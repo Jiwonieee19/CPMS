@@ -69,27 +69,41 @@ export default function DashboardPage() {
                                 <Clock size={40} />
                                 PROCESS OVERVIEW
                             </h2>
-                            <div className="border-b-3 mb-4 border-[#65524F]"></div>
-                            <div className="h-64 flex items-end justify-around gap-2 mt-22">
-                                {processData.map((data, index) => (
-                                    <div key={index} className="flex flex-col items-center gap-1 p-4 flex-1">
-                                        <div className="relative w-full h-68">
-                                            <div
-                                                className="absolute bottom-0 left-0 w-2/3 bg-[#F5F5DC] rounded-t-3xl"
-                                                style={{ height: `${(data.fermenting / maxValue) * 100}%` }}
-                                            />
-                                            <div
-                                                className="absolute bottom-0 right-0 w-2/3 bg-[#E5B917] rounded-t-3xl"
-                                                style={{ height: `${(data.drying / maxValue) * 100}%` }}
-                                            />
+                            <div className="border-b-3 mb-4 border-[#65524F] mb-31"></div>
+                            <div className="relative h-64 flex items-end justify-around gap-2 mt-22">
+
+                                {/* Horizontal grid lines background */}
+                                <div className="absolute inset-0 pointer-events-none">
+                                    {[10, 20, 30, 40, 50].map((lineValue) => (
+                                        <div key={lineValue} style={{ position: 'absolute', marginLeft: '35px', marginBottom: '40px', bottom: `${(lineValue / maxValue) * 100}%`, width: '95%' }}>
+                                            <div className="border-t border-[#65524F] w-full"></div>
+                                            <span className="text-lg text-[#65524F] absolute -ml-8 -mt-4">{lineValue}</span>
                                         </div>
-                                        <span className="text-xs text-[#F5F5DC] mt-2">{data.day}</span>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+
+                                <div className='flex flex-row items-center gap-1 flex-1 z-10 ml-8 border-2 border-[#65524F] rounded'>
+                                    {/* div above is for border graph */}
+                                    {processData.map((data, index) => (
+                                        <div key={index} className="flex flex-col items-center gap-1 p-4 flex-1 z-10">
+                                            <div className="relative w-full h-70">
+                                                <div
+                                                    className="absolute bottom-0 left-0 w-2/3 bg-[#F5F5DC] rounded-t-3xl"
+                                                    style={{ height: `${(data.fermenting / maxValue) * 100}%` }}
+                                                />
+                                                <div
+                                                    className="absolute bottom-0 right-0 w-2/3 bg-[#E5B917] rounded-t-3xl"
+                                                    style={{ height: `${(data.drying / maxValue) * 100}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-xs text-[#F5F5DC] mt-2">{data.day}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex flex-col gap-2 mt-4 text-lg">
+                            <div className="flex flex-row gap-2 mt-4 text-lg">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 bg-[#E5B917] rounded"></div>
+                                    <div className="w-4 h-4 bg-[#F5F5DC] rounded"></div>
                                     <span>Batch Fermenting</span>
                                 </div>
                                 <div className="flex items-center gap-2">
