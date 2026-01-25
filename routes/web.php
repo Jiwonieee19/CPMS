@@ -29,3 +29,7 @@ Route::get('/inventory', function () {
 Route::get('/accounts', function () {
     return inertia('LoginPage');
 });
+
+Route::get('/logout', function () {
+    return inertia('LoginPage');
+});
