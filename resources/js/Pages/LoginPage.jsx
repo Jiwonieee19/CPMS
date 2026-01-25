@@ -5,7 +5,7 @@ import loginBackground from '../Assets/login-background.png';
 export default function LoginPage() {
 
     const [formData, setFormData] = useState({
-        email: '',
+        staffid: '',
         password: ''
     });
 
@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert(`Login submitted!\nEmail: ${formData.email}`);
+        window.location.href = '/dashboard';
     };
 
     return (
@@ -33,7 +33,7 @@ export default function LoginPage() {
 
                 <div className='bg-[#3E2723] rounded-xl mt-6 p-5'>
                     <div className="mb-4">
-                        <label htmlFor="email" className="block text-[#F5F5DC] text-2xl font-semibold mb-3">
+                        <label htmlFor="staffid" className="block text-[#F5F5DC] text-2xl font-semibold mb-3">
                             STAFF ID
                         </label>
                         <div className="relative">
@@ -43,10 +43,10 @@ export default function LoginPage() {
                                 className="absolute left-3 top-1/2 -translate-y-1/2 h-7 w-7 pointer-events-none"
                             />
                             <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
+                                type="staffid"
+                                id="staffid"
+                                name="staffid"
+                                value={formData.staffid}
                                 onChange={handleChange}
                                 className="w-full pl-11 pr-4 py-2 border border-gray-300 bg-[#F5F5DC] font-medium rounded-lg focus:outline-none focus:ring-4 focus:ring-[#E5B917] focus:border-transparent"
                                 placeholder="ENTER YOUR ID"
