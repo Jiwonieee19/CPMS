@@ -51,7 +51,7 @@ export default function CreateAccountModal({ isOpen, onClose }) {
         }));
     };
 
-    const handleCreate = () => {
+    const handleCreate = async () => {
         // Validation
         if (!formData.firstName || !formData.lastName || !formData.email || !formData.contact || !formData.password || !formData.role) {
             alert('All fields are required!');
@@ -63,18 +63,41 @@ export default function CreateAccountModal({ isOpen, onClose }) {
             return;
         }
 
-        // Ready for API call
-        console.log('Creating new account with data:', formData);
-        // TODO: Replace with actual API call
-        // const response = await fetch('/api/accounts/create', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(formData)
-        // });
-        // if (response.ok) {
-        //     onClose();
-        // }
-        onClose();
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            const response = await fetch('/api/staffs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || ''
+                },
+                body: JSON.stringify({
+                    staff_firstname: formData.firstName,
+                    staff_lastname: formData.lastName,
+                    staff_email: formData.email,
+                    staff_contact: formData.contact,
+                    staff_password: formData.password,
+                    staff_role: formData.role,
+                    staff_status: 'active'
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Staff account created successfully!');
+                onClose();
+            } else {
+                const errorMsg = data.errors
+                    ? Object.values(data.errors).flat().join(', ')
+                    : (data.message || 'Failed to create account');
+                alert('Error: ' + errorMsg);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            alert('Error: ' + error.message);
+        }
     };
 
     const handleCancel = () => {

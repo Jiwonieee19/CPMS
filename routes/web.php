@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StaffsController;
 
 Route::get('/', function () {
     return inertia('LoginPage');
@@ -33,3 +34,6 @@ Route::get('/accounts', function () {
 Route::get('/logout', function () {
     return inertia('LoginPage');
 });
+
+// API Routes (with CSRF protection)
+Route::post('/api/staffs', [StaffsController::class, 'store']);
