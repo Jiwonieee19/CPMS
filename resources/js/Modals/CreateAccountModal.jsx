@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useToast } from '../Components/ToastProvider';
 
 export default function CreateAccountModal({ isOpen, onClose }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const toast = useToast();
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -54,12 +56,12 @@ export default function CreateAccountModal({ isOpen, onClose }) {
     const handleCreate = async () => {
         // Validation
         if (!formData.firstName || !formData.lastName || !formData.email || !formData.contact || !formData.password || !formData.role) {
-            alert('All fields are required!');
+            toast.warning('All fields are required!');
             return;
         }
 
         if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match!');
+            toast.warning('Passwords do not match!');
             return;
         }
 
@@ -86,17 +88,17 @@ export default function CreateAccountModal({ isOpen, onClose }) {
             const data = await response.json();
 
             if (response.ok) {
-                alert('Staff account created successfully!');
+                toast.success('Staff account created successfully!');
                 onClose();
             } else {
                 const errorMsg = data.errors
                     ? Object.values(data.errors).flat().join(', ')
                     : (data.message || 'Failed to create account');
-                alert('Error: ' + errorMsg);
+                toast.error('Error: ' + errorMsg);
             }
         } catch (error) {
             console.error('Fetch error:', error);
-            alert('Error: ' + error.message);
+            toast.error('Error: ' + error.message);
         }
     };
 
