@@ -1,0 +1,282 @@
+import { useState, useEffect } from 'react';
+import { Edit, Eye, Trash2, Plus, Menu } from 'lucide-react';
+import Sidebar from '../Components/sidebar';
+import EditAccountModal from '../Modals/EditAccountModal';
+import ViewAccountModal from '../Modals/ViewAccountModal';
+import DeleteAccountModal from '../Modals/DeleteAccountModal';
+import CreateAccountModal from '../Modals/CreateAccountModal';
+
+export default function AccountsPage() {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [selectedAccountId, setSelectedAccountId] = useState(null);
+
+    // Reset to page 1 when search term changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    const accountsData = [
+        { id: '00001', fullname: 'Kevin Anga', role: 'Staff', status: 'Active' },
+        { id: '00002', fullname: 'Ryan Comps', role: 'QA', status: 'Active' },
+        { id: '00003', fullname: 'Fletcher Malaz', role: 'IM', status: 'Active' },
+        { id: '00004', fullname: 'Yosh Bats', role: 'PM', status: 'Active' },
+        { id: '00005', fullname: 'Hatdog Hekhok', role: 'Staff', status: 'Inactive' },
+        { id: '00006', fullname: 'Hatdog Sure', role: 'Staff', status: 'Inactive' },
+        { id: '00007', fullname: 'SunFlower Lee', role: 'Staff', status: 'Active' },
+        { id: '00008', fullname: 'Maria Santos', role: 'QA', status: 'Active' },
+        { id: '00009', fullname: 'John Cruz', role: 'IM', status: 'Active' },
+        { id: '00010', fullname: 'Anna Garcia', role: 'PM', status: 'Active' },
+        { id: '00011', fullname: 'Carlos Reyes', role: 'Staff', status: 'Active' },
+        { id: '00012', fullname: 'Lisa Ramos', role: 'QA', status: 'Inactive' },
+        { id: '00013', fullname: 'Mark Torres', role: 'IM', status: 'Active' },
+        { id: '00014', fullname: 'Sofia Mendoza', role: 'Staff', status: 'Active' },
+        { id: '00015', fullname: 'David Lopez', role: 'PM', status: 'Active' },
+        { id: '00016', fullname: 'Emma Rivera', role: 'QA', status: 'Inactive' },
+        { id: '00017', fullname: 'James Flores', role: 'Staff', status: 'Active' },
+        { id: '00018', fullname: 'Mia Castro', role: 'IM', status: 'Active' },
+        { id: '00019', fullname: 'Lucas Diaz', role: 'PM', status: 'Active' },
+        { id: '00020', fullname: 'Olivia Vargas', role: 'Staff', status: 'Inactive' },
+        { id: '00021', fullname: 'Ethan Morales', role: 'QA', status: 'Active' },
+        { id: '00022', fullname: 'Ava Hernandez', role: 'IM', status: 'Active' },
+        { id: '00023', fullname: 'Noah Ramirez', role: 'Staff', status: 'Active' },
+        { id: '00024', fullname: 'Isabella Perez', role: 'PM', status: 'Inactive' },
+        { id: '00025', fullname: 'Mason Silva', role: 'QA', status: 'Active' },
+        { id: '00026', fullname: 'Jane Doe', role: 'Staff', status: 'Active' },
+    ];
+
+    // Filter accounts based on search term
+    const filteredAccounts = accountsData.filter(account => {
+        const search = searchTerm.toLowerCase();
+        return (
+            account.id.toLowerCase().includes(search) ||
+            account.fullname.toLowerCase().includes(search) ||
+            account.role.toLowerCase().includes(search) ||
+            account.status.toLowerCase().includes(search)
+        );
+    });
+
+    const itemsPerPage = 5;
+    const totalAccounts = filteredAccounts.length;
+    const totalPages = Math.ceil(totalAccounts / itemsPerPage);
+    const rangeStart = totalAccounts > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+    const rangeEnd = totalAccounts > 0 ? Math.min(currentPage * itemsPerPage, totalAccounts) : 0;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalAccounts);
+    const paginatedAccounts = filteredAccounts.slice(startIndex, endIndex);
+
+    // Calculate visible page numbers (max 3 page buttons)
+    const maxVisiblePages = 3;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    const visiblePages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
+    const handleEdit = (id) => {
+        setSelectedAccountId(id);
+        setIsEditModalOpen(true);
+    };
+
+    const handleView = (id) => {
+        setSelectedAccountId(id);
+        setIsViewModalOpen(true);
+    };
+
+    const handleDelete = (id) => {
+        setSelectedAccountId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleCreate = () => {
+        setSelectedAccountId();
+        setIsCreateModalOpen(true);
+    };
+
+    return (
+        <div className="flex min-h-screen flex-col md:flex-row">
+            <Sidebar />
+            <div className="flex-1 p-14 bg-[#F5F5DC] min-h-screen">
+                <h1 className="text-6xl font-extrabold text-[#E5B917] mb-8">ACCOUNT MANAGEMENT</h1>
+                <div className="space-y-6">
+                    {/* Search and Actions Bar */}
+                    <div className="flex justify-between items-center">
+                        <div className="relative w-96">
+                            <input
+                                type="text"
+                                placeholder="SEARCH HERE ...."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full px-6 py-3 pl-14 border-4 border-[#3E2723] rounded-full bg-[#F5F5DC] text-[#3E2723] placeholder-[#3E2723] focus:outline-none focus:ring-2 focus:ring-[#E5B917]"
+                            />
+                            <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                                <div className="w-8 h-8 border-4 border-[#3E2723] rounded-full flex items-center justify-center">
+                                    <div className="w-3 h-3 bg-[#3E2723] rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => handleCreate()}
+                                className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition"
+                            >
+                                <Plus size={32} className="text-[#F5F5DC]" strokeWidth={3} />
+                            </button>
+                            <button className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition">
+                                <Menu size={32} className="text-[#F5F5DC]" strokeWidth={3} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Table */}
+                    <div className="bg-[#3E2723] rounded-lg p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 border-4 border-white rounded-full flex items-center justify-center">
+                                <div className="w-5 h-5 bg-white rounded-full"></div>
+                            </div>
+                            <h2 className="text-3xl font-semibold text-[#F5F5DC]">ACCOUNTLIST</h2>
+                        </div>
+
+                        <div className="border-t-2 border-[#65524F] mb-6"></div>
+
+                        {/* Table Header */}
+                        <div className="grid grid-cols-5 gap-12 mb-4 text-[#E5B917] font-semibold text-lg text-center">
+                            <div className="flex items-center justify-center gap-2">
+                                ACOUNT ID
+                                <span className="text-xl">⇅</span>
+                            </div>
+                            <div className="flex items-center justify-center gap-2">
+                                FULLNAME
+                                <span className="text-xl">⇅</span>
+                            </div>
+                            <div className="flex items-center justify-center gap-2">
+                                ROLE
+                                <span className="text-xl">⇅</span>
+                            </div>
+                            <div className="flex items-center justify-center gap-2">
+                                STATUS
+                                <span className="text-xl">⇅</span>
+                            </div>
+                            <div className="text-center">ACTION</div>
+                        </div>
+
+                        {/* Table Rows */}
+                        <div className="space-y-3">
+                            {paginatedAccounts.length > 0 ? (
+                                paginatedAccounts.map((account) => (
+                                    <div
+                                        key={account.id}
+                                        className="grid grid-cols-5 gap-16 bg-[#3E2723] bg-opacity-50 py-4 px-6 rounded-lg text-[#F5F5DC] items-center text-center border-2 border-[#65524F]"
+                                    >
+                                        <div>{account.id}</div>
+                                        <div>{account.fullname}</div>
+                                        <div>{account.role}</div>
+                                        <div>{account.status}</div>
+                                        <div className="flex justify-center gap-3">
+                                            <button
+                                                onClick={() => handleEdit(account.id)}
+                                                className="hover:scale-110 transition"
+                                            >
+                                                <Edit size={28} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleView(account.id)}
+                                                className="hover:scale-110 transition"
+                                            >
+                                                <Eye size={28} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(account.id)}
+                                                className="hover:scale-110 transition"
+                                            >
+                                                <Trash2 size={28} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="py-8 text-center text-[#F5F5DC] text-xl font-semibold">
+                                    No Account Found
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="flex justify-between items-center text-[#3E2723]">
+                        <div className="text-lg">
+                            Showing <span className="font-bold">{rangeStart} - {rangeEnd}</span> Accounts from <span className="font-bold">{totalAccounts}</span>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 border-2 border-[#3E2723] bg-[#F5F5DC] rounded hover:bg-[#3E2723] hover:text-[#F5F5DC] transition disabled:opacity-50"
+                            >
+                                ←
+                            </button>
+
+                            {visiblePages.map((page) => (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    className={`px-4 py-2 border-2 border-[#3E2723] rounded transition ${currentPage === page
+                                        ? 'bg-[#3E2723] text-[#F5F5DC]'
+                                        : 'bg-[#F5F5DC] hover:bg-[#3E2723] hover:text-[#F5F5DC]'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 border-2 border-[#3E2723] bg-[#F5F5DC] rounded hover:bg-[#3E2723] hover:text-[#F5F5DC] transition disabled:opacity-50"
+                            >
+                                →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <EditAccountModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                accountId={selectedAccountId}
+                accountsData={accountsData}
+            />
+
+            <ViewAccountModal
+                isOpen={isViewModalOpen}
+                onClose={() => setIsViewModalOpen(false)}
+                staffId={selectedAccountId}
+                accountsData={accountsData}
+            />
+
+            <DeleteAccountModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                staffId={selectedAccountId}
+                accountsData={accountsData}
+            />
+
+            <CreateAccountModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                accountsData={accountsData}
+            />
+        </div>
+    );
+}
