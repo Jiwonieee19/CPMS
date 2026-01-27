@@ -157,19 +157,6 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                PASSWORD
-                            </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="ABCDE123!@#"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
                                 ROLE
                             </label>
                             <select
@@ -187,22 +174,14 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                             </select>
                         </div>
                     </div>
-
-                    {/* Fourth Row */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                CONFIRM PASS
-                            </label>
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="ABCDEFG"
-                            />
-                        </div>
+                    {/* Buttons */}
+                    <div className="grid grid-cols-2 gap-6 mt-8">
+                        <button
+                            onClick={handleCancel}
+                            className="py-3 rounded-2xl bg-[#311F1C] text-[#F5F5DC] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
+                        >
+                            CANCEL
+                        </button>
                     </div>
                 </div>
             </div>
