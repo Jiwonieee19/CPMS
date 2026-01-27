@@ -16,7 +16,7 @@ Route::get('/weather', function () {
 });
 
 Route::get('/process', function () {
-    return inertia('LoginPage');
+    return inertia('ProcessPage');
 });
 
 Route::get('/logs', function () {
