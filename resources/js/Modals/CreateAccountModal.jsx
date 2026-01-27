@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useToast } from '../Components/ToastProvider';
+import { useForm } from '@inertiajs/react';
 
 export default function CreateAccountModal({ isOpen, onClose }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const toast = useToast();
 
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        contact: '',
-        password: '',
-        confirmPassword: '',
-        role: ''
+    const { data, setData, post, processing, errors, reset } = useForm({
+        staff_firstname: '',
+        staff_lastname: '',
+        staff_email: '',
+        staff_contact: '',
+        staff_password: '',
+        staff_password_confirmation: '',
+        staff_role: ''
     });
 
     // Handle mount/unmount with fade/scale transitions
@@ -33,73 +34,36 @@ export default function CreateAccountModal({ isOpen, onClose }) {
     // Reset form when modal closes
     useEffect(() => {
         if (!isOpen) {
-            setFormData({
-                firstName: '',
-                lastName: '',
-                email: '',
-                contact: '',
-                password: '',
-                confirmPassword: '',
-                role: ''
-            });
+            reset();
         }
     }, [isOpen]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const handleCreate = (e) => {
+        e.preventDefault();
 
-    const handleCreate = async () => {
         // Validation
-        if (!formData.firstName || !formData.lastName || !formData.email || !formData.contact || !formData.password || !formData.role) {
+        if (!data.staff_firstname || !data.staff_lastname || !data.staff_email || !data.staff_contact || !data.staff_password || !data.staff_role) {
             toast.warning('All fields are required!');
             return;
         }
 
-        if (formData.password !== formData.confirmPassword) {
+        if (data.staff_password !== data.staff_password_confirmation) {
             toast.warning('Passwords do not match!');
             return;
         }
 
-        try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-            const response = await fetch('/api/staffs', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken || ''
-                },
-                body: JSON.stringify({
-                    staff_firstname: formData.firstName,
-                    staff_lastname: formData.lastName,
-                    staff_email: formData.email,
-                    staff_contact: formData.contact,
-                    staff_password: formData.password,
-                    staff_role: formData.role,
-                    staff_status: 'active'
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
+        post('/staffs', {
+            preserveScroll: true,
+            onSuccess: () => {
                 toast.success('Staff account created successfully!');
+                reset();
                 onClose();
-            } else {
-                const errorMsg = data.errors
-                    ? Object.values(data.errors).flat().join(', ')
-                    : (data.message || 'Failed to create account');
+            },
+            onError: (errors) => {
+                const errorMsg = Object.values(errors).flat().join(', ');
                 toast.error('Error: ' + errorMsg);
             }
-        } catch (error) {
-            console.error('Fetch error:', error);
-            toast.error('Error: ' + error.message);
-        }
+        });
     };
 
     const handleCancel = () => {
@@ -138,9 +102,9 @@ export default function CreateAccountModal({ isOpen, onClose }) {
                             </label>
                             <input
                                 type="text"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
+                                name="staff_firstname"
+                                value={data.staff_firstname}
+                                onChange={(e) => setData('staff_firstname', e.target.value)}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
                                 placeholder="ABCD"
                             />
@@ -151,9 +115,9 @@ export default function CreateAccountModal({ isOpen, onClose }) {
                             </label>
                             <input
                                 type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
+                                name="staff_email"
+                                value={data.staff_email}
+                                onChange={(e) => setData('staff_email', e.target.value)}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
                                 placeholder="ABC123@GMAIL.COM"
                             />
@@ -168,9 +132,9 @@ export default function CreateAccountModal({ isOpen, onClose }) {
                             </label>
                             <input
                                 type="text"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
+                                name="staff_lastname"
+                                value={data.staff_lastname}
+                                onChange={(e) => setData('staff_lastname', e.target.value)}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
                                 placeholder="ABCDEFG"
                             />
@@ -181,9 +145,9 @@ export default function CreateAccountModal({ isOpen, onClose }) {
                             </label>
                             <input
                                 type="tel"
-                                name="contact"
-                                value={formData.contact}
-                                onChange={handleChange}
+                                name="staff_contact"
+                                value={data.staff_contact}
+                                onChange={(e) => setData('staff_contact', e.target.value)}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
                                 placeholder="09090909090"
                             />
@@ -198,9 +162,9 @@ export default function CreateAccountModal({ isOpen, onClose }) {
                             </label>
                             <input
                                 type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
+                                name="staff_password"
+                                value={data.staff_password}
+                                onChange={(e) => setData('staff_password', e.target.value)}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
                                 placeholder="ABCDE123!@#"
                             />
@@ -210,9 +174,9 @@ export default function CreateAccountModal({ isOpen, onClose }) {
                                 ROLE
                             </label>
                             <select
-                                name="role"
-                                value={formData.role}
-                                onChange={handleChange}
+                                name="staff_role"
+                                value={data.staff_role}
+                                onChange={(e) => setData('staff_role', e.target.value)}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
                             >
                                 <option value="">Select Role</option>
@@ -233,9 +197,9 @@ export default function CreateAccountModal({ isOpen, onClose }) {
                             </label>
                             <input
                                 type="password"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
+                                name="staff_password_confirmation"
+                                value={data.staff_password_confirmation}
+                                onChange={(e) => setData('staff_password_confirmation', e.target.value)}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
                                 placeholder="ABCDEFG"
                             />
@@ -252,9 +216,10 @@ export default function CreateAccountModal({ isOpen, onClose }) {
                         </button>
                         <button
                             onClick={handleCreate}
-                            className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
+                            disabled={processing}
+                            className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition disabled:opacity-50"
                         >
-                            CREATE
+                            {processing ? 'CREATING...' : 'CREATE'}
                         </button>
                     </div>
                 </div>

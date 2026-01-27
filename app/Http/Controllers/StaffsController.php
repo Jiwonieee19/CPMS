@@ -34,7 +34,7 @@ class StaffsController extends Controller
                 'staff_lastname' => 'required|string|max:255',
                 'staff_email' => 'required|email|unique:staffs',
                 'staff_contact' => 'required|string|max:20',
-                'staff_password' => 'required|string|min:8',
+                'staff_password' => 'required|string|min:8|confirmed',
                 'staff_role' => 'required|string|max:100'
             ]);
 
@@ -43,19 +43,34 @@ class StaffsController extends Controller
             
             $staff = Staffs::create($validated);
 
-            return response()->json([
-                'message' => 'Staff account created successfully',
-                'staff' => $staff
-            ], 201);
+            // Check if request expects JSON (API) or Inertia
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Staff account created successfully',
+                    'staff' => $staff
+                ], 201);
+            }
+
+            // Inertia redirect with success message
+            return back()->with('success', 'Staff account created successfully');
+            
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            // Inertia will automatically handle validation errors
+            throw $e;
+            
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error creating staff account: ' . $e->getMessage()
-            ], 500);
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Error creating staff account: ' . $e->getMessage()
+                ], 500);
+            }
+            return back()->with('error', 'Error creating staff account: ' . $e->getMessage());
         }
     }
 

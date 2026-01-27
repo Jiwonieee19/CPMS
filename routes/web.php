@@ -35,5 +35,8 @@ Route::get('/logout', function () {
     return inertia('LoginPage');
 });
 
-// API Routes (with CSRF protection)
+// Staff Routes
+Route::post('/staffs', [StaffsController::class, 'store'])->name('staffs.store');
+
+// API Routes (with CSRF protection) - Deprecated, use the route above
 Route::post('/api/staffs', [StaffsController::class, 'store']);
