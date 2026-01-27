@@ -149,7 +149,7 @@ export default function AccountsPage() {
                         <div className="border-t-2 border-[#65524F] mb-6"></div>
 
                         {/* Table Header */}
-                        <div className="grid grid-cols-5 gap-12 mb-4 text-[#E5B917] font-semibold text-lg text-center">
+                        <div className="grid grid-cols-5 gap-16 mb-4 text-[#E5B917] font-semibold text-lg text-center">
                             <div className="flex items-center justify-center gap-2">
                                 ACOUNT ID
                                 <span className="text-xl">⇅</span>
@@ -175,7 +175,7 @@ export default function AccountsPage() {
                                 paginatedAccounts.map((account) => (
                                     <div
                                         key={account.id}
-                                        className="grid grid-cols-5 gap-16 bg-[#3E2723] bg-opacity-50 py-4 px-6 rounded-lg text-[#F5F5DC] items-center text-center border-2 border-[#65524F]"
+                                        className="grid grid-cols-5 gap-28 bg-[#3E2723] bg-opacity-50 py-4 px-6 rounded-lg text-[#F5F5DC] items-center text-center border-2 border-[#65524F]"
                                     >
                                         <div>{account.id}</div>
                                         <div>{account.fullname}</div>
