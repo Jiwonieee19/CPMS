@@ -1,0 +1,305 @@
+import { useState, useEffect } from 'react'
+import { Package, Plus, Menu, Box, PlusCircle, CheckCircle, Truck, Cloud, Clock, FileText, Eye, User } from 'lucide-react'
+import Sidebar from '../Components/sidebar'
+import ViewLogsModal from '../Modals/ViewLogsModal'
+
+
+export default function LogsPage() {
+
+    const [activeTab, setActiveTab] = useState('weather')
+    const [searchTerm, setSearchTerm] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
+    const [isViewLogsModalOpen, setIsViewLogsModalOpen] = useState(false)
+    const [selectedLogId, setSelectedLogId] = useState(null)
+    const User = new URL('../Assets/icons/icon-person.png', import.meta.url).href;
+
+    // Reset to page 1 when search term or tab changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, activeTab]);
+
+    const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href
+
+    // ================== STATIC SAMPLE DATA ==================
+    const weatherLogsData = [
+        { id: 'WL-001', task: 'Temperature Check', timeSaved: '08:30 AM', date: '2026-01-27' },
+        { id: 'WL-002', task: 'Humidity Monitoring', timeSaved: '10:15 AM', date: '2026-01-27' },
+        { id: 'WL-003', task: 'Rainfall Recording', timeSaved: '02:45 PM', date: '2026-01-26' },
+        { id: 'WL-004', task: 'Wind Speed Check', timeSaved: '04:20 PM', date: '2026-01-26' },
+        { id: 'WL-005', task: 'UV Index Reading', timeSaved: '09:00 AM', date: '2026-01-25' },
+    ]
+
+    const processLogsData = [
+        { id: 'PL-001', task: 'Fermentation Started', timeSaved: '07:00 AM', date: '2026-01-27' },
+        { id: 'PL-002', task: 'Drying Process Completed', timeSaved: '11:30 AM', date: '2026-01-27' },
+        { id: 'PL-003', task: 'Grading Inspection', timeSaved: '03:15 PM', date: '2026-01-26' },
+        { id: 'PL-004', task: 'Quality Check', timeSaved: '05:45 PM', date: '2026-01-26' },
+        { id: 'PL-005', task: 'Roasting Process', timeSaved: '08:20 AM', date: '2026-01-25' },
+    ]
+
+    const inventoryLogsData = [
+        { id: 'IL-001', task: 'Stock Added - Boxes', timeSaved: '09:15 AM', date: '2026-01-27' },
+        { id: 'IL-002', task: 'Beans Removed - Batch #204', timeSaved: '12:00 PM', date: '2026-01-27' },
+        { id: 'IL-003', task: 'Equipment Maintenance', timeSaved: '02:30 PM', date: '2026-01-26' },
+        { id: 'IL-004', task: 'Stock Count - Sacks', timeSaved: '04:00 PM', date: '2026-01-26' },
+        { id: 'IL-005', task: 'Low Stock Alert - Racks', timeSaved: '10:45 AM', date: '2026-01-25' },
+    ]
+
+    const accountLogsData = [
+        { id: 'AL-001', task: 'User Login - admin', timeSaved: '06:30 AM', date: '2026-01-27' },
+        { id: 'AL-002', task: 'Password Changed', timeSaved: '10:00 AM', date: '2026-01-27' },
+        { id: 'AL-003', task: 'New Staff Added', timeSaved: '01:20 PM', date: '2026-01-26' },
+        { id: 'AL-004', task: 'User Logout - staff01', timeSaved: '05:00 PM', date: '2026-01-26' },
+        { id: 'AL-005', task: 'Permission Updated', timeSaved: '09:30 AM', date: '2026-01-25' },
+    ]
+
+    const getActiveData = () => {
+        switch (activeTab) {
+            case 'weather': return weatherLogsData
+            case 'process': return processLogsData
+            case 'inventory': return inventoryLogsData
+            case 'account': return accountLogsData
+            default: return weatherLogsData
+        }
+    }
+
+    const activeData = getActiveData()
+
+    // ================== SEARCH FILTER ==================
+    const filteredData = activeData.filter(item =>
+        item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.task.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.date.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
+    // ================== PAGINATION LOGIC ==================
+    const itemsPerPage = 5;
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const rangeStart = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+    const rangeEnd = totalItems > 0 ? Math.min(currentPage * itemsPerPage, totalItems) : 0;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+    const paginatedData = filteredData.slice(startIndex, endIndex);
+
+    // Calculate visible page numbers (max 3 page buttons)
+    const maxVisiblePages = 3;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    const visiblePages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
+    const handleViewLog = (id) => {
+        setSelectedLogId(id);
+        setIsViewLogsModalOpen(true);
+    };
+
+    const getTabIcon = () => {
+        switch (activeTab) {
+            case 'weather': return <Cloud size={38} className="text-[#F5F5DC] mt-1" />
+            case 'process': return <Clock size={38} className="text-[#F5F5DC] mt-1" />
+            case 'inventory': return <Package size={38} className="text-[#F5F5DC] mt-1" />
+            case 'account': return <img src={User} alt="User Icon" className="w-9 h-9 mt-1" />
+            // case 'account': return <User size={38} className="text-[#F5F5DC] mt-1" />
+            default: return <Cloud size={38} className="text-[#F5F5DC] mt-1" />
+        }
+    }
+
+    const getTabTitle = () => {
+        switch (activeTab) {
+            case 'weather': return 'WEATHER LOG REPORTS'
+            case 'process': return 'PROCESS LOG REPORTS'
+            case 'inventory': return 'INVENTORY LOG REPORTS'
+            case 'account': return 'ACCOUNT LOG REPORTS'
+            default: return 'LOG REPORTS'
+        }
+    }
+
+    return (
+        <div className="flex min-h-screen">
+            <Sidebar />
+
+            <div className="flex-1 p-14 bg-[#F5F5DC]">
+                <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">
+                    LOGS MANAGEMENT
+                </h1>
+
+                {/* ================== TABS + SEARCH ================== */}
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-6">
+                        {/* Tabs */}
+                        <div className="flex bg-[#3E2723] p-2 rounded-2xl gap-2">
+                            <button
+                                onClick={() => setActiveTab('weather')}
+                                className={`px-10 py-2 rounded-lg font-semibold transition
+                                    ${activeTab === 'weather'
+                                        ? 'bg-[#E5B917] text-[#3E2723]'
+                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                    }`}
+                            >
+                                WEATHER
+                            </button>
+
+                            <button
+                                onClick={() => setActiveTab('process')}
+                                className={`px-10 py-2 rounded-lg font-semibold transition
+                                    ${activeTab === 'process'
+                                        ? 'bg-[#E5B917] text-[#3E2723]'
+                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                    }`}
+                            >
+                                PROCESS
+                            </button>
+
+                            <button
+                                onClick={() => setActiveTab('inventory')}
+                                className={`px-10 py-2 rounded-lg font-semibold transition
+                                    ${activeTab === 'inventory'
+                                        ? 'bg-[#E5B917] text-[#3E2723]'
+                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                    }`}
+                            >
+                                INVENTORY
+                            </button>
+
+                            <button
+                                onClick={() => setActiveTab('account')}
+                                className={`px-10 py-2 rounded-lg font-semibold transition
+                                    ${activeTab === 'account'
+                                        ? 'bg-[#E5B917] text-[#3E2723]'
+                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                    }`}
+                            >
+                                ACCOUNT
+                            </button>
+                        </div>
+
+                        {/* Search */}
+                        <div className="relative w-96">
+                            <input
+                                type="text"
+                                placeholder="SEARCH HERE ...."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full px-6 py-3 pl-14 border-4 border-[#3E2723]
+                                           rounded-3xl bg-[#F5F5DC] text-[#3E2723]
+                                           focus:outline-none"
+                            />
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                                <img src={Search} alt="Search" className="w-8 h-8" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ================== TABLE ================== */}
+                <div className="bg-[#3E2723] rounded-lg p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        {getTabIcon()}
+                        <h2 className="text-3xl font-semibold text-[#F5F5DC]">
+                            {getTabTitle()}
+                        </h2>
+                    </div>
+
+                    <div className="border-t-2 border-[#65524F] mb-6"></div>
+
+                    {/* Header */}
+                    <div className="grid grid-cols-5 text-[#E5B917] font-semibold text-lg mb-4 text-center">
+                        <div className='flex items-center justify-center gap-2'>LOG ID
+                            <span className="text-xl">⇅</span>
+                        </div>
+                        <div className='flex items-center justify-center gap-2'>TASK
+                            <span className="text-xl">⇅</span>
+                        </div>
+                        <div className='flex items-center justify-center gap-2'>TIME SAVED
+                            <span className="text-xl">⇅</span>
+                        </div>
+                        <div className='flex items-center justify-center gap-2'>DATE
+                            <span className="text-xl">⇅</span>
+                        </div>
+                        <div className='ml-4'>ACTION</div>
+                    </div>
+
+                    {/* Rows */}
+                    <div className="space-y-3">
+                        {paginatedData.length > 0 ? (
+                            paginatedData.map(item => (
+                                <div
+                                    key={item.id}
+                                    className="grid grid-cols-5 text-center items-center
+                                               py-4 px-6 rounded-lg border-2 gap-18
+                                               border-[#65524F] text-[#F5F5DC]"
+                                >
+                                    <div>{item.id}</div>
+                                    <div>{item.task}</div>
+                                    <div>{item.timeSaved}</div>
+                                    <div>{item.date}</div>
+                                    <div className="flex justify-center">
+                                        <Eye
+                                            size={28}
+                                            className="cursor-pointer hover:scale-110 transition text-[#F5F5DC]"
+                                            onClick={() => handleViewLog(item.id)}
+                                        />
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-10 text-[#F5F5DC] text-xl">
+                                No Data Found
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Pagination */}
+                <div className="flex justify-between items-center text-[#3E2723] mt-6">
+                    <div className="text-lg">
+                        Showing <span className="font-bold">{rangeStart} - {rangeEnd}</span> of <span className="font-bold">{totalItems}</span>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 border-2 border-[#3E2723] bg-[#F5F5DC] rounded hover:bg-[#3E2723] hover:text-[#F5F5DC] transition disabled:opacity-50"
+                        >
+                            ←
+                        </button>
+
+                        {visiblePages.map((page) => (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-4 py-2 border-2 border-[#3E2723] rounded transition ${currentPage === page
+                                    ? 'bg-[#3E2723] text-[#F5F5DC]'
+                                    : 'bg-[#F5F5DC] hover:bg-[#3E2723] hover:text-[#F5F5DC]'
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 border-2 border-[#3E2723] bg-[#F5F5DC] rounded hover:bg-[#3E2723] hover:text-[#F5F5DC] transition disabled:opacity-50"
+                        >
+                            →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <ViewLogsModal
+                isOpen={isViewLogsModalOpen}
+                onClose={() => setIsViewLogsModalOpen(false)}
+                logId={selectedLogId}
+            />
+        </div>
+    )
+}
