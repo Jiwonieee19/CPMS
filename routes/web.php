@@ -20,7 +20,7 @@ Route::get('/process', function () {
 });
 
 Route::get('/logs', function () {
-    return inertia('LoginPage');
+    return inertia('LogsPage');
 });
 
 Route::get('/inventory', function () {

@@ -183,11 +183,20 @@ export default function InventoryPage() {
 
                     {/* Header */}
                     <div className="grid grid-cols-5 text-[#E5B917] font-semibold text-lg mb-4 text-center">
-                        <div>{activeTab === 'beans' ? 'BATCH ID' : 'EQUIPMENT ID'}</div>
-                        <div>{activeTab === 'beans' ? 'ITEM USED' : 'NAME'}</div>
-                        <div>QUANTITY</div>
-                        <div>STATUS</div>
+                        <div className='flex items-center justify-center gap-2'>{activeTab === 'beans' ? 'BATCH ID' : 'EQUIPMENT ID'}
+                            <span className="text-xl">⇅</span>
+                        </div>
+                        <div className='flex items-center justify-center gap-2'>{activeTab === 'beans' ? 'ITEM USED' : 'NAME'}
+                            <span className="text-xl">⇅</span>
+                        </div>
+                        <div className='flex items-center justify-center gap-2'>QUANTITY
+                            <span className="text-xl">⇅</span>
+                        </div>
+                        <div className='flex items-center justify-center gap-2'>STATUS
+                            <span className="text-xl">⇅</span>
+                        </div>
                         <div className='ml-4'>ACTION</div>
+
                     </div>
 
                     {/* Rows */}
