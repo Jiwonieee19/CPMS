@@ -24,7 +24,7 @@ Route::get('/logs', function () {
 });
 
 Route::get('/inventory', function () {
-    return inertia('LoginPage');
+    return inertia('InventoryPage');
 });
 
 Route::get('/accounts', function () {

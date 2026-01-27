@@ -117,7 +117,7 @@ export default function AccountsPage() {
                                 placeholder="SEARCH HERE ...."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-7 py-3 pl-14 border-4 border-[#3E2723] rounded-full bg-[#F5F5DC] text-[#3E2723] placeholder-[#3E2723] focus:outline-none focus:ring-2 focus:ring-[#E5B917]"
+                                className="w-full px-7 py-3 pl-14 border-4 border-[#3E2723] rounded-3xl bg-[#F5F5DC] text-[#3E2723] placeholder-[#3E2723] focus:outline-none focus:ring-2 focus:ring-[#E5B917]"
                             />
                             <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
                                 <img src={Search} alt="Search" className="w-10 h-10" />
