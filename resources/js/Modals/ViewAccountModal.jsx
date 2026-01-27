@@ -65,7 +65,7 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
         onClose();
     };
 
-    const handleCancel = () => {
+    const handleClose = () => {
         onClose();
     };
 
@@ -177,10 +177,10 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                     {/* Buttons */}
                     <div className="grid grid-cols-2 gap-6 mt-8">
                         <button
-                            onClick={handleCancel}
+                            onClick={handleClose}
                             className="py-3 rounded-2xl bg-[#311F1C] text-[#F5F5DC] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
                         >
-                            CANCEL
+                            CLOSE
                         </button>
                     </div>
                 </div>
