@@ -68,6 +68,8 @@ export default function AccountsPage() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, totalAccounts);
     const paginatedAccounts = filteredAccounts.slice(startIndex, endIndex);
+    const User = new URL('../Assets/icons/icon-person.png', import.meta.url).href;
+    const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href;
 
     // Calculate visible page numbers (max 3 page buttons)
     const maxVisiblePages = 3;
@@ -115,12 +117,10 @@ export default function AccountsPage() {
                                 placeholder="SEARCH HERE ...."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-6 py-3 pl-14 border-4 border-[#3E2723] rounded-full bg-[#F5F5DC] text-[#3E2723] placeholder-[#3E2723] focus:outline-none focus:ring-2 focus:ring-[#E5B917]"
+                                className="w-full px-7 py-3 pl-14 border-4 border-[#3E2723] rounded-full bg-[#F5F5DC] text-[#3E2723] placeholder-[#3E2723] focus:outline-none focus:ring-2 focus:ring-[#E5B917]"
                             />
                             <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                                <div className="w-8 h-8 border-4 border-[#3E2723] rounded-full flex items-center justify-center">
-                                    <div className="w-3 h-3 bg-[#3E2723] rounded-full"></div>
-                                </div>
+                                <img src={Search} alt="Search" className="w-10 h-10" />
                             </div>
                         </div>
 
@@ -140,8 +140,8 @@ export default function AccountsPage() {
                     {/* Table */}
                     <div className="bg-[#3E2723] rounded-lg p-8">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 border-4 border-white rounded-full flex items-center justify-center">
-                                <div className="w-5 h-5 bg-white rounded-full"></div>
+                            <div className="w-10 h-10 pt-2 flex items-center justify-center">
+                                <img src={User} alt="Staff Icon" />
                             </div>
                             <h2 className="text-3xl font-semibold text-[#F5F5DC]">ACCOUNTLIST</h2>
                         </div>
