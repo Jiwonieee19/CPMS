@@ -36,7 +36,11 @@ Route::get('/logout', function () {
 });
 
 // Staff Routes
+Route::get('/staffs/list', [StaffsController::class, 'index'])->name('staffs.index');
 Route::post('/staffs', [StaffsController::class, 'store'])->name('staffs.store');
+Route::get('/staffs/{id}', [StaffsController::class, 'show'])->name('staffs.show');
+Route::put('/staffs/{id}', [StaffsController::class, 'update'])->name('staffs.update');
+Route::delete('/staffs/{id}', [StaffsController::class, 'destroy'])->name('staffs.destroy');
 
 // API Routes (with CSRF protection) - Deprecated, use the route above
 Route::post('/api/staffs', [StaffsController::class, 'store']);

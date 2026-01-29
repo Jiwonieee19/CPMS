@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export default function DeleteAccountModal({ isOpen, onClose, staffId }) {
+export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusUpdated }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const [staffName, setStaffName] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     // Handle mount/unmount with fade/scale transitions
     useEffect(() => {
@@ -18,10 +21,75 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId }) {
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        const fetchStaff = async () => {
+            if (!isOpen || !staffId) return;
+
+            try {
+                setIsLoading(true);
+                setError(null);
+                setStaffName('');
+
+                const response = await fetch(`/staffs/${staffId}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch staff: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const staff = data.staff || {};
+
+                setStaffName(staff.fullname || `${staff.first_name || ''} ${staff.last_name || ''}`.trim());
+            } catch (err) {
+                console.error('Error loading staff:', err);
+                setError('Failed to load staff name');
+                setStaffName('');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStaff();
+    }, [isOpen, staffId]);
+
     const handleConfirm = () => {
-        // API call ready here with staffId
-        console.log('Deleting account:', staffId);
-        onClose();
+        const updateStatus = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const csrfToken = document
+                    ?.querySelector('meta[name="csrf-token"]')
+                    ?.getAttribute('content');
+
+                const response = await fetch(`/staffs/${staffId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
+                    },
+                    body: JSON.stringify({ staff_status: 'inactive' })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to update staff: ${response.status}`);
+                }
+
+                if (onStatusUpdated) {
+                    onStatusUpdated();
+                }
+
+                onClose();
+            } catch (err) {
+                console.error('Error updating staff:', err);
+                setError('Failed to set staff inactive');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (staffId) {
+            updateStatus();
+        }
     };
 
     const handleCancel = () => {
@@ -52,11 +120,16 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId }) {
 
                 {/* Content */}
                 <div className="mb-8">
+                    {error && (
+                        <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
+                            {error}
+                        </div>
+                    )}
                     <p className="text-[#F5F5DC] text-lg mb-2">
                         Are you sure you want to delete this account?
                     </p>
                     <p className="text-[#E5B917] text-sm font-semibold">
-                        Staff ID: {staffId}
+                        {isLoading ? 'Loading staff...' : staffName ? `Staff: ${staffName}` : `Staff ID: ${staffId}`}
                     </p>
                     <p className="text-[#F5F5DC] text-sm mt-4">
                         This action cannot be undone.
@@ -73,9 +146,10 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId }) {
                     </button>
                     <button
                         onClick={handleConfirm}
+                        disabled={isLoading || !staffId}
                         className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
                     >
-                        DELETE
+                        {isLoading ? 'UPDATING...' : 'DELETE'}
                     </button>
                 </div>
             </div>

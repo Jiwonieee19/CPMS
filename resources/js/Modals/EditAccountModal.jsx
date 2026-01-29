@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export default function EditAccountModal({ isOpen, onClose, staffId }) {
+export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -29,21 +31,49 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
     }, [isOpen]);
 
     useEffect(() => {
-        if (staffId) {
-            // Fetch staff data based on staffId
-            // This is a placeholder - replace with actual API call
-            const mockStaffData = {
-                firstName: 'ABCD',
-                lastName: 'ABCDEFG',
-                email: 'ABC123@GMAIL.COM',
-                contact: '09090909090',
-                password: 'ABCDE123!@#',
-                confirmPassword: 'ABCDEFG',
-                role: 'STAFF/QA/WA'
-            };
-            setFormData(mockStaffData);
-        }
-    }, [staffId]);
+        const fetchStaff = async () => {
+            if (!isOpen || !staffId) return;
+
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const response = await fetch(`/staffs/${staffId}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch staff: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const staff = data.staff || {};
+
+                setFormData({
+                    firstName: staff.first_name || '',
+                    lastName: staff.last_name || '',
+                    email: staff.email || '',
+                    contact: staff.contact || '',
+                    password: '',
+                    confirmPassword: '',
+                    role: staff.role || ''
+                });
+            } catch (err) {
+                console.error('Error loading staff:', err);
+                setError('Failed to load staff data');
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    contact: '',
+                    password: '',
+                    confirmPassword: '',
+                    role: ''
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStaff();
+    }, [isOpen, staffId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -54,15 +84,64 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
     };
 
     const handleSave = () => {
-        // Validate passwords match
-        if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match!');
-            return;
-        }
+        const saveStaff = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
 
-        // Handle save logic here
-        console.log('Saving staff data:', formData);
-        onClose();
+                if (formData.password || formData.confirmPassword) {
+                    if (formData.password !== formData.confirmPassword) {
+                        setError('Passwords do not match');
+                        return;
+                    }
+                }
+
+                const payload = {
+                    staff_firstname: formData.firstName,
+                    staff_lastname: formData.lastName,
+                    staff_email: formData.email,
+                    staff_contact: formData.contact,
+                    staff_role: formData.role
+                };
+
+                if (formData.password) {
+                    payload.staff_password = formData.password;
+                    payload.staff_password_confirmation = formData.confirmPassword;
+                }
+
+                const csrfToken = document
+                    ?.querySelector('meta[name="csrf-token"]')
+                    ?.getAttribute('content');
+
+                const response = await fetch(`/staffs/${staffId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to update staff: ${response.status}`);
+                }
+
+                if (onUpdated) {
+                    onUpdated();
+                }
+
+                onClose();
+            } catch (err) {
+                console.error('Error saving staff:', err);
+                setError('Failed to save staff data');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (staffId) {
+            saveStaff();
+        }
     };
 
     const handleCancel = () => {
@@ -92,6 +171,11 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
                 </div>
 
                 {/* Form */}
+                {error && (
+                    <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-6">
+                        {error}
+                    </div>
+                )}
                 <div className="space-y-6">
                     {/* First Row */}
                     <div className="grid grid-cols-2 gap-6">
@@ -105,7 +189,6 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.firstName}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="ABCD"
                             />
                         </div>
                         <div>
@@ -118,7 +201,6 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.email}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="ABC123@GMAIL.COM"
                             />
                         </div>
                     </div>
@@ -135,7 +217,6 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.lastName}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="ABCDEFG"
                             />
                         </div>
                         <div>
@@ -148,7 +229,6 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.contact}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="09090909090"
                             />
                         </div>
                     </div>
@@ -165,7 +245,6 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.password}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="ABCDE123!@#"
                             />
                         </div>
                         <div>
@@ -200,7 +279,6 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="ABCDEFG"
                             />
                         </div>
                     </div>
@@ -215,9 +293,10 @@ export default function EditAccountModal({ isOpen, onClose, staffId }) {
                         </button>
                         <button
                             onClick={handleSave}
+                            disabled={isLoading || !staffId}
                             className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
                         >
-                            SAVE
+                            {isLoading ? 'SAVING...' : 'SAVE'}
                         </button>
                     </div>
                 </div>

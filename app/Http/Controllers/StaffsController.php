@@ -12,7 +12,31 @@ class StaffsController extends Controller
      */
     public function index()
     {
-        //
+        try {
+            $staffs = Staffs::all();
+            
+            // Transform the data to match frontend expectations
+            $transformedStaffs = $staffs->map(function ($staff) {
+                return [
+                    'id' => str_pad($staff->staff_id, 5, '0', STR_PAD_LEFT),
+                    'fullname' => $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                    'role' => $staff->staff_role,
+                    'status' => ucfirst($staff->staff_status),
+                    'email' => $staff->staff_email,
+                    'contact' => $staff->staff_contact,
+                    'staff_id' => $staff->staff_id
+                ];
+            });
+            
+            return response()->json([
+                'message' => 'Staffs retrieved successfully',
+                'staffs' => $transformedStaffs
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error retrieving staffs: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -77,9 +101,38 @@ class StaffsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Staffs $staffs)
+    public function show($id)
     {
-        //
+        try {
+            $staff = Staffs::find($id);
+            
+            if (!$staff) {
+                return response()->json([
+                    'message' => 'Staff not found'
+                ], 404);
+            }
+            
+            $transformedStaff = [
+                'id' => str_pad($staff->staff_id, 5, '0', STR_PAD_LEFT),
+                'first_name' => $staff->staff_firstname,
+                'last_name' => $staff->staff_lastname,
+                'fullname' => $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                'role' => $staff->staff_role,
+                'status' => ucfirst($staff->staff_status),
+                'email' => $staff->staff_email,
+                'contact' => $staff->staff_contact,
+                'staff_id' => $staff->staff_id
+            ];
+            
+            return response()->json([
+                'message' => 'Staff retrieved successfully',
+                'staff' => $transformedStaff
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error retrieving staff: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -93,16 +146,69 @@ class StaffsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Staffs $staffs)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $staff = Staffs::find($id);
+            
+            if (!$staff) {
+                return response()->json([
+                    'message' => 'Staff not found'
+                ], 404);
+            }
+            
+            $validated = $request->validate([
+                'staff_firstname' => 'sometimes|string|max:255',
+                'staff_lastname' => 'sometimes|string|max:255',
+                'staff_email' => 'sometimes|email|unique:staffs,staff_email,' . $id . ',staff_id',
+                'staff_contact' => 'sometimes|string|max:20',
+                'staff_role' => 'sometimes|string|max:100',
+                'staff_status' => 'sometimes|in:active,inactive',
+                'staff_password' => 'sometimes|string|min:8|confirmed'
+            ]);
+
+            if (isset($validated['staff_password'])) {
+                $validated['staff_password'] = bcrypt($validated['staff_password']);
+            }
+            
+            $staff->update($validated);
+            
+            return response()->json([
+                'message' => 'Staff updated successfully',
+                'staff' => $staff
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error updating staff: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Staffs $staffs)
+    public function destroy($id)
     {
-        //
+        try {
+            $staff = Staffs::find($id);
+            
+            if (!$staff) {
+                return response()->json([
+                    'message' => 'Staff not found'
+                ], 404);
+            }
+            
+            $staff->update([
+                'staff_status' => 'inactive'
+            ]);
+            
+            return response()->json([
+                'message' => 'Staff set to inactive successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error updating staff status: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

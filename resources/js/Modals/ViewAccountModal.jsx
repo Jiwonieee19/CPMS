@@ -4,6 +4,8 @@ import { X } from 'lucide-react';
 export default function ViewAccountModal({ isOpen, onClose, staffId }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -29,41 +31,49 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
     }, [isOpen]);
 
     useEffect(() => {
-        if (staffId) {
-            // Fetch staff data based on staffId
-            // This is a placeholder - replace with actual API call
-            const mockStaffData = {
-                firstName: 'ABCD',
-                lastName: 'ABCDEFG',
-                email: 'ABC123@GMAIL.COM',
-                contact: '09090909090',
-                password: 'ABCDE123!@#',
-                confirmPassword: 'ABCDEFG',
-                role: 'STAFF/QA/WA'
-            };
-            setFormData(mockStaffData);
-        }
-    }, [staffId]);
+        const fetchStaff = async () => {
+            if (!isOpen || !staffId) return;
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+            try {
+                setIsLoading(true);
+                setError(null);
 
-    const handleSave = () => {
-        // Validate passwords match
-        if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match!');
-            return;
-        }
+                const response = await fetch(`/staffs/${staffId}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch staff: ${response.status}`);
+                }
 
-        // Handle save logic here
-        console.log('Saving staff data:', formData);
-        onClose();
-    };
+                const data = await response.json();
+                const staff = data.staff || {};
+
+                setFormData({
+                    firstName: staff.first_name || '',
+                    lastName: staff.last_name || '',
+                    email: staff.email || '',
+                    contact: staff.contact || '',
+                    password: '',
+                    confirmPassword: '',
+                    role: staff.role || ''
+                });
+            } catch (err) {
+                console.error('Error loading staff:', err);
+                setError('Failed to load staff data');
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    contact: '',
+                    password: '',
+                    confirmPassword: '',
+                    role: ''
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStaff();
+    }, [isOpen, staffId]);
 
     const handleClose = () => {
         onClose();
@@ -92,6 +102,11 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                 </div>
 
                 {/* Form */}
+                {error && (
+                    <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-6">
+                        {error}
+                    </div>
+                )}
                 <div className="space-y-6">
                     {/* First Row */}
                     <div className="grid grid-cols-2 gap-6">
@@ -105,7 +120,6 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.firstName}
                                 readOnly
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="ABCD"
                             />
                         </div>
                         <div>
@@ -118,7 +132,6 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.email}
                                 readOnly
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="ABC123@GMAIL.COM"
                             />
                         </div>
                     </div>
@@ -135,7 +148,6 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.lastName}
                                 readOnly
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="ABCDEFG"
                             />
                         </div>
                         <div>
@@ -148,7 +160,6 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 value={formData.contact}
                                 readOnly
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="09090909090"
                             />
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Edit, Eye, Trash2, Plus, Menu } from 'lucide-react';
 import Sidebar from '../Components/sidebar';
 import EditAccountModal from '../Modals/EditAccountModal';
@@ -14,40 +14,49 @@ export default function AccountsPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedAccountId, setSelectedAccountId] = useState(null);
+    const [accountsData, setAccountsData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchStaffs = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            console.log('Fetching from /staffs/list...');
+            const response = await fetch('/staffs/list');
+
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                console.error('Error response:', errorData);
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Staffs data received:', data);
+
+            setAccountsData(data.staffs || []);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching staffs:', err);
+            setError(`Failed to load staffs data: ${err.message}`);
+            setAccountsData([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Fetch staffs data from API
+    useEffect(() => {
+        fetchStaffs();
+    }, [fetchStaffs]);
 
     // Reset to page 1 when search term changes
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm]);
-
-    const accountsData = [
-        { id: '00001', fullname: 'Kevin Anga', role: 'Staff', status: 'Active' },
-        { id: '00002', fullname: 'Ryan Comps', role: 'QA', status: 'Active' },
-        { id: '00003', fullname: 'Fletcher Malaz', role: 'IM', status: 'Active' },
-        { id: '00004', fullname: 'Yosh Bats', role: 'PM', status: 'Active' },
-        { id: '00005', fullname: 'Hatdog Hekhok', role: 'Staff', status: 'Inactive' },
-        { id: '00006', fullname: 'Hatdog Sure', role: 'Staff', status: 'Inactive' },
-        { id: '00007', fullname: 'SunFlower Lee', role: 'Staff', status: 'Active' },
-        { id: '00008', fullname: 'Maria Santos', role: 'QA', status: 'Active' },
-        { id: '00009', fullname: 'John Cruz', role: 'IM', status: 'Active' },
-        { id: '00010', fullname: 'Anna Garcia', role: 'PM', status: 'Active' },
-        { id: '00011', fullname: 'Carlos Reyes', role: 'Staff', status: 'Active' },
-        { id: '00012', fullname: 'Lisa Ramos', role: 'QA', status: 'Inactive' },
-        { id: '00013', fullname: 'Mark Torres', role: 'IM', status: 'Active' },
-        { id: '00014', fullname: 'Sofia Mendoza', role: 'Staff', status: 'Active' },
-        { id: '00015', fullname: 'David Lopez', role: 'PM', status: 'Active' },
-        { id: '00016', fullname: 'Emma Rivera', role: 'QA', status: 'Inactive' },
-        { id: '00017', fullname: 'James Flores', role: 'Staff', status: 'Active' },
-        { id: '00018', fullname: 'Mia Castro', role: 'IM', status: 'Active' },
-        { id: '00019', fullname: 'Lucas Diaz', role: 'PM', status: 'Active' },
-        { id: '00020', fullname: 'Olivia Vargas', role: 'Staff', status: 'Inactive' },
-        { id: '00021', fullname: 'Ethan Morales', role: 'QA', status: 'Active' },
-        { id: '00022', fullname: 'Ava Hernandez', role: 'IM', status: 'Active' },
-        { id: '00023', fullname: 'Noah Ramirez', role: 'Staff', status: 'Active' },
-        { id: '00024', fullname: 'Isabella Perez', role: 'PM', status: 'Inactive' },
-        { id: '00025', fullname: 'Mason Silva', role: 'QA', status: 'Active' },
-        { id: '00026', fullname: 'Jane Doe', role: 'Staff', status: 'Active' },
-    ];
 
     // Filter accounts based on search term
     const filteredAccounts = accountsData.filter(account => {
@@ -109,6 +118,13 @@ export default function AccountsPage() {
             <div className="flex-1 p-14 bg-[#F5F5DC] min-h-screen">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-8">ACCOUNT MANAGEMENT</h1>
                 <div className="space-y-6">
+                    {/* Error Message */}
+                    {error && (
+                        <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded">
+                            {error}
+                        </div>
+                    )}
+
                     {/* Search and Actions Bar */}
                     <div className="flex justify-between items-center">
                         <div className="relative w-96">
@@ -169,46 +185,55 @@ export default function AccountsPage() {
                             <div className="text-center">ACTION</div>
                         </div>
 
+                        {/* Loading State */}
+                        {loading && (
+                            <div className="py-8 text-center text-[#F5F5DC] text-xl font-semibold">
+                                Loading accounts...
+                            </div>
+                        )}
+
                         {/* Table Rows */}
-                        <div className="space-y-3">
-                            {paginatedAccounts.length > 0 ? (
-                                paginatedAccounts.map((account) => (
-                                    <div
-                                        key={account.id}
-                                        className="grid grid-cols-5 gap-28 bg-[#3E2723] bg-opacity-50 py-4 px-6 rounded-lg text-[#F5F5DC] items-center text-center border-2 border-[#65524F]"
-                                    >
-                                        <div>{account.id}</div>
-                                        <div>{account.fullname}</div>
-                                        <div>{account.role}</div>
-                                        <div>{account.status}</div>
-                                        <div className="flex justify-center gap-3">
-                                            <button
-                                                onClick={() => handleEdit(account.id)}
-                                                className="hover:scale-110 transition"
-                                            >
-                                                <Edit size={28} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleView(account.id)}
-                                                className="hover:scale-110 transition"
-                                            >
-                                                <Eye size={28} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(account.id)}
-                                                className="hover:scale-110 transition"
-                                            >
-                                                <Trash2 size={28} />
-                                            </button>
+                        {!loading && (
+                            <div className="space-y-3">
+                                {paginatedAccounts.length > 0 ? (
+                                    paginatedAccounts.map((account) => (
+                                        <div
+                                            key={account.id}
+                                            className="grid grid-cols-5 gap-28 bg-[#3E2723] bg-opacity-50 py-4 px-6 rounded-lg text-[#F5F5DC] items-center text-center border-2 border-[#65524F]"
+                                        >
+                                            <div>{account.id}</div>
+                                            <div>{account.fullname}</div>
+                                            <div>{account.role}</div>
+                                            <div>{account.status}</div>
+                                            <div className="flex justify-center gap-3">
+                                                <button
+                                                    onClick={() => handleEdit(account.staff_id)}
+                                                    className="hover:scale-110 transition"
+                                                >
+                                                    <Edit size={28} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleView(account.staff_id)}
+                                                    className="hover:scale-110 transition"
+                                                >
+                                                    <Eye size={28} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(account.staff_id)}
+                                                    className="hover:scale-110 transition"
+                                                >
+                                                    <Trash2 size={28} />
+                                                </button>
+                                            </div>
                                         </div>
+                                    ))
+                                ) : (
+                                    <div className="py-8 text-center text-[#F5F5DC] text-xl font-semibold">
+                                        No Account Found
                                     </div>
-                                ))
-                            ) : (
-                                <div className="py-8 text-center text-[#F5F5DC] text-xl font-semibold">
-                                    No Account Found
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Pagination */}
@@ -254,8 +279,9 @@ export default function AccountsPage() {
             <EditAccountModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
-                accountId={selectedAccountId}
+                staffId={selectedAccountId}
                 accountsData={accountsData}
+                onUpdated={fetchStaffs}
             />
 
             <ViewAccountModal
@@ -270,6 +296,7 @@ export default function AccountsPage() {
                 onClose={() => setIsDeleteModalOpen(false)}
                 staffId={selectedAccountId}
                 accountsData={accountsData}
+                onStatusUpdated={fetchStaffs}
             />
 
             <CreateAccountModal
