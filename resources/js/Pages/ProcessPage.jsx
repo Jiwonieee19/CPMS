@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, CheckCircle, Menu, Star } from 'lucide-react'
+import { Clock, CheckCircle, Menu, Star } from 'lucide-react'
 import Sidebar from '../Components/sidebar'
 import ProceedProcessModal from '../Modals/ProceedProcessModal'
 import GradingProcessModal from '../Modals/GradingProcessModal'
@@ -148,7 +148,7 @@ export default function ProcessPage() {
                 {/* ================== TABLE ================== */}
                 <div className="bg-[#3E2723] rounded-lg p-8">
                     <div className="flex items-center gap-3 mb-6">
-                        <Package size={38} className="text-[#F5F5DC]" />
+                        <Clock size={38} className="text-[#F5F5DC]" />
                         <h2 className="text-3xl font-semibold text-[#F5F5DC]">
                             {activeTab === 'process' ? 'PROCESS BATCHLIST' : 'DRIED BATCHLIST'}
                         </h2>

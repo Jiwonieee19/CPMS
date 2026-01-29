@@ -12,7 +12,7 @@ Route::get('/dashboard', function () {
 });
 
 Route::get('/weather', function () {
-    return inertia('LoginPage');
+    return inertia('WeatherPage');
 });
 
 Route::get('/process', function () {
