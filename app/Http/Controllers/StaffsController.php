@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Staffs;
+use App\Models\Logs;
 use Illuminate\Http\Request;
 
 class StaffsController extends Controller
@@ -66,6 +67,13 @@ class StaffsController extends Controller
             $validated['staff_status'] = 'active';
             
             $staff = Staffs::create($validated);
+
+            Logs::create([
+                'log_type' => 'account',
+                'log_message' => 'New staff account created: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                'severity' => 'info',
+                'created_at' => now()
+            ]);
 
             // Check if request expects JSON (API) or Inertia
             if ($request->expectsJson() || $request->is('api/*')) {
@@ -172,6 +180,13 @@ class StaffsController extends Controller
             }
             
             $staff->update($validated);
+
+            Logs::create([
+                'log_type' => 'account',
+                'log_message' => 'Staff account updated: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                'severity' => 'info',
+                'created_at' => now()
+            ]);
             
             return response()->json([
                 'message' => 'Staff updated successfully',
@@ -200,6 +215,13 @@ class StaffsController extends Controller
             
             $staff->update([
                 'staff_status' => 'inactive'
+            ]);
+
+            Logs::create([
+                'log_type' => 'account',
+                'log_message' => 'Staff account set to inactive: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                'severity' => 'warning',
+                'created_at' => now()
             ]);
             
             return response()->json([

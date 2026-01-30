@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Package, Plus, Menu, Box, PlusCircle, CheckCircle, Truck, Cloud, Clock, FileText, Eye, User } from 'lucide-react'
 import Sidebar from '../Components/sidebar'
 import ViewLogsModal from '../Modals/ViewLogsModal'
@@ -11,6 +11,9 @@ export default function LogsPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const [isViewLogsModalOpen, setIsViewLogsModalOpen] = useState(false)
     const [selectedLogId, setSelectedLogId] = useState(null)
+    const [logsData, setLogsData] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
     const User = new URL('../Assets/icons/icon-person.png', import.meta.url).href;
 
     // Reset to page 1 when search term or tab changes
@@ -20,60 +23,41 @@ export default function LogsPage() {
 
     const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href
 
-    // ================== STATIC SAMPLE DATA ==================
-    const weatherLogsData = [
-        { id: 'WL-001', task: 'Temperature Check', timeSaved: '08:30 AM', date: '2026-01-27' },
-        { id: 'WL-002', task: 'Humidity Monitoring', timeSaved: '10:15 AM', date: '2026-01-27' },
-        { id: 'WL-003', task: 'Rainfall Recording', timeSaved: '02:45 PM', date: '2026-01-26' },
-        { id: 'WL-004', task: 'Wind Speed Check', timeSaved: '04:20 PM', date: '2026-01-26' },
-        { id: 'WL-005', task: 'UV Index Reading', timeSaved: '09:00 AM', date: '2026-01-25' },
-    ]
+    const fetchLogs = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
 
-    const processLogsData = [
-        { id: 'PL-001', task: 'Fermentation Started', timeSaved: '07:00 AM', date: '2026-01-27' },
-        { id: 'PL-002', task: 'Drying Process Completed', timeSaved: '11:30 AM', date: '2026-01-27' },
-        { id: 'PL-003', task: 'Grading Inspection', timeSaved: '03:15 PM', date: '2026-01-26' },
-        { id: 'PL-004', task: 'Quality Check', timeSaved: '05:45 PM', date: '2026-01-26' },
-        { id: 'PL-005', task: 'Roasting Process', timeSaved: '08:20 AM', date: '2026-01-25' },
-    ]
+            const response = await fetch(`/logs/list?type=${activeTab}`)
 
-    const inventoryLogsData = [
-        { id: 'IL-001', task: 'Stock Added - Boxes', timeSaved: '09:15 AM', date: '2026-01-27' },
-        { id: 'IL-002', task: 'Beans Removed - Batch #204', timeSaved: '12:00 PM', date: '2026-01-27' },
-        { id: 'IL-003', task: 'Equipment Maintenance', timeSaved: '02:30 PM', date: '2026-01-26' },
-        { id: 'IL-004', task: 'Stock Count - Sacks', timeSaved: '04:00 PM', date: '2026-01-26' },
-        { id: 'IL-005', task: 'Low Stock Alert - Racks', timeSaved: '10:45 AM', date: '2026-01-25' },
-    ]
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`)
+            }
 
-    const accountLogsData = [
-        { id: 'AL-001', task: 'User Login - admin', timeSaved: '06:30 AM', date: '2026-01-27' },
-        { id: 'AL-002', task: 'Password Changed', timeSaved: '10:00 AM', date: '2026-01-27' },
-        { id: 'AL-003', task: 'New Staff Added', timeSaved: '01:20 PM', date: '2026-01-26' },
-        { id: 'AL-004', task: 'User Logout - staff01', timeSaved: '05:00 PM', date: '2026-01-26' },
-        { id: 'AL-005', task: 'Permission Updated', timeSaved: '09:30 AM', date: '2026-01-25' },
-    ]
-
-    const getActiveData = () => {
-        switch (activeTab) {
-            case 'weather': return weatherLogsData
-            case 'process': return processLogsData
-            case 'inventory': return inventoryLogsData
-            case 'account': return accountLogsData
-            default: return weatherLogsData
+            const data = await response.json()
+            setLogsData(data.logs || [])
+        } catch (err) {
+            console.error('Error fetching logs:', err)
+            setError(err.message || 'Failed to load logs')
+            setLogsData([])
+        } finally {
+            setLoading(false)
         }
-    }
+    }, [activeTab])
 
-    const activeData = getActiveData()
+    useEffect(() => {
+        fetchLogs()
+    }, [fetchLogs])
 
     // ================== SEARCH FILTER ==================
-    const filteredData = activeData.filter(item =>
+    const filteredData = logsData.filter(item =>
         item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.task.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.date.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     // ================== PAGINATION LOGIC ==================
-    const itemsPerPage = 5;
+    const itemsPerPage = 4;
     const totalItems = filteredData.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const rangeStart = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
@@ -124,7 +108,7 @@ export default function LogsPage() {
         <div className="flex min-h-screen">
             <Sidebar />
 
-            <div className="flex-1 p-14 bg-[#F5F5DC]">
+            <div className="flex-1 px-14 pt-14 bg-[#F5F5DC]">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">
                     LOGS MANAGEMENT
                 </h1>
@@ -227,7 +211,15 @@ export default function LogsPage() {
 
                     {/* Rows */}
                     <div className="space-y-3">
-                        {paginatedData.length > 0 ? (
+                        {loading ? (
+                            <div className="text-center py-10 text-[#F5F5DC] text-xl">
+                                Loading logs...
+                            </div>
+                        ) : error ? (
+                            <div className="text-center py-10 text-red-200 text-xl">
+                                {error}
+                            </div>
+                        ) : paginatedData.length > 0 ? (
                             paginatedData.map(item => (
                                 <div
                                     key={item.id}
@@ -243,7 +235,7 @@ export default function LogsPage() {
                                         <Eye
                                             size={28}
                                             className="cursor-pointer hover:scale-110 transition text-[#F5F5DC]"
-                                            onClick={() => handleViewLog(item.id)}
+                                            onClick={() => handleViewLog(item.log_id ?? item.id)}
                                         />
                                     </div>
                                 </div>

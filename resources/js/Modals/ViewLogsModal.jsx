@@ -4,6 +4,8 @@ import { X } from 'lucide-react';
 export default function ViewLogsModal({ isOpen, onClose, logId }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const [formData, setFormData] = useState({
         logId: '',
@@ -28,19 +30,47 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
     }, [isOpen]);
 
     useEffect(() => {
-        if (logId) {
-            // Fetch log data based on logId
-            // This is a placeholder - replace with actual API call
-            const mockLogData = {
-                logId: logId,
-                taskDescription: 'skcasacascac;aslca;slcac;aca;claclakcmacmac;acmcas;ca;ccm;lacm;a;clasc;lasmcamac;alcmac; ' + logId,
-                timeSaved: '08:30 AM',
-                date: '2026-01-27',
-                performedBy: 'Admin User',
-                type: 'Weather Log'
-            };
-            setFormData(mockLogData);
-        }
+        if (!logId) return;
+
+        const fetchLog = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const response = await fetch(`/logs/${logId}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const log = data.log || {};
+
+                setFormData({
+                    logId: log.id || '',
+                    taskDescription: log.description || log.task || '',
+                    timeSaved: log.timeSaved || '',
+                    date: log.date || '',
+                    performedBy: 'Admin',
+                    type: log.type || 'Log'
+                });
+            } catch (err) {
+                console.error('Error fetching log:', err);
+                setError(err.message || 'Failed to load log');
+                setFormData({
+                    logId: '',
+                    taskDescription: '',
+                    timeSaved: '',
+                    date: '',
+                    performedBy: 'Admin',
+                    type: 'Log'
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLog();
     }, [logId]);
 
     const handleCancel = () => {
@@ -71,77 +101,90 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
 
                 {/* Form */}
                 <div className="space-y-6">
-                    {/* First Row */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                LOG ID
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.logId}
-                                readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="WL-001"
-                            />
+                    {error && (
+                        <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
+                            {error}
                         </div>
-                        <div>
-                            <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                TYPE
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.type}
-                                readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="Log Type"
-                            />
-                        </div>
-                    </div>
+                    )}
 
-                    {/* Second Row */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                TIMESTAMP SAVED
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.timeSaved}
-                                readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="08:30 AM"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                PERFORMED BY
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.performedBy}
-                                readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
-                                placeholder="Admin User"
-                            />
-                        </div>
-                    </div>
+                    {loading ? (
+                        <div className="text-[#F5F5DC] text-lg">Loading...</div>
+                    ) : (
+                        <>
+                            {/* First Row */}
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
+                                        LOG ID
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.logId}
+                                        readOnly
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                        placeholder="WL-001"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
+                                        TYPE
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.type}
+                                        readOnly
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                        placeholder="Log Type"
+                                    />
+                                </div>
+                            </div>
 
-                    {/* Third Row */}
-                    <div className="grid grid-cols-1 gap-6">
-                        <div>
-                            <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                TASK DESCRIPTION
-                            </label>
-                            <textarea
-                                value={formData.taskDescription}
-                                readOnly
-                                rows="6"
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default resize-none"
-                                placeholder="Temperature Check"
-                            />
-                        </div>
-                    </div>
+                            {/* Second Row */}
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
+                                        TIMESTAMP SAVED
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.timeSaved}
+                                        readOnly
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                        placeholder="08:30 AM"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
+                                        PERFORMED BY
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.performedBy}
+                                        readOnly
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                        placeholder="Admin User"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Third Row */}
+                            <div className="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
+                                        TASK DESCRIPTION
+                                    </label>
+                                    <textarea
+                                        value={formData.taskDescription}
+                                        readOnly
+                                        rows="6"
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default resize-none"
+                                        placeholder="Temperature Check"
+                                    />
+                                </div>
+                            </div>
+
+                        </>
+                    )}
 
                     {/* Buttons */}
                     <div className="grid grid-cols-2 gap-6 mt-8">

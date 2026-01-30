@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useToast } from '../Components/ToastProvider';
 
-export default function AddNewEquipmentModal({ isOpen, onClose }) {
+export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const toast = useToast();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -33,10 +37,58 @@ export default function AddNewEquipmentModal({ isOpen, onClose }) {
         }));
     };
 
-    const handleAdd = () => {
-        // Handle add logic here
-        console.log('Adding new equipment:', formData);
-        onClose();
+    const handleAdd = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            if (!formData.name || !formData.quantity) {
+                setError('Name and Quantity are required');
+                return;
+            }
+
+            const csrfToken = document
+                ?.querySelector('meta[name="csrf-token"]')
+                ?.getAttribute('content');
+
+            const response = await fetch('/equipments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
+                },
+                body: JSON.stringify({
+                    equipment_name: formData.name,
+                    quantity: parseInt(formData.quantity)
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to add equipment');
+            }
+
+            if (onAdded) {
+                onAdded();
+            }
+
+            toast.success('Equipment added successfully!');
+
+            setFormData({
+                name: '',
+                from: '',
+                quantity: '',
+                attachFile: ''
+            });
+            onClose();
+        } catch (err) {
+            console.error('Error adding equipment:', err);
+            const errorMsg = err.message || 'Failed to add equipment';
+            setError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleCancel = () => {
@@ -67,6 +119,11 @@ export default function AddNewEquipmentModal({ isOpen, onClose }) {
 
                 {/* Form */}
                 <div className="space-y-6">
+                    {error && (
+                        <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-4">
+                            {error}
+                        </div>
+                    )}
                     {/* First Row */}
                     <div className="grid grid-cols-2 gap-6">
                         <div>
@@ -135,9 +192,10 @@ export default function AddNewEquipmentModal({ isOpen, onClose }) {
                         </button>
                         <button
                             onClick={handleAdd}
-                            className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
+                            disabled={isLoading}
+                            className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition disabled:opacity-50"
                         >
-                            ADD
+                            {isLoading ? 'ADDING...' : 'ADD'}
                         </button>
                     </div>
 

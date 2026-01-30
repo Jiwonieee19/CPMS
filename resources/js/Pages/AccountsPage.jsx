@@ -5,6 +5,7 @@ import EditAccountModal from '../Modals/EditAccountModal';
 import ViewAccountModal from '../Modals/ViewAccountModal';
 import DeleteAccountModal from '../Modals/DeleteAccountModal';
 import CreateAccountModal from '../Modals/CreateAccountModal';
+import { useToast } from '../Components/ToastProvider';
 
 export default function AccountsPage() {
     const [currentPage, setCurrentPage] = useState(1);
@@ -17,6 +18,7 @@ export default function AccountsPage() {
     const [accountsData, setAccountsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const toast = useToast();
 
     const fetchStaffs = useCallback(async () => {
         try {
@@ -41,7 +43,9 @@ export default function AccountsPage() {
             setError(null);
         } catch (err) {
             console.error('Error fetching staffs:', err);
-            setError(`Failed to load staffs data: ${err.message}`);
+            const errorMsg = `Failed to load staffs data: ${err.message}`;
+            setError(errorMsg);
+            toast.error(errorMsg);
             setAccountsData([]);
         } finally {
             setLoading(false);
@@ -115,7 +119,7 @@ export default function AccountsPage() {
     return (
         <div className="flex min-h-screen flex-col md:flex-row">
             <Sidebar />
-            <div className="flex-1 p-14 bg-[#F5F5DC] min-h-screen">
+            <div className="flex-1 px-14 pt-14 bg-[#F5F5DC] min-h-screen">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-8">ACCOUNT MANAGEMENT</h1>
                 <div className="space-y-6">
                     {/* Error Message */}

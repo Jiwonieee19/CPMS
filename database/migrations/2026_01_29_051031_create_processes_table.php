@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('processes', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->id('process_id');
+            $table->unsignedBigInteger('batch_id');
+            $table->foreign('batch_id')->references('batch_id')->on('batches')->onDelete('cascade');
+            $table->string('process_status');
+            $table->timestamp('created_at')->nullable();
         });
     }
 

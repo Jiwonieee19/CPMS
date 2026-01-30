@@ -12,6 +12,7 @@ class EquipmentInventory extends Model
     protected $fillable = [
         'equipment_id',
         'equipment_status',
+        'quantity',
         'created_at',
         'updated_at'
     ];

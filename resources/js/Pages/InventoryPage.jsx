@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Package, Plus, Menu, Box, PlusCircle, CheckCircle, Truck } from 'lucide-react'
 import Sidebar from '../Components/sidebar'
 import AddNewEquipmentModal from '../Modals/AddNewEquipmentModal'
@@ -6,6 +6,7 @@ import AddFreshBeanModal from '../Modals/AddFreshBeansModal'
 import AddStockEquipmentModal from '../Modals/AddStockEquipmentModal'
 import ProceedBeansBatchModal from '../Modals/ProceedBeansBatchModal'
 import ProceedBeansPickupModal from '../Modals/ProceedBeansPickupModal'
+import { useToast } from '../Components/ToastProvider'
 
 
 export default function InventoryPage() {
@@ -16,34 +17,79 @@ export default function InventoryPage() {
     const [isAddEquipmentModalOpen, setIsAddEquipmentModalOpen] = useState(false)
     const [isAddBeanModalOpen, setIsAddBeanModalOpen] = useState(false)
     const [isAddStockModalOpen, setIsAddStockModalOpen] = useState(false)
-    const [selectedEquipmentId, setSelectedEquipmentId] = useState(null)
+    const [selectedEquipment, setSelectedEquipment] = useState(null)
     const [isProceedBeansModalOpen, setIsProceedBeansModalOpen] = useState(false)
-    const [selectedBeanId, setSelectedBeanId] = useState(null)
+    const [selectedBean, setSelectedBean] = useState(null)
     const [isProceedPickupModalOpen, setIsProceedPickupModalOpen] = useState(false)
     const [selectedPickupBeanId, setSelectedPickupBeanId] = useState(null)
+    const [equipmentStockData, setEquipmentStockData] = useState([])
+    const [beanStockData, setBeanStockData] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
+    const toast = useToast()
 
     // Reset to page 1 when search term or tab changes
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, activeTab]);
 
+    const fetchBatches = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch('/batches/list');
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setBeanStockData(data.batches || []);
+        } catch (err) {
+            console.error('Error fetching batches:', err);
+            const errorMsg = `Failed to load batches: ${err.message}`;
+            setError(errorMsg);
+            toast.error(errorMsg);
+            setBeanStockData([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchEquipments = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch('/equipments/list');
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setEquipmentStockData(data.equipments || []);
+        } catch (err) {
+            console.error('Error fetching equipments:', err);
+            const errorMsg = `Failed to load equipments: ${err.message}`;
+            setError(errorMsg);
+            toast.error(errorMsg);
+            setEquipmentStockData([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (activeTab === 'beans') {
+            fetchBatches();
+        } else if (activeTab === 'equipments') {
+            fetchEquipments();
+        }
+    }, [activeTab, fetchEquipments, fetchBatches]);
+
     const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href
-
-    // ================== STATIC SAMPLE DATA ==================
-    const beanStockData = [
-        { id: '00001', item: 'BOXES', quantity: 22, status: 'Graded' },
-        { id: '00002', item: 'RACKS', quantity: 15, status: 'Fermented' },
-        { id: '00003', item: 'RACKS', quantity: 9, status: 'Fermented' },
-        { id: '00004', item: 'RACKS', quantity: 18, status: 'Fermented' },
-        { id: '00005', item: 'SACKS', quantity: 8, status: 'Fresh' },
-        { id: '00006', item: 'SACKS', quantity: 8, status: 'Fresh' },
-    ]
-
-    const equipmentStockData = [
-        { id: 'EQ-001', item: 'BOXES', quantity: 56, status: 'Low' },
-        { id: 'EQ-002', item: 'RACKS', quantity: 114, status: 'High' },
-        { id: 'EQ-003', item: 'SACKS', quantity: 342, status: 'Normal' },
-    ]
 
     const activeData = activeTab === 'beans' ? beanStockData : equipmentStockData
 
@@ -84,13 +130,13 @@ export default function InventoryPage() {
         }
     };
 
-    const handleAddStock = (id) => {
-        setSelectedEquipmentId(id);
+    const handleAddStock = (equipment) => {
+        setSelectedEquipment(equipment);
         setIsAddStockModalOpen(true);
     };
 
-    const handleProceedBeans = (id) => {
-        setSelectedBeanId(id);
+    const handleProceedBeans = (batch) => {
+        setSelectedBean(batch);
         setIsProceedBeansModalOpen(true);
     };
 
@@ -103,7 +149,7 @@ export default function InventoryPage() {
         <div className="flex min-h-screen">
             <Sidebar />
 
-            <div className="flex-1 p-14 bg-[#F5F5DC]">
+            <div className="flex-1 px-14 pt-14 bg-[#F5F5DC]">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">
                     INVENTORY MANAGEMENT
                 </h1>
@@ -220,7 +266,7 @@ export default function InventoryPage() {
                                             <PlusCircle
                                                 size={28}
                                                 className="cursor-pointer hover:scale-110 transition"
-                                                onClick={() => handleAddStock(item.id)}
+                                                onClick={() => handleAddStock(item)}
                                             />
                                         ) : (
                                             item.status === 'Graded' ? (
@@ -233,7 +279,7 @@ export default function InventoryPage() {
                                                 <CheckCircle
                                                     size={28}
                                                     className="cursor-pointer hover:scale-110 transition"
-                                                    onClick={() => handleProceedBeans(item.id)}
+                                                    onClick={() => handleProceedBeans(item)}
                                                 />
                                             )
                                         )}
@@ -290,23 +336,27 @@ export default function InventoryPage() {
             <AddNewEquipmentModal
                 isOpen={isAddEquipmentModalOpen}
                 onClose={() => setIsAddEquipmentModalOpen(false)}
+                onAdded={fetchEquipments}
             />
 
             <AddFreshBeanModal
                 isOpen={isAddBeanModalOpen}
                 onClose={() => setIsAddBeanModalOpen(false)}
+                onAdded={fetchBatches}
             />
 
             <AddStockEquipmentModal
                 isOpen={isAddStockModalOpen}
                 onClose={() => setIsAddStockModalOpen(false)}
-                id={selectedEquipmentId}
+                equipment={selectedEquipment}
+                onStockAdded={fetchEquipments}
             />
 
             <ProceedBeansBatchModal
                 isOpen={isProceedBeansModalOpen}
                 onClose={() => setIsProceedBeansModalOpen(false)}
-                batchId={selectedBeanId}
+                batch={selectedBean}
+                onProceed={fetchBatches}
             />
 
             <ProceedBeansPickupModal

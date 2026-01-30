@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useToast } from '../Components/ToastProvider';
 
-export default function AddStockEquipmentModal({ isOpen, onClose, id }) {
+export default function AddStockEquipmentModal({ isOpen, onClose, equipment, onStockAdded }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const toast = useToast();
 
     const [formData, setFormData] = useState({
-        name: '',
-        from: '',
-        quantity: '',
-        attachFile: ''
+        supplier_name: '',
+        quantity: ''
     });
 
     // Handle mount/unmount with fade/scale transitions
     useEffect(() => {
         if (isOpen) {
             setIsRendering(true);
+            setFormData({ supplier_name: '', quantity: '' });
+            setError(null);
             // allow next paint to apply visible classes
             requestAnimationFrame(() => setIsVisible(true));
         } else {
@@ -33,10 +37,66 @@ export default function AddStockEquipmentModal({ isOpen, onClose, id }) {
         }));
     };
 
-    const handleAdd = () => {
-        // Handle add logic here
-        console.log('Adding new equipment:', formData);
-        onClose();
+    const handleAdd = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Validation
+            if (!formData.supplier_name || !formData.quantity) {
+                const errorMsg = 'Please fill in all required fields';
+                setError(errorMsg);
+                toast.error(errorMsg);
+                return;
+            }
+
+            if (!equipment || !equipment.equipment_id) {
+                const errorMsg = 'Invalid equipment selected';
+                setError(errorMsg);
+                toast.error(errorMsg);
+                return;
+            }
+
+            const quantity = parseInt(formData.quantity);
+            if (isNaN(quantity) || quantity <= 0) {
+                const errorMsg = 'Quantity must be a positive number';
+                setError(errorMsg);
+                toast.error(errorMsg);
+                return;
+            }
+
+            const response = await fetch(`/equipments/${equipment.equipment_id}/stock-in`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({
+                    supplier_name: formData.supplier_name,
+                    quantity: quantity
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP Error: ${response.status}`);
+            }
+
+            if (onStockAdded) {
+                onStockAdded();
+            }
+
+            toast.success(`Stock added successfully! New quantity: ${data.new_quantity}`);
+            onClose();
+        } catch (err) {
+            console.error('Error adding stock:', err);
+            const errorMsg = err.message || 'Failed to add stock';
+            setError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleCancel = () => {
@@ -65,30 +125,32 @@ export default function AddStockEquipmentModal({ isOpen, onClose, id }) {
                     </button>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500 text-red-200">
+                        {error}
+                    </div>
+                )}
+
                 {/* Form */}
                 <div className="space-y-6">
                     {/* First Row */}
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                NAME
+                                EQUIPMENT
                             </label>
-                            <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                {id}
-                            </label>
+                            <div className="px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917]">
+                                {equipment?.item || 'No equipment selected'}
+                            </div>
                         </div>
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                FROM
+                                CURRENT QUANTITY
                             </label>
-                            <input
-                                type="text"
-                                name="from"
-                                value={formData.from}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
-                                placeholder="SUPPLIER NAME"
-                            />
+                            <div className="px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917]">
+                                {equipment?.quantity || 0}
+                            </div>
                         </div>
                     </div>
 
@@ -96,26 +158,31 @@ export default function AddStockEquipmentModal({ isOpen, onClose, id }) {
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                QUANTITY
+                                SUPPLIER NAME *
                             </label>
                             <input
                                 type="text"
-                                name="quantity"
-                                value={formData.quantity}
+                                name="supplier_name"
+                                value={formData.supplier_name}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
-                                placeholder="123"
+                                placeholder="Enter supplier name"
+                                disabled={isLoading}
                             />
                         </div>
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                ATTACH FILE
+                                ADD QUANTITY *
                             </label>
                             <input
-                                type="file"
-                                name="attachFile"
-                                onChange={(e) => setFormData(prev => ({ ...prev, attachFile: e.target.files[0] }))}
+                                type="number"
+                                name="quantity"
+                                value={formData.quantity}
+                                onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
+                                placeholder="Enter quantity to add"
+                                min="1"
+                                disabled={isLoading}
                             />
                         </div>
                     </div>
@@ -124,15 +191,17 @@ export default function AddStockEquipmentModal({ isOpen, onClose, id }) {
                     <div className="grid grid-cols-2 gap-6 mt-8">
                         <button
                             onClick={handleCancel}
-                            className="py-3 rounded-2xl bg-[#311F1C] text-[#F5F5DC] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
+                            className="py-3 rounded-2xl bg-[#311F1C] text-[#F5F5DC] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isLoading}
                         >
                             CANCEL
                         </button>
                         <button
                             onClick={handleAdd}
-                            className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
+                            className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isLoading}
                         >
-                            ADD
+                            {isLoading ? 'ADDING...' : 'ADD STOCK'}
                         </button>
                     </div>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EquipmentInventory;
+use App\Models\Equipments;
 use Illuminate\Http\Request;
 
 class EquipmentInventoryController extends Controller

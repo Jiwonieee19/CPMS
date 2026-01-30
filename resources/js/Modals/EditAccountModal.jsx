@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useToast } from '../Components/ToastProvider';
 
 export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const toast = useToast();
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -130,10 +132,13 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                     onUpdated();
                 }
 
+                toast.success('Staff updated successfully!');
                 onClose();
             } catch (err) {
                 console.error('Error saving staff:', err);
-                setError('Failed to save staff data');
+                const errorMsg = 'Failed to save staff data';
+                setError(errorMsg);
+                toast.error(errorMsg);
             } finally {
                 setIsLoading(false);
             }

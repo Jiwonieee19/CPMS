@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useToast } from '../Components/ToastProvider';
 
 export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusUpdated }) {
     const [isRendering, setIsRendering] = useState(isOpen);
@@ -7,6 +8,7 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
     const [staffName, setStaffName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const toast = useToast();
 
     // Handle mount/unmount with fade/scale transitions
     useEffect(() => {
@@ -78,10 +80,13 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                     onStatusUpdated();
                 }
 
+                toast.success('Staff set to inactive successfully!');
                 onClose();
             } catch (err) {
                 console.error('Error updating staff:', err);
-                setError('Failed to set staff inactive');
+                const errorMsg = 'Failed to set staff inactive';
+                setError(errorMsg);
+                toast.error(errorMsg);
             } finally {
                 setIsLoading(false);
             }

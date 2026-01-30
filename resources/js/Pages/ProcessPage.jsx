@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Clock, CheckCircle, Menu, Star } from 'lucide-react'
 import Sidebar from '../Components/sidebar'
 import ProceedProcessModal from '../Modals/ProceedProcessModal'
 import GradingProcessModal from '../Modals/GradingProcessModal'
+import { useToast } from '../Components/ToastProvider'
 
 
 export default function ProcessPage() {
@@ -11,37 +12,79 @@ export default function ProcessPage() {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [isProceedProcessModalOpen, setIsProceedProcessModalOpen] = useState(false)
-    const [selectedProcessId, setSelectedProcessId] = useState(null)
+    const [selectedProcess, setSelectedProcess] = useState(null)
     const [isGradingProcessModalOpen, setIsGradingProcessModalOpen] = useState(false)
     const [selectedGradingId, setSelectedGradingId] = useState(null)
+    const [processData, setProcessData] = useState([])
+    const [driedData, setDriedData] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
+    const toast = useToast()
 
     // Reset to page 1 when search term or tab changes
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, activeTab]);
 
+    const fetchProcesses = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch('/processes/list');
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setProcessData(data.processes || []);
+        } catch (err) {
+            console.error('Error fetching processes:', err);
+            const errorMsg = `Failed to load processes: ${err.message}`;
+            setError(errorMsg);
+            toast.error(errorMsg);
+            setProcessData([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [toast]);
+
+    const fetchDriedBatches = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch('/batches/dried');
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setDriedData(data.batches || []);
+        } catch (err) {
+            console.error('Error fetching dried batches:', err);
+            const errorMsg = `Failed to load dried batches: ${err.message}`;
+            setError(errorMsg);
+            toast.error(errorMsg);
+            setDriedData([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [toast]);
+
+    useEffect(() => {
+        if (activeTab === 'process') {
+            fetchProcesses();
+        } else if (activeTab === 'dried') {
+            fetchDriedBatches();
+        }
+    }, [activeTab, fetchProcesses, fetchDriedBatches]);
+
     const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href
 
-    // ================== STATIC SAMPLE DATA ==================
-    const beanStockData = [
-        { id: '00001', dayCount: 3, racks: 22, status: 'Drying' },
-        { id: '00002', dayCount: 2, racks: 15, status: 'Fermenting' },
-        { id: '00003', dayCount: 2, racks: 9, status: 'Fermenting' },
-        { id: '00004', dayCount: 2, racks: 18, status: 'Fermenting' },
-        { id: '00005', dayCount: 5, racks: 8, status: 'Drying' },
-        { id: '00006', dayCount: 1, racks: 8, status: 'Drying' },
-    ]
-
-    const equipmentStockData = [
-        { id: '00001', dayCount: 3, racks: 22, status: 'Dried' },
-        { id: '00002', dayCount: 2, racks: 15, status: 'Dried' },
-        { id: '00003', dayCount: 2, racks: 9, status: 'Dried' },
-        { id: '00004', dayCount: 2, racks: 18, status: 'Dried' },
-        { id: '00005', dayCount: 5, racks: 8, status: 'Dried' },
-        { id: '00006', dayCount: 1, racks: 8, status: 'Dried' },
-    ]
-
-    const activeData = activeTab === 'process' ? beanStockData : equipmentStockData
+    const activeData = activeTab === 'process' ? processData : driedData
 
     // ================== SEARCH FILTER ==================
     const filteredData = activeData.filter(item =>
@@ -73,8 +116,8 @@ export default function ProcessPage() {
 
     const visiblePages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
-    const handleProceedProcess = (id) => {
-        setSelectedProcessId(id);
+    const handleProceedProcess = (process) => {
+        setSelectedProcess(process);
         setIsProceedProcessModalOpen(true);
     };
 
@@ -158,10 +201,10 @@ export default function ProcessPage() {
 
                     {/* Header */}
                     <div className="grid grid-cols-5 text-[#E5B917] font-semibold text-lg mb-4 text-center">
-                        <div className='flex items-center justify-center gap-2'>{activeTab === 'process' ? 'BATCH ID' : 'EQUIPMENT ID'}
+                        <div className='flex items-center justify-center gap-2'>BATCH ID
                             <span className="text-xl">⇅</span>
                         </div>
-                        <div className='flex items-center justify-center gap-2'>{activeTab === 'process' ? 'DAY COUNT' : 'NAME'}
+                        <div className='flex items-center justify-center gap-2'>DAY COUNT
                             <span className="text-xl">⇅</span>
                         </div>
                         <div className='flex items-center justify-center gap-2'>RACK/S
@@ -201,7 +244,7 @@ export default function ProcessPage() {
                                             <CheckCircle
                                                 size={28}
                                                 className="cursor-pointer hover:scale-110 transition"
-                                                onClick={() => handleProceedProcess(item.id)}
+                                                onClick={() => handleProceedProcess(item)}
                                             />
                                         )}
                                     </div>
@@ -257,7 +300,8 @@ export default function ProcessPage() {
             <ProceedProcessModal
                 isOpen={isProceedProcessModalOpen}
                 onClose={() => setIsProceedProcessModalOpen(false)}
-                batchId={selectedProcessId}
+                process={selectedProcess}
+                onComplete={fetchProcesses}
             />
 
             <GradingProcessModal

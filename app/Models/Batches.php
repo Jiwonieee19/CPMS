@@ -8,6 +8,8 @@ class Batches extends Model
 {
     protected $table = 'batches';
     protected $primaryKey = 'batch_id';
+    public $timestamps = false;
+    
     protected $fillable = [
         'harvest_date',
         'initial_condition',
