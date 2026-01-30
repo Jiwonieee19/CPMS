@@ -49,6 +49,12 @@ export default function WeatherPage({ weather }) {
     const visibleBars = 8;
     const graphHeight = 430;
 
+    const Megaphone = new URL('../Assets/icons/icon-megaphone.png', import.meta.url).href;
+
+    const handleAddItem = () => {
+        // Placeholder for add item functionality
+    };
+
     return (
         <div className="flex min-h-screen">
             <Sidebar />
@@ -58,37 +64,58 @@ export default function WeatherPage({ weather }) {
                     WEATHER MONITORING
                 </h1>
 
-                {/* ================== TABS ================== */}
-                <div className="flex bg-[#3E2723] p-2 rounded-2xl gap-2 mb-8 w-fit">
-                    <button
-                        onClick={() => setActiveTab('temperature')}
-                        className={`px-10 py-2 rounded-lg font-semibold
-                            ${activeTab === 'temperature'
-                                ? 'bg-[#E5B917] text-[#3E2723]'
-                                : 'text-[#F5F5DC]'}`}
-                    >
-                        TEMPERATURE
-                    </button>
+                {/* ================== TABS + SEARCH ================== */}
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-6">
+                        {/* Tabs */}
+                        <div className="flex bg-[#3E2723] p-2 rounded-2xl gap-2">
+                            <button
+                                onClick={() => setActiveTab('temperature')}
+                                className={`px-10 py-2 rounded-lg font-semibold transition
+                                    ${activeTab === 'temperature'
+                                        ? 'bg-[#E5B917] text-[#3E2723]'
+                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                    }`}
+                            >
+                                TEMPERATURE
+                            </button>
 
-                    <button
-                        onClick={() => setActiveTab('humidity')}
-                        className={`px-10 py-2 rounded-lg font-semibold
-                            ${activeTab === 'humidity'
-                                ? 'bg-[#E5B917] text-[#3E2723]'
-                                : 'text-[#F5F5DC]'}`}
-                    >
-                        HUMIDITY
-                    </button>
+                            <button
+                                onClick={() => setActiveTab('humidity')}
+                                className={`px-10 py-2 rounded-lg font-semibold transition
+                                    ${activeTab === 'humidity'
+                                        ? 'bg-[#E5B917] text-[#3E2723]'
+                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                    }`}
+                            >
+                                HUMIDITY
+                            </button>
 
-                    <button
-                        onClick={() => setActiveTab('wind')}
-                        className={`px-10 py-2 rounded-lg font-semibold
-                            ${activeTab === 'wind'
-                                ? 'bg-[#E5B917] text-[#3E2723]'
-                                : 'text-[#F5F5DC]'}`}
-                    >
-                        WIND
-                    </button>
+                            <button
+                                onClick={() => setActiveTab('wind')}
+                                className={`px-10 py-2 rounded-lg font-semibold transition
+                                    ${activeTab === 'wind'
+                                        ? 'bg-[#E5B917] text-[#3E2723]'
+                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                    }`}
+                            >
+                                WIND
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-4">
+                        <button
+                            onClick={handleAddItem}
+                            className="relative bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition flex items-center justify-center"
+                        >
+                            <img src={Megaphone} alt="Megaphone" className="w-8 h-8" />
+                        </button>
+                        <button className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition">
+                            <Menu size={32} className="text-[#F5F5DC]" strokeWidth={3} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* ================== GRAPH ================== */}
