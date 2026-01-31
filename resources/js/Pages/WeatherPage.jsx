@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Menu, Cloud } from 'lucide-react'
 import Sidebar from '../Components/sidebar'
+import '../Styles/scrollbar.css'
 
 export default function WeatherPage({ weather }) {
 
