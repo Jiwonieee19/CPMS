@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Edit, Eye, Trash2, Plus, Menu } from 'lucide-react';
+import { Edit, Eye, Trash2, Plus, Menu, RotateCcw } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import Sidebar from '../Components/sidebar';
 import EditAccountModal from '../Modals/EditAccountModal';
 import ViewAccountModal from '../Modals/ViewAccountModal';
@@ -18,6 +19,8 @@ export default function AccountsPage() {
     const [accountsData, setAccountsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [sortColumn, setSortColumn] = useState(null);
+    const [sortDirection, setSortDirection] = useState('asc');
     const toast = useToast();
 
     const fetchStaffs = useCallback(async () => {
@@ -73,14 +76,30 @@ export default function AccountsPage() {
         );
     });
 
+    // Sort accounts
+    const sortedAccounts = [...filteredAccounts].sort((a, b) => {
+        if (!sortColumn) return 0;
+
+        let aValue = a[sortColumn];
+        let bValue = b[sortColumn];
+
+        // Convert to lowercase for case-insensitive sorting
+        if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+        if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
     const itemsPerPage = 5;
-    const totalAccounts = filteredAccounts.length;
+    const totalAccounts = sortedAccounts.length;
     const totalPages = Math.ceil(totalAccounts / itemsPerPage);
     const rangeStart = totalAccounts > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
     const rangeEnd = totalAccounts > 0 ? Math.min(currentPage * itemsPerPage, totalAccounts) : 0;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, totalAccounts);
-    const paginatedAccounts = filteredAccounts.slice(startIndex, endIndex);
+    const paginatedAccounts = sortedAccounts.slice(startIndex, endIndex);
     const User = new URL('../Assets/icons/icon-person.png', import.meta.url).href;
     const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href;
 
@@ -114,6 +133,26 @@ export default function AccountsPage() {
     const handleCreate = () => {
         setSelectedAccountId();
         setIsCreateModalOpen(true);
+    };
+
+    const handleViewLogs = () => {
+        router.visit('/logs?tab=account');
+    };
+
+    const handleSort = (column) => {
+        if (sortColumn === column) {
+            // Toggle direction if same column
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            // New column, default to ascending
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+
+    const getSortIcon = (column) => {
+        if (sortColumn !== column) return '⇅';
+        return sortDirection === 'asc' ? '↑' : '↓';
     };
 
     return (
@@ -151,7 +190,10 @@ export default function AccountsPage() {
                             >
                                 <Plus size={32} className="text-[#F5F5DC]" strokeWidth={3} />
                             </button>
-                            <button className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition">
+                            <button
+                                onClick={handleViewLogs}
+                                className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition"
+                            >
                                 <Menu size={32} className="text-[#F5F5DC]" strokeWidth={3} />
                             </button>
                         </div>
@@ -170,21 +212,33 @@ export default function AccountsPage() {
 
                         {/* Table Header */}
                         <div className="grid grid-cols-5 gap-16 mb-4 text-[#E5B917] font-semibold text-lg text-center">
-                            <div className="flex items-center justify-center gap-2">
+                            <div
+                                className="flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition"
+                                onClick={() => handleSort('id')}
+                            >
                                 ACOUNT ID
-                                <span className="text-xl">⇅</span>
+                                <span className="text-xl">{getSortIcon('id')}</span>
                             </div>
-                            <div className="flex items-center justify-center gap-2">
+                            <div
+                                className="flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition"
+                                onClick={() => handleSort('fullname')}
+                            >
                                 FULLNAME
-                                <span className="text-xl">⇅</span>
+                                <span className="text-xl">{getSortIcon('fullname')}</span>
                             </div>
-                            <div className="flex items-center justify-center gap-2">
+                            <div
+                                className="flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition"
+                                onClick={() => handleSort('role')}
+                            >
                                 ROLE
-                                <span className="text-xl">⇅</span>
+                                <span className="text-xl">{getSortIcon('role')}</span>
                             </div>
-                            <div className="flex items-center justify-center gap-2">
+                            <div
+                                className="flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition"
+                                onClick={() => handleSort('status')}
+                            >
                                 STATUS
-                                <span className="text-xl">⇅</span>
+                                <span className="text-xl">{getSortIcon('status')}</span>
                             </div>
                             <div className="text-center">ACTION</div>
                         </div>
@@ -226,7 +280,11 @@ export default function AccountsPage() {
                                                     onClick={() => handleDelete(account.staff_id)}
                                                     className="hover:scale-110 transition"
                                                 >
-                                                    <Trash2 size={28} />
+                                                    {account.status.toLowerCase() === 'inactive' ? (
+                                                        <RotateCcw size={28} />
+                                                    ) : (
+                                                        <Trash2 size={28} />
+                                                    )}
                                                 </button>
                                             </div>
                                         </div>
@@ -307,6 +365,7 @@ export default function AccountsPage() {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 accountsData={accountsData}
+                onCreated={fetchStaffs}
             />
         </div>
     );

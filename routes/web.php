@@ -29,7 +29,10 @@ Route::get('/process', function () {
 });
 
 Route::get('/logs', function () {
-    return inertia('LogsPage');
+    $initialTab = request()->query('tab', 'weather');
+    return inertia('LogsPage', [
+        'initialTab' => $initialTab
+    ]);
 });
 
 Route::get('/inventory', function () {

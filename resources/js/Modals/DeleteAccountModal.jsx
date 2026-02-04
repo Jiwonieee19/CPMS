@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, RotateCcw } from 'lucide-react';
 import { useToast } from '../Components/ToastProvider';
 
 export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusUpdated }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const [staffName, setStaffName] = useState('');
+    const [staffStatus, setStaffStatus] = useState('active');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const toast = useToast();
@@ -41,6 +42,8 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                 const staff = data.staff || {};
 
                 setStaffName(staff.fullname || `${staff.first_name || ''} ${staff.last_name || ''}`.trim());
+                // Backend returns status with ucfirst (Active/Inactive), convert to lowercase for comparison
+                setStaffStatus((staff.status || 'active').toLowerCase());
             } catch (err) {
                 console.error('Error loading staff:', err);
                 setError('Failed to load staff name');
@@ -59,6 +62,8 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                 setIsLoading(true);
                 setError(null);
 
+                const newStatus = staffStatus === 'inactive' ? 'active' : 'inactive';
+
                 const csrfToken = document
                     ?.querySelector('meta[name="csrf-token"]')
                     ?.getAttribute('content');
@@ -69,7 +74,7 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                         'Content-Type': 'application/json',
                         ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
                     },
-                    body: JSON.stringify({ staff_status: 'inactive' })
+                    body: JSON.stringify({ staff_status: newStatus })
                 });
 
                 if (!response.ok) {
@@ -80,11 +85,11 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                     onStatusUpdated();
                 }
 
-                toast.success('Staff set to inactive successfully!');
+                toast.success(`Staff set to ${newStatus} successfully!`);
                 onClose();
             } catch (err) {
                 console.error('Error updating staff:', err);
-                const errorMsg = 'Failed to set staff inactive';
+                const errorMsg = 'Failed to update staff status';
                 setError(errorMsg);
                 toast.error(errorMsg);
             } finally {
@@ -114,7 +119,9 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
             >
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-bold text-[#E5B917]">DELETE ACCOUNT</h2>
+                    <h2 className="text-3xl font-bold text-[#E5B917]">
+                        {staffStatus === 'inactive' ? 'ACTIVATE ACCOUNT' : 'DELETE ACCOUNT'}
+                    </h2>
                     <button
                         onClick={onClose}
                         className="text-[#E5B917] hover:text-[#d4a815] transition"
@@ -131,13 +138,17 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                         </div>
                     )}
                     <p className="text-[#F5F5DC] text-lg mb-2">
-                        Are you sure you want to delete this account?
+                        {staffStatus === 'inactive'
+                            ? 'Are you sure you want to activate this account?'
+                            : 'Are you sure you want to delete this account?'}
                     </p>
                     <p className="text-[#E5B917] text-sm font-semibold">
                         {isLoading ? 'Loading staff...' : staffName ? `Staff: ${staffName}` : `Staff ID: ${staffId}`}
                     </p>
                     <p className="text-[#F5F5DC] text-sm mt-4">
-                        This action cannot be undone.
+                        {staffStatus === 'inactive'
+                            ? 'This account will be reactivated and can access the system.'
+                            : 'This account will be set to inactive and can be reactivated anytime.'}
                     </p>
                 </div>
 
@@ -154,7 +165,7 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                         disabled={isLoading || !staffId}
                         className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
                     >
-                        {isLoading ? 'UPDATING...' : 'DELETE'}
+                        {isLoading ? 'UPDATING...' : (staffStatus === 'inactive' ? 'ACTIVATE' : 'DELETE')}
                     </button>
                 </div>
             </div>

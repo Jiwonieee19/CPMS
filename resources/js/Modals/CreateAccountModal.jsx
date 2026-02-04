@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { useToast } from '../Components/ToastProvider';
 import { useForm } from '@inertiajs/react';
 
-export default function CreateAccountModal({ isOpen, onClose }) {
+export default function CreateAccountModal({ isOpen, onClose, onCreated }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const toast = useToast();
@@ -57,6 +57,9 @@ export default function CreateAccountModal({ isOpen, onClose }) {
             onSuccess: () => {
                 toast.success('Staff account created successfully!');
                 reset();
+                if (onCreated) {
+                    onCreated();
+                }
                 onClose();
             },
             onError: (errors) => {

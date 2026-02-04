@@ -4,9 +4,9 @@ import Sidebar from '../Components/sidebar'
 import ViewLogsModal from '../Modals/ViewLogsModal'
 
 
-export default function LogsPage() {
+export default function LogsPage({ initialTab = 'weather' }) {
 
-    const [activeTab, setActiveTab] = useState('weather')
+    const [activeTab, setActiveTab] = useState(initialTab)
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [isViewLogsModalOpen, setIsViewLogsModalOpen] = useState(false)
