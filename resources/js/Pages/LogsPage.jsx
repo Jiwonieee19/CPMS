@@ -14,6 +14,8 @@ export default function LogsPage({ initialTab = 'weather' }) {
     const [logsData, setLogsData] = useState([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [sortColumn, setSortColumn] = useState(null)
+    const [sortDirection, setSortDirection] = useState('asc')
     const User = new URL('../Assets/icons/icon-person.png', import.meta.url).href;
 
     // Reset to page 1 when search term or tab changes
@@ -56,15 +58,30 @@ export default function LogsPage({ initialTab = 'weather' }) {
         item.date.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
+    // Sort data
+    const sortedData = [...filteredData].sort((a, b) => {
+        if (!sortColumn) return 0;
+
+        let aValue = a[sortColumn];
+        let bValue = b[sortColumn];
+
+        if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+        if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
     // ================== PAGINATION LOGIC ==================
     const itemsPerPage = 4;
-    const totalItems = filteredData.length;
+    const totalItems = sortedData.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const rangeStart = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
     const rangeEnd = totalItems > 0 ? Math.min(currentPage * itemsPerPage, totalItems) : 0;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-    const paginatedData = filteredData.slice(startIndex, endIndex);
+    const paginatedData = sortedData.slice(startIndex, endIndex);
 
     // Calculate visible page numbers (max 3 page buttons)
     const maxVisiblePages = 3;
@@ -81,6 +98,20 @@ export default function LogsPage({ initialTab = 'weather' }) {
     const handleViewLog = (id) => {
         setSelectedLogId(id);
         setIsViewLogsModalOpen(true);
+    };
+
+    const handleSort = (column) => {
+        if (sortColumn === column) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+
+    const getSortIcon = (column) => {
+        if (sortColumn !== column) return '⇅';
+        return sortDirection === 'asc' ? '↑' : '↓';
     };
 
     const getTabIcon = () => {
@@ -194,17 +225,33 @@ export default function LogsPage({ initialTab = 'weather' }) {
 
                     {/* Header */}
                     <div className="grid grid-cols-5 text-[#E5B917] font-semibold text-lg mb-4 text-center">
-                        <div className='flex items-center justify-center gap-2'>LOG ID
-                            <span className="text-xl">⇅</span>
+                        <div
+                            className='flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition'
+                            onClick={() => handleSort('id')}
+                        >
+                            LOG ID
+                            <span className="text-xl">{getSortIcon('id')}</span>
                         </div>
-                        <div className='flex items-center justify-center gap-2'>TASK
-                            <span className="text-xl">⇅</span>
+                        <div
+                            className='flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition'
+                            onClick={() => handleSort('task')}
+                        >
+                            TASK
+                            <span className="text-xl">{getSortIcon('task')}</span>
                         </div>
-                        <div className='flex items-center justify-center gap-2'>TIME SAVED
-                            <span className="text-xl">⇅</span>
+                        <div
+                            className='flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition'
+                            onClick={() => handleSort('timeSaved')}
+                        >
+                            TIME SAVED
+                            <span className="text-xl">{getSortIcon('timeSaved')}</span>
                         </div>
-                        <div className='flex items-center justify-center gap-2'>DATE
-                            <span className="text-xl">⇅</span>
+                        <div
+                            className='flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition'
+                            onClick={() => handleSort('date')}
+                        >
+                            DATE
+                            <span className="text-xl">{getSortIcon('date')}</span>
                         </div>
                         <div className='ml-4'>ACTION</div>
                     </div>

@@ -26,6 +26,8 @@ export default function InventoryPage() {
     const [beanStockData, setBeanStockData] = useState([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [sortColumn, setSortColumn] = useState(null)
+    const [sortDirection, setSortDirection] = useState('asc')
     const toast = useToast()
 
     // Reset to page 1 when search term or tab changes
@@ -100,15 +102,30 @@ export default function InventoryPage() {
         item.status.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
+    // Sort data
+    const sortedData = [...filteredData].sort((a, b) => {
+        if (!sortColumn) return 0;
+
+        let aValue = a[sortColumn];
+        let bValue = b[sortColumn];
+
+        if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+        if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
     // ================== PAGINATION LOGIC ==================
     const itemsPerPage = 5;
-    const totalItems = filteredData.length;
+    const totalItems = sortedData.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const rangeStart = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
     const rangeEnd = totalItems > 0 ? Math.min(currentPage * itemsPerPage, totalItems) : 0;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-    const paginatedData = filteredData.slice(startIndex, endIndex);
+    const paginatedData = sortedData.slice(startIndex, endIndex);
 
     // Calculate visible page numbers (max 3 page buttons)
     const maxVisiblePages = 3;
@@ -143,6 +160,20 @@ export default function InventoryPage() {
     const handleProceedPickup = (id) => {
         setSelectedPickupBeanId(id);
         setIsProceedPickupModalOpen(true);
+    };
+
+    const handleSort = (column) => {
+        if (sortColumn === column) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+
+    const getSortIcon = (column) => {
+        if (sortColumn !== column) return '⇅';
+        return sortDirection === 'asc' ? '↑' : '↓';
     };
 
     return (
@@ -229,17 +260,33 @@ export default function InventoryPage() {
 
                     {/* Header */}
                     <div className="grid grid-cols-5 text-[#E5B917] font-semibold text-lg mb-4 text-center">
-                        <div className='flex items-center justify-center gap-2'>{activeTab === 'beans' ? 'BATCH ID' : 'EQUIPMENT ID'}
-                            <span className="text-xl">⇅</span>
+                        <div
+                            className='flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition'
+                            onClick={() => handleSort('id')}
+                        >
+                            {activeTab === 'beans' ? 'BATCH ID' : 'EQUIPMENT ID'}
+                            <span className="text-xl">{getSortIcon('id')}</span>
                         </div>
-                        <div className='flex items-center justify-center gap-2'>{activeTab === 'beans' ? 'ITEM USED' : 'NAME'}
-                            <span className="text-xl">⇅</span>
+                        <div
+                            className='flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition'
+                            onClick={() => handleSort('item')}
+                        >
+                            {activeTab === 'beans' ? 'ITEM USED' : 'NAME'}
+                            <span className="text-xl">{getSortIcon('item')}</span>
                         </div>
-                        <div className='flex items-center justify-center gap-2'>QUANTITY
-                            <span className="text-xl">⇅</span>
+                        <div
+                            className='flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition'
+                            onClick={() => handleSort('quantity')}
+                        >
+                            QUANTITY
+                            <span className="text-xl">{getSortIcon('quantity')}</span>
                         </div>
-                        <div className='flex items-center justify-center gap-2'>STATUS
-                            <span className="text-xl">⇅</span>
+                        <div
+                            className='flex items-center justify-center gap-2 cursor-pointer hover:text-[#d4a815] transition'
+                            onClick={() => handleSort('status')}
+                        >
+                            STATUS
+                            <span className="text-xl">{getSortIcon('status')}</span>
                         </div>
                         <div className='ml-4'>ACTION</div>
 
