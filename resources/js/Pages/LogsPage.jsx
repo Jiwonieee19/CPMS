@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Package, Plus, Menu, Box, PlusCircle, CheckCircle, Truck, Cloud, Clock, FileText, Eye, User } from 'lucide-react'
+import { Package, Plus, ArrowLeft, Box, PlusCircle, CheckCircle, Truck, Cloud, Clock, FileText, Eye, User } from 'lucide-react'
 import { usePage } from '@inertiajs/react'
 import Sidebar from '../Components/sidebar'
 import ViewLogsModal from '../Modals/ViewLogsModal'
@@ -214,6 +214,16 @@ export default function LogsPage({ initialTab = 'weather' }) {
                                 <img src={Search} alt="Search" className="w-8 h-8" />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => window.history.back()}
+                            className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition"
+                        >
+                            <ArrowLeft size={32} className="text-[#F5F5DC]" strokeWidth={3} />
+                        </button>
                     </div>
                 </div>
 
