@@ -119,7 +119,7 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 name="firstName"
                                 value={formData.firstName}
                                 readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                             />
                         </div>
                         <div>
@@ -131,7 +131,7 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 name="email"
                                 value={formData.email}
                                 readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                             />
                         </div>
                     </div>
@@ -147,7 +147,7 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 name="lastName"
                                 value={formData.lastName}
                                 readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                             />
                         </div>
                         <div>
@@ -159,7 +159,7 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 name="contact"
                                 value={formData.contact}
                                 readOnly
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                             />
                         </div>
                     </div>
@@ -174,7 +174,7 @@ export default function ViewAccountModal({ isOpen, onClose, staffId }) {
                                 name="role"
                                 value={formData.role}
                                 disabled
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                             >
                                 <option value="">Select Role</option>
                                 <option value="Staff">Staff</option>

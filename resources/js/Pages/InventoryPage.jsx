@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Package, Plus, Menu, Box, PlusCircle, CheckCircle, Truck } from 'lucide-react'
+import { router } from '@inertiajs/react'
 import Sidebar from '../Components/sidebar'
 import AddNewEquipmentModal from '../Modals/AddNewEquipmentModal'
 import AddFreshBeanModal from '../Modals/AddFreshBeansModal'
@@ -241,7 +242,10 @@ export default function InventoryPage() {
                                 <Plus size={18} strokeWidth={3} />
                             </span>
                         </button>
-                        <button className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition">
+                        <button
+                            onClick={() => router.visit('/logs?tab=inventory')}
+                            className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition"
+                        >
                             <Menu size={32} className="text-[#F5F5DC]" strokeWidth={3} />
                         </button>
                     </div>

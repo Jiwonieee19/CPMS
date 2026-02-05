@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Package, Plus, Menu, Box, PlusCircle, CheckCircle, Truck, Cloud, Clock, FileText, Eye, User } from 'lucide-react'
+import { usePage } from '@inertiajs/react'
 import Sidebar from '../Components/sidebar'
 import ViewLogsModal from '../Modals/ViewLogsModal'
 
 
 export default function LogsPage({ initialTab = 'weather' }) {
 
-    const [activeTab, setActiveTab] = useState(initialTab)
+    const { url } = usePage()
+    const queryParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+    const tabFromQuery = queryParams.get('tab')
+
+    const [activeTab, setActiveTab] = useState(tabFromQuery || initialTab)
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [isViewLogsModalOpen, setIsViewLogsModalOpen] = useState(false)

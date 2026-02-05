@@ -121,7 +121,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         type="text"
                                         value={formData.logId}
                                         readOnly
-                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                                         placeholder="WL-001"
                                     />
                                 </div>
@@ -133,7 +133,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         type="text"
                                         value={formData.type}
                                         readOnly
-                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                                         placeholder="Log Type"
                                     />
                                 </div>
@@ -149,7 +149,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         type="text"
                                         value={formData.timeSaved}
                                         readOnly
-                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                                         placeholder="08:30 AM"
                                     />
                                 </div>
@@ -161,7 +161,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         type="text"
                                         value={formData.performedBy}
                                         readOnly
-                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default"
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
                                         placeholder="Admin User"
                                     />
                                 </div>
@@ -177,7 +177,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         value={formData.taskDescription}
                                         readOnly
                                         rows="6"
-                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] cursor-default resize-none"
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default resize-none"
                                         placeholder="Temperature Check"
                                     />
                                 </div>
