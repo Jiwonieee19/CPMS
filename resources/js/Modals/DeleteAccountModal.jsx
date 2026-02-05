@@ -120,7 +120,7 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-3xl font-bold text-[#E5B917]">
-                        {staffStatus === 'inactive' ? 'ACTIVATE ACCOUNT' : 'DELETE ACCOUNT'}
+                        {staffStatus === 'inactive' ? 'ACTIVATE ACCOUNT' : 'DEACTIVATE ACCOUNT'}
                     </h2>
                     <button
                         onClick={onClose}
@@ -140,7 +140,7 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                     <p className="text-[#F5F5DC] text-lg mb-2">
                         {staffStatus === 'inactive'
                             ? 'Are you sure you want to activate this account?'
-                            : 'Are you sure you want to delete this account?'}
+                            : 'Are you sure you want to deactivate this account?'}
                     </p>
                     <p className="text-[#E5B917] text-sm font-semibold">
                         {isLoading ? 'Loading staff...' : staffName ? `Staff: ${staffName}` : `Staff ID: ${staffId}`}
@@ -165,7 +165,7 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                         disabled={isLoading || !staffId}
                         className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
                     >
-                        {isLoading ? 'UPDATING...' : (staffStatus === 'inactive' ? 'ACTIVATE' : 'DELETE')}
+                        {isLoading ? 'UPDATING...' : (staffStatus === 'inactive' ? 'ACTIVATE' : 'DEACTIVATE')}
                     </button>
                 </div>
             </div>
