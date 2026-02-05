@@ -51,7 +51,7 @@ class WeatherController extends Controller
                 'forecast_days' => 1
             ]);
 
-            dd($response->body());
+            // dd($response->body());
 
             if ($response->failed()) {
                 return response()->json([
