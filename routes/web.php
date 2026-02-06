@@ -63,6 +63,7 @@ Route::post('/batches', [BatchesController::class, 'store'])->name('batches.stor
 Route::get('/batches/list', [BatchesController::class, 'index'])->name('batches.index');
 Route::get('/batches/dried', [BatchesController::class, 'getDried'])->name('batches.dried');
 Route::post('/batches/{id}/grade', [BatchesController::class, 'grade'])->name('batches.grade');
+Route::post('/batches/{id}/pickup', [BatchesController::class, 'pickup'])->name('batches.pickup');
 
 Route::post('/batches/{id}/proceed', [ProcessController::class, 'proceed'])->name('processes.proceed');
 Route::get('/processes/list', [ProcessController::class, 'index'])->name('processes.index');

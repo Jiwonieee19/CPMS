@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useToast } from '../Components/ToastProvider';
 
-export default function ProceedBeansPickupModal({ isOpen, onClose, batchId }) {
+export default function ProceedBeansPickupModal({ isOpen, onClose, batchId, onPickedUp }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
 
     // Handle mount/unmount with fade/scale transitions
     useEffect(() => {
@@ -18,10 +21,36 @@ export default function ProceedBeansPickupModal({ isOpen, onClose, batchId }) {
         }
     }, [isOpen]);
 
-    const handleConfirm = () => {
-        // API call ready here with batchId
-        console.log('Confirming pickup for batch:', batchId);
-        onClose();
+    const handleConfirm = async () => {
+        try {
+            setIsLoading(true);
+
+            const response = await fetch(`/batches/${batchId}/pickup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP Error: ${response.status}`);
+            }
+
+            toast.success('Batch picked up successfully!');
+            onClose();
+
+            if (onPickedUp) {
+                onPickedUp();
+            }
+        } catch (err) {
+            console.error('Error confirming pickup:', err);
+            toast.error(err.message || 'Failed to confirm pickup');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleCancel = () => {
@@ -70,9 +99,13 @@ export default function ProceedBeansPickupModal({ isOpen, onClose, batchId }) {
                     </button>
                     <button
                         onClick={handleConfirm}
-                        className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
+                        disabled={isLoading}
+                        className={`py-3 rounded-2xl text-xl font-semibold transition ${isLoading
+                                ? 'bg-[#311F1C] text-[#65524F] cursor-not-allowed opacity-50'
+                                : 'bg-[#311F1C] text-[#E5B917] hover:bg-[#E5B917] hover:text-[#311F1C]'
+                            }`}
                     >
-                        CONFIRM
+                        {isLoading ? 'PROCESSING...' : 'CONFIRM'}
                     </button>
                 </div>
             </div>

@@ -414,6 +414,7 @@ export default function InventoryPage() {
                 isOpen={isProceedPickupModalOpen}
                 onClose={() => setIsProceedPickupModalOpen(false)}
                 batchId={selectedPickupBeanId}
+                onPickedUp={fetchBatches}
             />
         </div>
     )

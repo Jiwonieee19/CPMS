@@ -429,4 +429,45 @@ class BatchesController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Process batch pickup and remove from inventory
+     */
+    public function pickup($id, Request $request)
+    {
+        try {
+            // Extract batch_id from formatted ID or use it directly
+            $batchId = is_numeric($id) ? $id : (int)str_replace('BATCH-', '', $id);
+            
+            $batch = Batches::findOrFail($batchId);
+            $inventory = BatchInventory::where('batch_id', $batchId)->first();
+            
+            if (!$inventory) {
+                return response()->json([
+                    'message' => 'Batch inventory not found'
+                ], 404);
+            }
+
+            // Log the pickup activity
+            Logs::create([
+                'batch_id' => $batchId,
+                'log_type' => 'inventory',
+                'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' picked up by Auro Chocolate',
+                'severity' => 'info',
+                'created_at' => now()
+            ]);
+
+            // Delete the batch from inventory
+            $inventory->delete();
+
+            return response()->json([
+                'message' => 'Batch picked up successfully',
+                'batch_id' => $batchId
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error processing pickup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
