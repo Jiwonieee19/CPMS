@@ -7,6 +7,7 @@ use App\Models\BatchInventory;
 use App\Models\Equipments;
 use App\Models\EquipmentInventory;
 use App\Models\Logs;
+use App\Models\QualityGrading;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -67,7 +68,7 @@ class BatchesController extends Controller
     {
         try {
             // Get all batch inventory records that are NOT in processing stages or dried
-            $inventories = BatchInventory::whereNotIn('batch_status', ['Fermenting', 'Drying', 'Dried'])
+            $inventories = BatchInventory::whereNotIn('batch_status', ['Fermenting', 'Drying', 'Dried', 'Graded'])
                 ->with('batch')
                 ->get();
             
@@ -97,9 +98,35 @@ class BatchesController extends Controller
                 ];
             });
             
+            // Get graded batches with boxes information from quality_gradings
+            $gradedInventories = BatchInventory::where('batch_status', 'Graded')
+                ->with('batch')
+                ->get();
+
+            $gradedBatches = $gradedInventories->map(function ($inventory) {
+                // Get quality grading data for this batch
+                $grading = QualityGrading::where('batch_id', $inventory->batch_id)->first();
+                
+                $totalBoxes = 0;
+                if ($grading) {
+                    $totalBoxes = (int)($grading->grade_a + $grading->grade_b + $grading->reject);
+                }
+                
+                return [
+                    'id' => 'BATCH-' . str_pad($inventory->batch_id, 5, '0', STR_PAD_LEFT),
+                    'item' => 'Boxes',
+                    'quantity' => $totalBoxes,
+                    'weight' => (int)$inventory->batch_weight,
+                    'status' => $inventory->batch_status,
+                    'batch_id' => $inventory->batch_id
+                ];
+            });
+            
+            $allBatches = $transformedBatches->concat($gradedBatches);
+            
             return response()->json([
                 'message' => 'Batches retrieved successfully',
-                'batches' => $transformedBatches
+                'batches' => $allBatches
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
