@@ -4,6 +4,7 @@ import Sidebar from '../Components/sidebar'
 import ProceedProcessModal from '../Modals/ProceedProcessModal'
 import GradingProcessModal from '../Modals/GradingProcessModal'
 import { useToast } from '../Components/ToastProvider'
+import { router } from '@inertiajs/react'
 
 
 export default function ProcessPage() {
@@ -14,7 +15,7 @@ export default function ProcessPage() {
     const [isProceedProcessModalOpen, setIsProceedProcessModalOpen] = useState(false)
     const [selectedProcess, setSelectedProcess] = useState(null)
     const [isGradingProcessModalOpen, setIsGradingProcessModalOpen] = useState(false)
-    const [selectedGradingId, setSelectedGradingId] = useState(null)
+    const [selectedGradingItem, setSelectedGradingItem] = useState(null)
     const [processData, setProcessData] = useState([])
     const [driedData, setDriedData] = useState([])
     const [loading, setLoading] = useState(false)
@@ -138,8 +139,8 @@ export default function ProcessPage() {
         setIsProceedProcessModalOpen(true);
     };
 
-    const handleGradingProcess = (id) => {
-        setSelectedGradingId(id);
+    const handleGradingProcess = (item) => {
+        setSelectedGradingItem(item);
         setIsGradingProcessModalOpen(true);
     };
 
@@ -213,7 +214,11 @@ export default function ProcessPage() {
 
                     {/* Actions */}
                     <div className="flex gap-4">
-                        <button className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition">
+                        <button
+                            onClick={() => router.visit('/logs?tab=process')}
+                            className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition"
+                            title="View Process Logs"
+                        >
                             <Menu size={32} className="text-[#F5F5DC]" strokeWidth={3} />
                         </button>
                     </div>
@@ -285,7 +290,7 @@ export default function ProcessPage() {
                                             <Star
                                                 size={28}
                                                 className="cursor-pointer hover:scale-110 transition"
-                                                onClick={() => handleGradingProcess(item.id)}
+                                                onClick={() => handleGradingProcess(item)}
                                             />
                                         ) : (
                                             <CheckCircle
@@ -354,7 +359,8 @@ export default function ProcessPage() {
             <GradingProcessModal
                 isOpen={isGradingProcessModalOpen}
                 onClose={() => setIsGradingProcessModalOpen(false)}
-                id={selectedGradingId}
+                batch={selectedGradingItem}
+                onComplete={fetchDriedBatches}
             />
         </div>
     )

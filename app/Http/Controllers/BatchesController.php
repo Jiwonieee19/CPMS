@@ -317,4 +317,89 @@ class BatchesController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Grade a batch and update its status
+     */
+    public function grade($id, Request $request)
+    {
+        try {
+            // Extract batch_id from formatted ID or use it directly
+            $batchId = is_numeric($id) ? $id : (int)str_replace('BATCH-', '', $id);
+            
+            $batch = Batches::findOrFail($batchId);
+            $inventory = BatchInventory::where('batch_id', $batchId)->first();
+            
+            if (!$inventory) {
+                return response()->json([
+                    'message' => 'Batch inventory not found'
+                ], 404);
+            }
+
+            // Get boxes needed
+            $boxesUsed = (int)($request->input('boxes_used') ?? 0);
+            
+            // Deduct boxes from equipment inventory if needed
+            if ($boxesUsed > 0) {
+                $boxesEquipment = Equipments::where('equipment_type', 'boxes')->first();
+                
+                if ($boxesEquipment) {
+                    $boxesInventory = EquipmentInventory::where('equipment_id', $boxesEquipment->equipment_id)->first();
+                    
+                    if ($boxesInventory) {
+                        $currentQuantity = (int)($boxesInventory->quantity ?? $boxesInventory->equipment_status ?? 0);
+                        
+                        if ($currentQuantity >= $boxesUsed) {
+                            $boxesInventory->quantity = $currentQuantity - $boxesUsed;
+                            $boxesInventory->equipment_status = 'Available';
+                            $boxesInventory->save();
+                            
+                            // Log equipment deduction
+                            Logs::create([
+                                'batch_id' => $batchId,
+                                'equipment_id' => $boxesEquipment->equipment_id,
+                                'log_type' => 'equipment_deduction',
+                                'log_message' => 'Deducted ' . $boxesUsed . ' boxes for grading batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT),
+                                'severity' => 'info',
+                                'created_at' => now()
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Update batch inventory status to Graded
+            $inventory->batch_status = 'Graded';
+            $inventory->save();
+
+            // Create quality grading record
+            DB::table('quality_gradings')->insert([
+                'batch_id' => $batchId,
+                'grade_a' => (int)($request->input('grade_a') ?? 0),
+                'grade_b' => (int)($request->input('grade_b') ?? 0),
+                'reject' => (int)($request->input('reject') ?? 0),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Log the grading activity
+            Logs::create([
+                'batch_id' => $batchId,
+                'log_type' => 'process',
+                'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' graded - Grade A: ' . (int)($request->input('grade_a') ?? 0) . ', Grade B: ' . (int)($request->input('grade_b') ?? 0) . ', Reject: ' . (int)($request->input('reject') ?? 0),
+                'severity' => 'info',
+                'created_at' => now()
+            ]);
+
+            return response()->json([
+                'message' => 'Batch graded successfully',
+                'batch_id' => $batchId,
+                'status' => 'Graded'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error grading batch: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

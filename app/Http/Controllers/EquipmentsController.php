@@ -24,6 +24,7 @@ class EquipmentsController extends Controller
                 return [
                     'id' => 'EQ-' . str_pad($equipment->equipment_id, 3, '0', STR_PAD_LEFT),
                     'item' => $equipment->equipment_name,
+                    'equipment_type' => $equipment->equipment_type,
                     'quantity' => $quantity,
                     'status' => 'Normal',
                     'equipment_id' => $equipment->equipment_id
@@ -58,7 +59,7 @@ class EquipmentsController extends Controller
             $validated = $request->validate([
                 'equipment_name' => 'required|string|max:255',
                 'quantity' => 'required|integer|min:0',
-                'equipment_type' => 'nullable|string|in:sack,rack'
+                'equipment_type' => 'nullable|string|in:sack,rack,boxes'
             ]);
 
             $nameLower = strtolower($validated['equipment_name']);
@@ -67,6 +68,8 @@ class EquipmentsController extends Controller
                 $inferredType = 'sack';
             } elseif (str_contains($nameLower, 'rack')) {
                 $inferredType = 'rack';
+            } elseif (str_contains($nameLower, 'box')) {
+                $inferredType = 'boxes';
             }
 
             $equipmentType = $validated['equipment_type'] ?? $inferredType;

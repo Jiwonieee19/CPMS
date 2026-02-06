@@ -89,7 +89,7 @@ export default function ProceedProcessModal({ isOpen, onClose, process, onComple
             onClick={onClose}
         >
             <div
-                className={`bg-[#3E2723] rounded-3xl p-8 w-full max-w-md relative transform transition-all duration-500 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+                className={`bg-[#3E2723] rounded-3xl p-8 w-full max-w-lg relative transform transition-all duration-500 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

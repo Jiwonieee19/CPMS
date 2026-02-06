@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('quality_gradings', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('batch_id');
+            $table->integer('grade_a')->default(0);
+            $table->integer('grade_b')->default(0);
+            $table->integer('reject')->default(0);
             $table->timestamps();
+            
+            // Foreign key constraint
+            $table->foreign('batch_id')->references('batch_id')->on('batches')->onDelete('cascade');
         });
     }
 

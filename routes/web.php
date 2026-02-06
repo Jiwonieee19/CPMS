@@ -62,6 +62,7 @@ Route::post('/equipments/{id}/stock-in', [EquipmentsController::class, 'stockIn'
 Route::post('/batches', [BatchesController::class, 'store'])->name('batches.store');
 Route::get('/batches/list', [BatchesController::class, 'index'])->name('batches.index');
 Route::get('/batches/dried', [BatchesController::class, 'getDried'])->name('batches.dried');
+Route::post('/batches/{id}/grade', [BatchesController::class, 'grade'])->name('batches.grade');
 
 Route::post('/batches/{id}/proceed', [ProcessController::class, 'proceed'])->name('processes.proceed');
 Route::get('/processes/list', [ProcessController::class, 'index'])->name('processes.index');
