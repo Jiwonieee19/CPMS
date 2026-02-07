@@ -290,7 +290,12 @@ export default function LogsPage({ initialTab = 'weather' }) {
                                                border-[#65524F] text-[#F5F5DC]"
                                 >
                                     <div>{item.id}</div>
-                                    <div>{item.task}</div>
+                                    <div>
+                                        {(activeTab === 'inventory' || activeTab === 'process') && item.batch_id
+                                            ? `${item.task}: ${item.batch_id}`
+                                            : item.task
+                                        }
+                                    </div>
                                     <div>{item.timeSaved}</div>
                                     <div>{item.date}</div>
                                     <div className="flex justify-center">

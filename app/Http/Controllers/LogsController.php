@@ -146,6 +146,7 @@ class LogsController extends Controller
                     'id' => 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT),
                     'log_id' => $log->id,
                     'task' => $this->getSimplifiedTask($log->log_message ?? '', $log->log_type ?? ''),
+                    'batch_id' => $log->batch_id ? 'batch-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT) : null,
                     'timeSaved' => $createdAt->format('h:i A'),
                     'date' => $createdAt->format('Y-m-d')
                 ];
@@ -227,6 +228,24 @@ class LogsController extends Controller
                 // Create formal sentence description
                 if ($staffName && $accId && $changesFormatted) {
                     $description = "The staff account of {$staffName} with account ID {$accId} has been updated. Changes made: {$changesFormatted}.";
+                }
+            }
+            
+            // For logs with batch_id, append or replace batch ID in description
+            if ($log->batch_id) {
+                $formattedBatchId = 'batch-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT);
+                
+                // If the message mentions "fresh batch", replace with "fresh batch-00009"
+                if (stripos($description, 'fresh batch') !== false) {
+                    $description = preg_replace('/fresh batch(?!\-)/i', 'fresh ' . $formattedBatchId, $description);
+                }
+                // Else if it mentions standalone "batch", replace with "batch-00009"
+                elseif (preg_match('/\bbatch\b(?!\-)/', $description)) {
+                    $description = preg_replace('/\bbatch\b(?!\-)/', $formattedBatchId, $description);
+                }
+                // Otherwise, append the batch ID at the end
+                else {
+                    $description .= ' for ' . $formattedBatchId;
                 }
             }
 

@@ -196,6 +196,7 @@ class BatchesController extends Controller
                         'log_type' => 'equipment_deduction',
                         'log_message' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for fresh batch",
                         'severity' => 'info',
+                        'batch_id' => $batch->batch_id,
                         'equipment_id' => $deduction['equipment']->equipment_id,
                         'created_at' => now()
                     ]);
