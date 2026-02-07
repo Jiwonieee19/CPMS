@@ -72,17 +72,17 @@ class LogsController extends Controller
         }
 
         // Process logs
-        if (stripos($logMessage, 'started fermenting') !== false) {
-            return 'Fermenting Started';
+        if (stripos($logMessage, 'proceeded to Fermenting') !== false) {
+            return 'Batch Fermenting';
         }
-        if (stripos($logMessage, 'fermenting completed') !== false || stripos($logMessage, 'fermentation completed') !== false) {
-            return 'Fermenting Completed';
+        if (stripos($logMessage, 'completed to Fermented') !== false) {
+            return 'Batch Fermented';
         }
-        if (stripos($logMessage, 'started drying') !== false) {
-            return 'Drying Started';
+        if (stripos($logMessage, 'proceeded to Drying') !== false) {
+            return 'Batch Drying';
         }
-        if (stripos($logMessage, 'drying completed') !== false) {
-            return 'Drying Completed';
+        if (stripos($logMessage, 'completed to Dried') !== false) {
+            return 'Batch Dried';
         }
         if (stripos($logMessage, 'graded') !== false) {
             return 'Batch Graded';
