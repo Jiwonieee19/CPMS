@@ -8,6 +8,108 @@ use Illuminate\Http\Request;
 class LogsController extends Controller
 {
     /**
+     * Generate simplified task description from log message
+     */
+    private function getSimplifiedTask($logMessage, $logType)
+    {
+        // Account logs
+        if (stripos($logMessage, 'new staff account') !== false || stripos($logMessage, 'account added') !== false) {
+            return 'Account Added';
+        }
+        if (stripos($logMessage, 'staff account updated') !== false || stripos($logMessage, 'account updated') !== false || stripos($logMessage, 'account edited') !== false || stripos($logMessage, 'staff account edited') !== false) {
+            // Extract account ID and changes from log message
+            $accId = '';
+            $changes = '';
+            
+            if (preg_match('/\(acc-(\d+)\)/', $logMessage, $matches)) {
+                $accId = 'acc-' . $matches[1];
+            }
+            
+            if (preg_match('/\(edited: ([^)]+)\)/', $logMessage, $matches)) {
+                $rawChanges = trim($matches[1]);
+                // Extract just the field names, remove old->new values like "role:staff->quality analyst"
+                $changes = preg_replace('/:[^,]+/', '', $rawChanges);
+            }
+            
+            if ($accId && $changes) {
+                return 'Account Edited: ' . $changes . ' ' . $accId;
+            }
+            
+            return 'Account Edited';
+        }
+        if (stripos($logMessage, 'deactivated') !== false) {
+            return 'Account Deactivated';
+        }
+        if (stripos($logMessage, 'reactivated') !== false || stripos($logMessage, 'activated') !== false) {
+            return 'Account Reactivated';
+        }
+
+        // Inventory logs - Batch operations
+        if (stripos($logMessage, 'fresh batch added') !== false) {
+            return 'Fresh Batch Added';
+        }
+        if (stripos($logMessage, 'picked up') !== false) {
+            return 'Batch Picked Up';
+        }
+
+        // Equipment operations
+        if (stripos($logMessage, 'new equipment added') !== false) {
+            return 'Equipment Added';
+        }
+        if (stripos($logMessage, 'stock-in') !== false || stripos($logMessage, 'stock added') !== false) {
+            return 'Stock Added';
+        }
+        if (stripos($logMessage, 'deducted') !== false && $logType === 'equipment_deduction') {
+            return 'Equipment Deducted';
+        }
+
+        // Equipment alerts
+        if ($logType === 'equipment_alert') {
+            if (stripos($logMessage, 'insufficient') !== false) {
+                return 'Equipment Alert: Insufficient Stock';
+            }
+            return 'Equipment Alert';
+        }
+
+        // Process logs
+        if (stripos($logMessage, 'started fermenting') !== false) {
+            return 'Fermenting Started';
+        }
+        if (stripos($logMessage, 'fermenting completed') !== false || stripos($logMessage, 'fermentation completed') !== false) {
+            return 'Fermenting Completed';
+        }
+        if (stripos($logMessage, 'started drying') !== false) {
+            return 'Drying Started';
+        }
+        if (stripos($logMessage, 'drying completed') !== false) {
+            return 'Drying Completed';
+        }
+        if (stripos($logMessage, 'graded') !== false) {
+            return 'Batch Graded';
+        }
+
+        // Weather logs
+        if ($logType === 'weather_alert') {
+            if (stripos($logMessage, 'high temperature') !== false) {
+                return 'Weather Alert: High Temperature';
+            }
+            if (stripos($logMessage, 'high humidity') !== false) {
+                return 'Weather Alert: High Humidity';
+            }
+            if (stripos($logMessage, 'rain') !== false) {
+                return 'Weather Alert: Rain Detected';
+            }
+            return 'Weather Alert';
+        }
+        if ($logType === 'weather') {
+            return 'Weather Data Logged';
+        }
+
+        // Default fallback
+        return 'Log Entry';
+    }
+
+    /**
      * Display logs filtered by type.
      */
     public function index(Request $request)
@@ -43,7 +145,7 @@ class LogsController extends Controller
                 return [
                     'id' => 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT),
                     'log_id' => $log->id,
-                    'task' => $log->log_message ?? 'Log entry',
+                    'task' => $this->getSimplifiedTask($log->log_message ?? '', $log->log_type ?? ''),
                     'timeSaved' => $createdAt->format('h:i A'),
                     'date' => $createdAt->format('Y-m-d')
                 ];
@@ -84,12 +186,56 @@ class LogsController extends Controller
                 default => 'Log'
             };
 
+            // For account logs, create formal description
+            $description = $log->log_message ?? 'Log entry';
+            if ($log->log_type === 'account' && stripos($log->log_message, 'updated') !== false) {
+                // Parse log message for staff name, account ID, and changes
+                $staffName = '';
+                $accId = '';
+                $changesFormatted = '';
+                
+                // Extract staff name
+                if (preg_match('/Staff account updated: ([^(]+)/', $log->log_message, $matches)) {
+                    $staffName = trim($matches[1]);
+                }
+                
+                // Extract account ID
+                if (preg_match('/\(acc-(\d+)\)/', $log->log_message, $matches)) {
+                    $accId = $matches[1];
+                }
+                
+                // Extract changes and format them
+                if (preg_match('/\(edited: ([^)]+)\)/', $log->log_message, $matches)) {
+                    $rawChanges = trim($matches[1]);
+                    $changeList = explode(', ', $rawChanges);
+                    $formattedChanges = [];
+                    
+                    foreach ($changeList as $change) {
+                        if ($change === 'password') {
+                            $formattedChanges[] = 'password';
+                        } elseif (strpos($change, ':') !== false) {
+                            // Format is "field:oldValue->newValue"
+                            list($field, $values) = explode(':', $change, 2);
+                            list($oldVal, $newVal) = explode('->', $values, 2);
+                            $formattedChanges[] = "{$field} from {$oldVal} to {$newVal}";
+                        }
+                    }
+                    
+                    $changesFormatted = implode(', ', $formattedChanges);
+                }
+                
+                // Create formal sentence description
+                if ($staffName && $accId && $changesFormatted) {
+                    $description = "The staff account of {$staffName} with account ID {$accId} has been updated. Changes made: {$changesFormatted}.";
+                }
+            }
+
             return response()->json([
                 'message' => 'Log retrieved successfully',
                 'log' => [
                     'id' => 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT),
                     'task' => $log->log_message ?? 'Log entry',
-                    'description' => $log->log_message ?? 'Log entry',
+                    'description' => $description,
                     'timeSaved' => $createdAt->format('h:i A'),
                     'date' => $createdAt->format('Y-m-d'),
                     'type' => $typeLabel

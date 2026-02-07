@@ -175,15 +175,41 @@ class StaffsController extends Controller
                 'staff_password' => 'sometimes|string|min:8|confirmed'
             ]);
 
-            if (isset($validated['staff_password'])) {
-                $validated['staff_password'] = bcrypt($validated['staff_password']);
+            // Track changes for logging
+            $changes = [];
+            $fieldLabels = [
+                'staff_firstname' => 'first name',
+                'staff_lastname' => 'last name',
+                'staff_email' => 'email',
+                'staff_contact' => 'contact',
+                'staff_role' => 'role',
+                'staff_status' => 'status'
+            ];
+
+            foreach ($validated as $key => $value) {
+                if ($key === 'staff_password') {
+                    $changes[] = 'password';
+                    $validated[$key] = bcrypt($value);
+                } elseif ($key === 'staff_password_confirmation') {
+                    // Skip confirmation field
+                    continue;
+                } elseif (isset($fieldLabels[$key]) && $staff->$key != $value) {
+                    $oldValue = $staff->$key;
+                    $newValue = $value;
+                    $changes[] = $fieldLabels[$key] . ':' . $oldValue . '->' . $newValue;
+                }
             }
             
             $staff->update($validated);
 
+            // Build detailed log message
+            $changesText = count($changes) > 0 ? implode(', ', $changes) : 'no fields';
+            $staffIdPadded = str_pad($staff->staff_id, 5, '0', STR_PAD_LEFT);
+            $logMessage = 'Staff account updated: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ') (edited: ' . $changesText . ')';
+
             Logs::create([
                 'log_type' => 'account',
-                'log_message' => 'Staff account updated: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                'log_message' => $logMessage,
                 'severity' => 'info',
                 'created_at' => now()
             ]);
@@ -217,9 +243,10 @@ class StaffsController extends Controller
                 'staff_status' => 'inactive'
             ]);
 
+            $staffIdPadded = str_pad($staff->staff_id, 5, '0', STR_PAD_LEFT);
             Logs::create([
                 'log_type' => 'account',
-                'log_message' => 'Staff account set to inactive: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                'log_message' => 'Staff account set to inactive: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ')',
                 'severity' => 'warning',
                 'created_at' => now()
             ]);
