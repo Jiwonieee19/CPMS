@@ -142,6 +142,7 @@ export default function AddFreshBeansModal({ isOpen, onClose, onAdded }) {
                                 name="harvest_date"
                                 value={formData.harvest_date}
                                 onChange={handleChange}
+                                max={new Date().toISOString().split('T')[0]}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
                                 disabled={isLoading}
                             />
