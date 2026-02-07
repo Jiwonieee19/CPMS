@@ -6,22 +6,37 @@ import { useForm } from '@inertiajs/react';
 export default function CreateAccountModal({ isOpen, onClose, onCreated }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
+    const [error, setError] = useState(null);
     const toast = useToast();
 
     const { data, setData, post, processing, errors, reset } = useForm({
         staff_firstname: '',
         staff_lastname: '',
         staff_email: '',
-        staff_contact: '',
+        staff_contact: '+63 9',
         staff_password: '',
         staff_password_confirmation: '',
         staff_role: ''
     });
 
+    const contactPrefix = '+63 9';
+    const formatContact = (value) => {
+        let digits = String(value || '').replace(/\D/g, '');
+        if (digits.startsWith('63')) {
+            digits = digits.slice(2);
+        }
+        if (digits.startsWith('9')) {
+            digits = digits.slice(1);
+        }
+        digits = digits.slice(0, 9);
+        return `${contactPrefix}${digits}`;
+    };
+
     // Handle mount/unmount with fade/scale transitions
     useEffect(() => {
         if (isOpen) {
             setIsRendering(true);
+            setError(null);
             // allow next paint to apply visible classes
             requestAnimationFrame(() => setIsVisible(true));
         } else {
@@ -35,6 +50,7 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated }) {
     useEffect(() => {
         if (!isOpen) {
             reset();
+            setError(null);
         }
     }, [isOpen]);
 
@@ -43,18 +59,32 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated }) {
 
         // Validation
         if (!data.staff_firstname || !data.staff_lastname || !data.staff_email || !data.staff_contact || !data.staff_password || !data.staff_role) {
-            toast.warning('All fields are required!');
+            const errorMsg = 'All fields are required!';
+            setError(errorMsg);
+            toast.error(errorMsg);
             return;
         }
 
         if (data.staff_password !== data.staff_password_confirmation) {
-            toast.warning('Passwords do not match!');
+            const errorMsg = 'The password confirmation does not match.';
+            setError(errorMsg);
+            toast.error(errorMsg);
+            return;
+        }
+
+        // Validate contact number length (must be 9 digits after +63 9)
+        const contactDigits = data.staff_contact.replace(/\D/g, '').slice(2); // Remove all non-digits and skip 63
+        if (contactDigits.length !== 10) { // 9 + the leading 9
+            const errorMsg = 'The Contact field must be a valid contact number.';
+            setError(errorMsg);
+            toast.error(errorMsg);
             return;
         }
 
         post('/staffs', {
             preserveScroll: true,
             onSuccess: () => {
+                setError(null);
                 toast.success('Staff account created successfully!');
                 reset();
                 if (onCreated) {
@@ -64,7 +94,9 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated }) {
             },
             onError: (errors) => {
                 const errorMsg = Object.values(errors).flat().join(', ');
-                toast.error('Error: ' + errorMsg);
+                const message = errorMsg || 'Failed to create staff account';
+                setError(message);
+                toast.error(message);
             }
         });
     };
@@ -94,6 +126,13 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated }) {
                         <X size={32} strokeWidth={3} />
                     </button>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500 text-red-200">
+                        {error}
+                    </div>
+                )}
 
                 {/* Form */}
                 <div className="space-y-6">
@@ -148,11 +187,12 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated }) {
                             </label>
                             <input
                                 type="tel"
+                                inputMode="numeric"
                                 name="staff_contact"
                                 value={data.staff_contact}
-                                onChange={(e) => setData('staff_contact', e.target.value)}
+                                onChange={(e) => setData('staff_contact', formatContact(e.target.value))}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="09090909090"
+                                placeholder="+63 9XXXXXXXXX"
                             />
                         </div>
                     </div>
@@ -187,7 +227,8 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated }) {
                                 <option value="Quality Analyst">Quality Analyst</option>
                                 <option value="Weather Analyst">Weather Analyst</option>
                                 <option value="Process Manager">Process Manager</option>
-                                <option value="Logs Manager">Logs Manager</option>
+                                <option value="Inventory Manager">Inventory Manager</option>
+                                <option value="Account Manager">Account Manager</option>
                             </select>
                         </div>
                     </div>

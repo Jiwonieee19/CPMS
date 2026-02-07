@@ -13,16 +13,38 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
         firstName: '',
         lastName: '',
         email: '',
-        contact: '',
+        contact: '+63 9',
         password: '',
         confirmPassword: '',
         role: ''
     });
 
+    const [originalData, setOriginalData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        contact: '+63 9',
+        role: ''
+    });
+
+    const contactPrefix = '+63 9';
+    const formatContact = (value) => {
+        let digits = String(value || '').replace(/\D/g, '');
+        if (digits.startsWith('63')) {
+            digits = digits.slice(2);
+        }
+        if (digits.startsWith('9')) {
+            digits = digits.slice(1);
+        }
+        digits = digits.slice(0, 9);
+        return `${contactPrefix}${digits}`;
+    };
+
     // Handle mount/unmount with fade/scale transitions
     useEffect(() => {
         if (isOpen) {
             setIsRendering(true);
+            setError(null);
             // allow next paint to apply visible classes
             requestAnimationFrame(() => setIsVisible(true));
         } else {
@@ -48,25 +70,44 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                 const data = await response.json();
                 const staff = data.staff || {};
 
-                setFormData({
+                const loadedData = {
                     firstName: staff.first_name || '',
                     lastName: staff.last_name || '',
                     email: staff.email || '',
-                    contact: staff.contact || '',
+                    contact: formatContact(staff.contact || ''),
                     password: '',
                     confirmPassword: '',
                     role: staff.role || ''
+                };
+
+                setFormData(loadedData);
+                setOriginalData({
+                    firstName: loadedData.firstName,
+                    lastName: loadedData.lastName,
+                    email: loadedData.email,
+                    contact: loadedData.contact,
+                    role: loadedData.role
                 });
             } catch (err) {
                 console.error('Error loading staff:', err);
-                setError('Failed to load staff data');
-                setFormData({
+                const errorMsg = 'Failed to load staff data';
+                setError(errorMsg);
+                toast.error(errorMsg);
+                const emptyData = {
                     firstName: '',
                     lastName: '',
                     email: '',
-                    contact: '',
+                    contact: contactPrefix,
                     password: '',
                     confirmPassword: '',
+                    role: ''
+                };
+                setFormData(emptyData);
+                setOriginalData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    contact: contactPrefix,
                     role: ''
                 });
             } finally {
@@ -81,8 +122,24 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [name]: name === 'contact' ? formatContact(value) : value
         }));
+    };
+
+    const hasChanges = () => {
+        // If password fields have values, consider it a change
+        if (formData.password || formData.confirmPassword) {
+            return true;
+        }
+
+        // Compare other fields with original data
+        return (
+            formData.firstName !== originalData.firstName ||
+            formData.lastName !== originalData.lastName ||
+            formData.email !== originalData.email ||
+            formData.contact !== originalData.contact ||
+            formData.role !== originalData.role
+        );
     };
 
     const handleSave = () => {
@@ -93,9 +150,27 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
 
                 if (formData.password || formData.confirmPassword) {
                     if (formData.password !== formData.confirmPassword) {
-                        setError('Passwords do not match');
+                        const errorMsg = 'The password confirmation does not match.';
+                        setError(errorMsg);
+                        toast.error(errorMsg);
                         return;
                     }
+                }
+
+                if (formData.email && !formData.email.includes('@')) {
+                    const errorMsg = 'The email field must be a valid email address.';
+                    setError(errorMsg);
+                    toast.error(errorMsg);
+                    return;
+                }
+
+                // Validate contact number length (must be 9 digits after +63 9)
+                const contactDigits = formData.contact.replace(/\D/g, '').slice(2); // Remove all non-digits and skip 63
+                if (contactDigits.length !== 10) { // 9 + the leading 9
+                    const errorMsg = 'The Contact field must be a valid contact number.';
+                    setError(errorMsg);
+                    toast.error(errorMsg);
+                    return;
                 }
 
                 const payload = {
@@ -175,12 +250,14 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                     </button>
                 </div>
 
-                {/* Form */}
+                {/* Error Message */}
                 {error && (
-                    <div className="bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded mb-6">
+                    <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500 text-red-200">
                         {error}
                     </div>
                 )}
+
+                {/* Form */}
                 <div className="space-y-6">
                     {/* First Row */}
                     <div className="grid grid-cols-2 gap-6">
@@ -230,10 +307,12 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                             </label>
                             <input
                                 type="tel"
+                                inputMode="numeric"
                                 name="contact"
                                 value={formData.contact}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
+                                placeholder="+63 9XXXXXXXXX"
                             />
                         </div>
                     </div>
@@ -267,7 +346,8 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                                 <option value="Quality Analyst">Quality Analyst</option>
                                 <option value="Weather Analyst">Weather Analyst</option>
                                 <option value="Process Manager">Process Manager</option>
-                                <option value="Logs Manager">Logs Manager</option>
+                                <option value="Inventory Manager">Inventory Manager</option>
+                                <option value="Account Manager">Account Manager</option>
                             </select>
                         </div>
                     </div>
@@ -298,8 +378,8 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                         </button>
                         <button
                             onClick={handleSave}
-                            disabled={isLoading || !staffId}
-                            className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition"
+                            disabled={isLoading || !staffId || !hasChanges()}
+                            className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? 'SAVING...' : 'SAVE'}
                         </button>
