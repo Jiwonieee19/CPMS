@@ -36,6 +36,28 @@ export default function WeatherPage({ weather }) {
 
     const displayData = getDataForTab();
 
+    const formatValue = (value) => {
+        if (activeTab === 'temperature') return `${value}°C`;
+        if (activeTab === 'humidity') return `${value}%`;
+        return `${value} km/h`;
+    };
+
+    const getFooterLabel = () => {
+        if (activeTab === 'temperature') return 'Temperature (°C)';
+        if (activeTab === 'humidity') return 'Humidity (%)';
+        return 'Wind Speed (km/h)';
+    };
+
+    const isAboveNormal = (value) => {
+        if (activeTab === 'temperature') return value > 35; // Above 35°C
+        if (activeTab === 'humidity') return value > 85; // Above 85%
+        return value > 25; // Wind above 25 km/h
+    };
+
+    const getBarColor = (value) => {
+        return isAboveNormal(value) ? '#FF6769' : '#F5F5DC';
+    };
+
     const today = new Date();
     const dateString = `${today.toLocaleString('default', { month: 'short' })} ${today.getDate()} ${today.getFullYear()}`;
 
@@ -140,13 +162,16 @@ export default function WeatherPage({ weather }) {
                         >
                             {displayData.map((data, index) => (
                                 <div key={index} className="flex flex-col items-center justify-end h-full" style={{ width: barWidth }}>
+                                    <span className="text-sm font-bold text-[#F5F5DC] mb-1">
+                                        {formatValue(data.value)}
+                                    </span>
                                     <div
-                                        className="w-2/3 bg-[#F5F5DC] rounded-t-3xl flex items-start justify-center pt-2"
-                                        style={{ height: `${(data.value / maxValue) * 100}%` }}
+                                        className="w-2/3 rounded-t-3xl flex items-start justify-center pt-2"
+                                        style={{
+                                            height: `${(data.value / maxValue) * 100}%`,
+                                            backgroundColor: getBarColor(data.value)
+                                        }}
                                     >
-                                        <span className="text-sm font-bold text-[#3E2723]">
-                                            {data.value}
-                                        </span>
                                     </div>
                                     <span className="text-xs mt-2">{data.hour}</span>
                                 </div>
@@ -155,9 +180,7 @@ export default function WeatherPage({ weather }) {
                     </div>
 
                     <div className="mt-4 text-lg">
-                        {activeTab === 'temperature' && 'Temperature (°C)'}
-                        {activeTab === 'humidity' && 'Humidity (%)'}
-                        {activeTab === 'wind' && 'Wind Speed (km/h)'}
+                        {getFooterLabel()}
                     </div>
                 </div>
             </div>
