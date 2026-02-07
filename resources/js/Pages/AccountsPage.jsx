@@ -115,7 +115,11 @@ export default function AccountsPage() {
 
     const visiblePages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
-    const handleEdit = (id) => {
+    const handleEdit = (id, status) => {
+        if (status && status.toLowerCase() === 'inactive') {
+            toast.error('Account is inactive, cannot be edited.');
+            return;
+        }
         setSelectedAccountId(id);
         setIsEditModalOpen(true);
     };
@@ -265,8 +269,8 @@ export default function AccountsPage() {
                                             <div>{account.status}</div>
                                             <div className="flex justify-center gap-3">
                                                 <button
-                                                    onClick={() => handleEdit(account.staff_id)}
-                                                    className="hover:scale-110 transition"
+                                                    onClick={() => handleEdit(account.staff_id, account.status)}
+                                                    className={`hover:scale-110 transition ${account.status.toLowerCase() === 'inactive' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 >
                                                     <Edit size={28} />
                                                 </button>
