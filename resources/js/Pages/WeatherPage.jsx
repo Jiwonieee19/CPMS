@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Menu, Cloud } from 'lucide-react'
+import { router } from '@inertiajs/react'
 import Sidebar from '../Components/sidebar'
+import WeatherDecisionModal from '../Modals/WeatherDecisionModal'
 import '../Styles/scrollbar.css'
 
 export default function WeatherPage({ weather }) {
 
     const [activeTab, setActiveTab] = useState('temperature')
-    const [selectedDayIndex, setSelectedDayIndex] = useState(0)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     // ================= REAL WEATHER DATA =================
     const hours = weather?.forecast?.forecastday?.[0]?.hour || [];
@@ -75,8 +77,12 @@ export default function WeatherPage({ weather }) {
 
     const Megaphone = new URL('../Assets/icons/icon-megaphone.png', import.meta.url).href;
 
-    const handleAddItem = () => {
-        // Placeholder for add item functionality
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleNavigateToLogs = () => {
+        router.visit('/logs?tab=weather');
     };
 
     return (
@@ -131,12 +137,15 @@ export default function WeatherPage({ weather }) {
                     {/* Actions */}
                     <div className="flex gap-4">
                         <button
-                            onClick={handleAddItem}
+                            onClick={handleOpenModal}
                             className="relative bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition flex items-center justify-center"
                         >
                             <img src={Megaphone} alt="Megaphone" className="w-8 h-8" />
                         </button>
-                        <button className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition">
+                        <button
+                            onClick={handleNavigateToLogs}
+                            className="bg-[#E5B917] p-4 rounded-lg hover:bg-[#3E2723] transition"
+                        >
                             <Menu size={32} className="text-[#F5F5DC]" strokeWidth={3} />
                         </button>
                     </div>
@@ -159,8 +168,8 @@ export default function WeatherPage({ weather }) {
                     >
                         {/* Background stripes */}
                         <div
-                            className="absolute inset-0 flex flex-col justify-between pointer-events-none"
-                            style={{ height: graphHeight }}
+                            className="absolute top-0 left-0 flex flex-col justify-between pointer-events-none"
+                            style={{ height: graphHeight, width: `${displayData.length * barWidth}px` }}
                         >
                             {[...Array(6)].map((_, i) => (
                                 <div
@@ -198,6 +207,11 @@ export default function WeatherPage({ weather }) {
                     </div>
                 </div>
             </div>
+
+            <WeatherDecisionModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     )
 }
