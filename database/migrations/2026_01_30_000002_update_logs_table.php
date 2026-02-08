@@ -22,6 +22,9 @@ return new class extends Migration
             if (!Schema::hasColumn('logs', 'severity')) {
                 $table->string('severity')->nullable()->comment('critical, warning, info');
             }
+            if (!Schema::hasColumn('logs', 'task')) {
+                $table->string('task')->nullable()->comment('Task type: weather data alert, weather data notify, etc');
+            }
             if (!Schema::hasColumn('logs', 'batch_id')) {
                 $table->unsignedBigInteger('batch_id')->nullable();
                 $table->foreign('batch_id')->references('batch_id')->on('batches')->onDelete('set null');

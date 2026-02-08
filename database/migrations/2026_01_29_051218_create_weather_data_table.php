@@ -12,7 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('weather_data', function (Blueprint $table) {
-            $table->id();
+            $table->id('weather_id');
+            $table->date('data_date');
+            $table->decimal('temperature', 5, 2);
+            $table->decimal('temperature_end', 5, 2)->nullable();
+            $table->integer('humidity');
+            $table->integer('humidity_end')->nullable();
+            $table->decimal('wind_speed', 5, 2);
+            $table->decimal('wind_speed_end', 5, 2)->nullable();
+            $table->string('weather_condition')->nullable()->comment('rainy, sunny, cloudy, etc.');
+            $table->string('weather_condition_end')->nullable();
             $table->timestamps();
         });
     }

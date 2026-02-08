@@ -177,7 +177,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         value={formData.taskDescription}
                                         readOnly
                                         rows="6"
-                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default resize-none"
+                                        className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default resize-none whitespace-pre-wrap"
                                         placeholder="Temperature Check"
                                     />
                                 </div>

@@ -12,6 +12,7 @@ class Logs extends Model
         'log_type',
         'log_message',
         'severity',
+        'task',
         'batch_id',
         'equipment_id',
         'process_id',

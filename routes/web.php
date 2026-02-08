@@ -7,6 +7,9 @@ use App\Http\Controllers\BatchesController;
 use App\Http\Controllers\ProcessController;
 use App\Http\Controllers\LogsController;
 use App\Http\Controllers\WeatherController;
+use App\Http\Controllers\WeatherAlertController;
+use App\Http\Controllers\WeatherReportController;
+use App\Http\Controllers\WeatherDataController;
 
 Route::get('/', function () {
     return inertia('LoginPage');
@@ -73,10 +76,22 @@ Route::get('/logs/list', [LogsController::class, 'index'])->name('logs.index');
 Route::get('/logs/{id}', [LogsController::class, 'show'])->name('logs.show');
 
 // Weather Routes
-
-
 Route::get('/weather/hourly', [WeatherController::class, 'getHourlyWeather'])->name('weather.hourly');
 Route::get('/weather/current', [WeatherController::class, 'getCurrentWeather'])->name('weather.current');
+
+// Weather Alert Routes
+Route::post('/weather-alerts/store', [WeatherAlertController::class, 'store'])->name('weather-alerts.store');
+Route::get('/weather-alerts/active', [WeatherAlertController::class, 'getActive'])->name('weather-alerts.active');
+Route::post('/weather-alerts/{id}/deactivate', [WeatherAlertController::class, 'deactivate'])->name('weather-alerts.deactivate');
+
+// Weather Report Routes
+Route::post('/weather-reports/store', [WeatherReportController::class, 'store'])->name('weather-reports.store');
+Route::get('/weather-reports', [WeatherReportController::class, 'getAll'])->name('weather-reports.all');
+
+// Weather Data Routes
+Route::post('/weather-data/store', [WeatherDataController::class, 'store'])->name('weather-data.store');
+Route::get('/weather-data/latest', [WeatherDataController::class, 'getLatest'])->name('weather-data.latest');
+Route::get('/weather-data/range', [WeatherDataController::class, 'getByDateRange'])->name('weather-data.range');
 
 // API Routes (with CSRF protection) - Deprecated, use the route above
 Route::post('/api/staffs', [StaffsController::class, 'store']);

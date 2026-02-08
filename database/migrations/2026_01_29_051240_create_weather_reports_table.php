@@ -12,7 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('weather_reports', function (Blueprint $table) {
-            $table->id();
+            $table->id('report_id');
+            $table->text('report_message');
+            $table->date('report_date');
+            $table->string('report_action')->nullable();
+            $table->unsignedBigInteger('weather_id')->nullable();
+            $table->unsignedBigInteger('batch_id')->nullable();
+            $table->foreign('batch_id')->references('batch_id')->on('batches')->onDelete('set null');
+            $table->unsignedBigInteger('staff_id')->nullable();
+            $table->foreign('staff_id')->references('id')->on('users')->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -10,7 +10,7 @@ class LogsController extends Controller
     /**
      * Generate simplified task description from log message
      */
-    private function getSimplifiedTask($logMessage, $logType)
+    private function getSimplifiedTask($logMessage, $logType, $task = null)
     {
         // Account logs
         if (stripos($logMessage, 'new staff account') !== false || stripos($logMessage, 'account added') !== false) {
@@ -102,6 +102,12 @@ class LogsController extends Controller
             return 'Weather Alert';
         }
         if ($logType === 'weather') {
+            if ($task === 'weather data alert') {
+                return 'Weather Data Alert';
+            }
+            if ($task === 'weather data notify') {
+                return 'Weather Data Notify';
+            }
             return 'Weather Data Logged';
         }
 
@@ -145,7 +151,7 @@ class LogsController extends Controller
                 return [
                     'id' => 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT),
                     'log_id' => $log->id,
-                    'task' => $this->getSimplifiedTask($log->log_message ?? '', $log->log_type ?? ''),
+                    'task' => $this->getSimplifiedTask($log->log_message ?? '', $log->log_type ?? '', $log->task ?? null),
                     'batch_id' => $log->batch_id ? 'batch-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT) : null,
                     'timeSaved' => $createdAt->format('h:i A'),
                     'date' => $createdAt->format('Y-m-d')
@@ -246,6 +252,54 @@ class LogsController extends Controller
                 // Otherwise, append the batch ID at the end
                 else {
                     $description .= ' for ' . $formattedBatchId;
+                }
+            }
+
+            // For weather logs, include timestamp and field details in description
+            if (in_array($log->log_type, ['weather', 'weather_alert'])) {
+                $baseMessage = $log->log_message;
+                
+                // Extract parts from message
+                $message = '';
+                $severity = '';
+                $postpone = '';
+                $action = '';
+                $timestamp = '';
+                
+                if (preg_match('/^([^|]+)/', $baseMessage, $matches)) {
+                    $message = trim($matches[1]);
+                    // Remove trailing "..." if present
+                    $message = rtrim($message, '.');
+                }
+                if (preg_match('/Severity:\s*([^ |]+)/', $baseMessage, $matches)) {
+                    $severity = trim($matches[1]);
+                }
+                if (preg_match('/Postpone:\s*([^ |]+)/', $baseMessage, $matches)) {
+                    $postpone = trim($matches[1]);
+                }
+                if (preg_match('/Action:\s*([^|]+)/', $baseMessage, $matches)) {
+                    $action = trim($matches[1]);
+                }
+                if (preg_match('/Timestamp:\s*(.+)$/', $baseMessage, $matches)) {
+                    $timestamp = trim($matches[1]);
+                }
+                
+                // Determine if this is an alert or notify to set appropriate time label
+                $timeLabel = ($log->task === 'weather data alert') ? 'Postpone Time:' : 'Drying Time:';
+                
+                // Format as multiple lines
+                $description = $message . "\n";
+                if ($severity || $postpone) {
+                    $details = [];
+                    if ($severity) $details[] = "Severity: " . $severity;
+                    if ($postpone) $details[] = "Postpone: " . $postpone;
+                    $description .= " " . implode(" , ", $details) . "\n";
+                }
+                // Only add time if we have a valid timestamp from the log
+                if ($timestamp && $timestamp !== 'N/A' && !empty(trim($timestamp))) {
+                    // Add spaces around dash in time range (2PM-7PM becomes 2PM - 7PM)
+                    $timestamp = preg_replace('/(\d+(?::\d+)?(?:AM|PM|am|pm))-(\d+(?::\d+)?(?:AM|PM|am|pm))/i', '$1 - $2', $timestamp);
+                    $description .= $timeLabel . " " . $timestamp;
                 }
             }
 
