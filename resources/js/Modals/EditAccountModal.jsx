@@ -199,8 +199,18 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                     body: JSON.stringify(payload)
                 });
 
+                const responseData = await response.json();
+
                 if (!response.ok) {
-                    throw new Error(`Failed to update staff: ${response.status}`);
+                    // If server returned validation errors, show them
+                    if (response.status === 422 && responseData.errors) {
+                        const errorMessages = Object.entries(responseData.errors)
+                            .map(([field, messages]) => messages.join(', '))
+                            .join('\n');
+                        throw new Error(errorMessages);
+                    }
+                    // Otherwise show the message from the server
+                    throw new Error(responseData.message || `Failed to update staff: ${response.status}`);
                 }
 
                 if (onUpdated) {
@@ -211,7 +221,7 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                 onClose();
             } catch (err) {
                 console.error('Error saving staff:', err);
-                const errorMsg = 'Failed to save staff data';
+                const errorMsg = err.message || 'Failed to save staff data';
                 setError(errorMsg);
                 toast.error(errorMsg);
             } finally {

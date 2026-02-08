@@ -169,6 +169,7 @@ class StaffsController extends Controller
                 ], 404);
             }
             
+            // Validate the request
             $validated = $request->validate([
                 'staff_firstname' => 'sometimes|string|max:255',
                 'staff_lastname' => 'sometimes|string|max:255',
@@ -195,7 +196,8 @@ class StaffsController extends Controller
                     $changes[] = 'password';
                     $validated[$key] = bcrypt($value);
                 } elseif ($key === 'staff_password_confirmation') {
-                    // Skip confirmation field
+                    // Skip confirmation field - remove from validated array
+                    unset($validated[$key]);
                     continue;
                 } elseif (isset($fieldLabels[$key]) && $staff->$key != $value) {
                     $oldValue = $staff->$key;
@@ -204,6 +206,7 @@ class StaffsController extends Controller
                 }
             }
             
+            // Update the staff member
             $staff->update($validated);
 
             // Build detailed log message
@@ -211,17 +214,27 @@ class StaffsController extends Controller
             $staffIdPadded = str_pad($staff->staff_id, 5, '0', STR_PAD_LEFT);
             $logMessage = 'Staff account updated: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ') (edited: ' . $changesText . ')';
 
-            Logs::create([
-                'log_type' => 'account',
-                'log_message' => $logMessage,
-                'created_at' => now(),
-                'staff_id' => getCurrentUserId()
-            ]);
+            // Log the update
+            $currentUserId = getCurrentUserId();
+            if ($currentUserId !== null) {
+                Logs::create([
+                    'log_type' => 'account',
+                    'log_message' => $logMessage,
+                    'created_at' => now(),
+                    'staff_id' => $currentUserId
+                ]);
+            }
             
             return response()->json([
                 'message' => 'Staff updated successfully',
                 'staff' => $staff
             ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Return validation errors
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error updating staff: ' . $e->getMessage()
