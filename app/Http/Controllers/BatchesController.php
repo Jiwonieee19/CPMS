@@ -183,7 +183,7 @@ class BatchesController extends Controller
                     'created_at' => now()
                 ]);
 
-                Logs::create([
+                Logs::createWithStaff([
                     'log_type' => 'inventory',
                     'log_message' => 'New fresh batch added: BATCH-' . str_pad($batch->batch_id, 5, '0', STR_PAD_LEFT) . ' (' . $validated['initial_weight'] . ' kg)',
                     'severity' => 'info',
@@ -192,7 +192,7 @@ class BatchesController extends Controller
                 ]);
 
                 if ($deduction) {
-                    Logs::create([
+                    Logs::createWithStaff([
                         'log_type' => 'equipment_deduction',
                         'log_message' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for fresh batch",
                         'severity' => 'info',

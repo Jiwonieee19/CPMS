@@ -123,7 +123,7 @@ class LogsController extends Controller
         try {
             $type = $request->query('type');
 
-            $query = Logs::query();
+            $query = Logs::query()->with('staff');
 
             if ($type) {
                 switch ($type) {
@@ -148,13 +148,22 @@ class LogsController extends Controller
 
             $transformed = $logs->map(function ($log) {
                 $createdAt = ($log->created_at ?? now())->setTimezone('Asia/Manila');
+                // Get role from related staff member, or fall back to performed_by_role or 'System'
+                $performedByRole = 'System';
+                if ($log->staff) {
+                    $performedByRole = ucfirst($log->staff->staff_role ?? 'system');
+                } elseif ($log->performed_by_role) {
+                    $performedByRole = $log->performed_by_role;
+                }
+                
                 return [
-                    'id' => 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT),
-                    'log_id' => $log->id,
+                    'id' => 'LOG-' . str_pad($log->log_id, 5, '0', STR_PAD_LEFT),
+                    'log_id' => $log->log_id,
                     'task' => $this->getSimplifiedTask($log->log_message ?? '', $log->log_type ?? '', $log->task ?? null),
                     'batch_id' => $log->batch_id ? 'batch-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT) : null,
-                    'timeSaved' => $createdAt->format('h:i A'),
-                    'date' => $createdAt->format('Y-m-d')
+                    'timeSaved' => $createdAt->format('Y-m-d H:i A'),
+                    'date' => $createdAt->format('Y-m-d'),
+                    'performedByRole' => $performedByRole
                 ];
             });
 
@@ -175,7 +184,7 @@ class LogsController extends Controller
     public function show($id)
     {
         try {
-            $log = Logs::find($id);
+            $log = Logs::with('staff')->find($id);
 
             if (!$log) {
                 return response()->json([
@@ -192,6 +201,14 @@ class LogsController extends Controller
                 'weather', 'weather_alert' => 'Weather Log',
                 default => 'Log'
             };
+
+            // Get role from related staff member, or fall back to performed_by_role or 'System'
+            $performedByRole = 'System';
+            if ($log->staff) {
+                $performedByRole = ucfirst($log->staff->staff_role ?? 'system');
+            } elseif ($log->performed_by_role) {
+                $performedByRole = $log->performed_by_role;
+            }
 
             // For account logs, create formal description
             $description = $log->log_message ?? 'Log entry';
@@ -306,11 +323,12 @@ class LogsController extends Controller
             return response()->json([
                 'message' => 'Log retrieved successfully',
                 'log' => [
-                    'id' => 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT),
+                    'id' => 'LOG-' . str_pad($log->log_id, 5, '0', STR_PAD_LEFT),
                     'task' => $log->log_message ?? 'Log entry',
                     'description' => $description,
-                    'timeSaved' => $createdAt->format('h:i A'),
+                    'timeSaved' => $createdAt->format('Y-m-d H:i A'),
                     'date' => $createdAt->format('Y-m-d'),
+                    'performedByRole' => $performedByRole,
                     'type' => $typeLabel
                 ]
             ], 200);

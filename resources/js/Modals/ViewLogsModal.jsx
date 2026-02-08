@@ -12,7 +12,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
         taskDescription: '',
         timeSaved: '',
         date: '',
-        performedBy: '',
+        performedByRole: '',
         type: ''
     });
 
@@ -51,7 +51,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                     taskDescription: log.description || log.task || '',
                     timeSaved: log.timeSaved || '',
                     date: log.date || '',
-                    performedBy: 'Admin',
+                    performedByRole: log.performedByRole || 'System',
                     type: log.type || 'Log'
                 });
             } catch (err) {
@@ -62,7 +62,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                     taskDescription: '',
                     timeSaved: '',
                     date: '',
-                    performedBy: 'Admin',
+                    performedByRole: 'System',
                     type: 'Log'
                 });
             } finally {
@@ -150,19 +150,19 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         value={formData.timeSaved}
                                         readOnly
                                         className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
-                                        placeholder="08:30 AM"
+                                        placeholder="2026-02-08 08:30 AM"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                        PERFORMED BY
+                                        PERFORMED BY (ROLE)
                                     </label>
                                     <input
                                         type="text"
-                                        value={formData.performedBy}
+                                        value={formData.performedByRole}
                                         readOnly
                                         className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default"
-                                        placeholder="Admin User"
+                                        placeholder="Admin"
                                     />
                                 </div>
                             </div>

@@ -68,7 +68,12 @@ class StaffsController extends Controller
             
             $staff = Staffs::create($validated);
 
+            // Get current user info from session
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $staffId = $currentUser['staff_id'] ?? null;
+
             Logs::create([
+                'staff_id' => $staffId,
                 'log_type' => 'account',
                 'log_message' => 'New staff account created: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
                 'severity' => 'info',
@@ -208,6 +213,7 @@ class StaffsController extends Controller
             $logMessage = 'Staff account updated: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ') (edited: ' . $changesText . ')';
 
             Logs::create([
+                'staff_id' => getCurrentUserId(),
                 'log_type' => 'account',
                 'log_message' => $logMessage,
                 'severity' => 'info',
@@ -245,6 +251,7 @@ class StaffsController extends Controller
 
             $staffIdPadded = str_pad($staff->staff_id, 5, '0', STR_PAD_LEFT);
             Logs::create([
+                'staff_id' => getCurrentUserId(),
                 'log_type' => 'account',
                 'log_message' => 'Staff account set to inactive: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ')',
                 'severity' => 'warning',
