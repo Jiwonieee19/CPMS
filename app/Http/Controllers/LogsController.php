@@ -150,7 +150,11 @@ class LogsController extends Controller
                 $createdAt = ($log->created_at ?? now())->setTimezone('Asia/Manila');
                 // Get role from related staff member, or fall back to performed_by_role or 'System'
                 $performedByRole = 'System';
-                if ($log->staff) {
+                
+                // Special case: static admin (staff_id = 0)
+                if ($log->staff_id === 0) {
+                    $performedByRole = 'Admin';
+                } elseif ($log->staff) {
                     $performedByRole = ucfirst($log->staff->staff_role ?? 'system');
                 } elseif ($log->performed_by_role) {
                     $performedByRole = $log->performed_by_role;
@@ -204,7 +208,11 @@ class LogsController extends Controller
 
             // Get role from related staff member, or fall back to performed_by_role or 'System'
             $performedByRole = 'System';
-            if ($log->staff) {
+            
+            // Special case: static admin (staff_id = 0)
+            if ($log->staff_id === 0) {
+                $performedByRole = 'Admin';
+            } elseif ($log->staff) {
                 $performedByRole = ucfirst($log->staff->staff_role ?? 'system');
             } elseif ($log->performed_by_role) {
                 $performedByRole = $log->performed_by_role;
