@@ -205,10 +205,9 @@ class ProcessController extends Controller
                     Logs::create([
                         'log_type' => 'equipment_deduction',
                         'log_message' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for processing",
-                        'severity' => 'info',
+                        'created_at' => now(),
                         'batch_id' => $batchId,
-                        'equipment_id' => $deduction['equipment']->equipment_id,
-                        'created_at' => now()
+                        'equipment_id' => $deduction['equipment']->equipment_id
                     ]);
                 }
 
@@ -248,10 +247,9 @@ class ProcessController extends Controller
                 Logs::create([
                     'log_type' => 'equipment_alert',
                     'log_message' => $message,
-                    'severity' => 'critical',
+                    'created_at' => now(),
                     'batch_id' => $batchId,
-                    'equipment_id' => $equipment ? $equipment->equipment_id : null,
-                    'created_at' => now()
+                    'equipment_id' => $equipment ? $equipment->equipment_id : null
                 ]);
 
                 return response()->json([
@@ -322,9 +320,8 @@ class ProcessController extends Controller
             Logs::create([
                 'log_type' => 'process',
                 'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' completed to ' . $completedStatus,
-                'severity' => 'info',
-                'batch_id' => $batchId,
-                'created_at' => now()
+                'created_at' => now(),
+                'batch_id' => $batchId
             ]);
 
             return response()->json([

@@ -73,11 +73,10 @@ class StaffsController extends Controller
             $staffId = $currentUser['staff_id'] ?? null;
 
             Logs::create([
-                'staff_id' => $staffId,
                 'log_type' => 'account',
                 'log_message' => 'New staff account created: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
-                'severity' => 'info',
-                'created_at' => now()
+                'created_at' => now(),
+                'staff_id' => $staffId
             ]);
 
             // Check if request expects JSON (API) or Inertia
@@ -213,11 +212,10 @@ class StaffsController extends Controller
             $logMessage = 'Staff account updated: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ') (edited: ' . $changesText . ')';
 
             Logs::create([
-                'staff_id' => getCurrentUserId(),
                 'log_type' => 'account',
                 'log_message' => $logMessage,
-                'severity' => 'info',
-                'created_at' => now()
+                'created_at' => now(),
+                'staff_id' => getCurrentUserId()
             ]);
             
             return response()->json([
@@ -251,11 +249,10 @@ class StaffsController extends Controller
 
             $staffIdPadded = str_pad($staff->staff_id, 5, '0', STR_PAD_LEFT);
             Logs::create([
-                'staff_id' => getCurrentUserId(),
                 'log_type' => 'account',
                 'log_message' => 'Staff account set to inactive: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ')',
-                'severity' => 'warning',
-                'created_at' => now()
+                'created_at' => now(),
+                'staff_id' => getCurrentUserId()
             ]);
             
             return response()->json([

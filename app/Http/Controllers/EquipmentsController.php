@@ -94,9 +94,8 @@ class EquipmentsController extends Controller
             Logs::create([
                 'log_type' => 'inventory',
                 'log_message' => 'New equipment added: ' . $equipment->equipment_name . ' (Qty: ' . $validated['quantity'] . ')',
-                'severity' => 'info',
-                'equipment_id' => $equipment->equipment_id,
-                'created_at' => now()
+                'created_at' => now(),
+                'equipment_id' => $equipment->equipment_id
             ]);
 
             return response()->json([
@@ -157,9 +156,8 @@ class EquipmentsController extends Controller
             Logs::create([
                 'log_type' => 'inventory',
                 'log_message' => 'Stock added for ' . $equipment->equipment_name . ' (+' . $validated['quantity'] . ')',
-                'severity' => 'info',
-                'equipment_id' => $equipment->equipment_id,
-                'created_at' => now()
+                'created_at' => now(),
+                'equipment_id' => $equipment->equipment_id
             ]);
 
             return response()->json([

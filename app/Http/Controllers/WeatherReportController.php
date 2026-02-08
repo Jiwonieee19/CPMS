@@ -40,7 +40,6 @@ class WeatherReportController extends Controller
             Logs::create([
                 'log_type' => 'weather',
                 'log_message' => 'Weather report created: ' . substr($validated['report_message'], 0, 50) . '... | Action: ' . substr($validated['report_action'] ?? 'N/A', 0, 50) . ' | Timestamp: ' . $optimalTime,
-                'severity' => 'info',
                 'task' => 'weather data notify',
                 'created_at' => now()
             ]);

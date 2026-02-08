@@ -229,9 +229,8 @@ class BatchesController extends Controller
                 Logs::create([
                     'log_type' => 'equipment_alert',
                     'log_message' => $message,
-                    'severity' => 'critical',
-                    'equipment_id' => $equipment ? $equipment->equipment_id : null,
-                    'created_at' => now()
+                    'created_at' => now(),
+                    'equipment_id' => $equipment ? $equipment->equipment_id : null
                 ]);
 
                 return response()->json([
@@ -384,12 +383,11 @@ class BatchesController extends Controller
                             
                             // Log equipment deduction
                             Logs::create([
-                                'batch_id' => $batchId,
-                                'equipment_id' => $boxesEquipment->equipment_id,
                                 'log_type' => 'equipment_deduction',
                                 'log_message' => 'Deducted ' . $boxesUsed . ' boxes for grading batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT),
-                                'severity' => 'info',
-                                'created_at' => now()
+                                'created_at' => now(),
+                                'batch_id' => $batchId,
+                                'equipment_id' => $boxesEquipment->equipment_id
                             ]);
                         }
                     }
@@ -412,11 +410,10 @@ class BatchesController extends Controller
 
             // Log the grading activity
             Logs::create([
-                'batch_id' => $batchId,
                 'log_type' => 'process',
                 'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' graded - Grade A: ' . (int)($request->input('grade_a') ?? 0) . ', Grade B: ' . (int)($request->input('grade_b') ?? 0) . ', Reject: ' . (int)($request->input('reject') ?? 0),
-                'severity' => 'info',
-                'created_at' => now()
+                'created_at' => now(),
+                'batch_id' => $batchId
             ]);
 
             return response()->json([
@@ -451,11 +448,10 @@ class BatchesController extends Controller
 
             // Log the pickup activity
             Logs::create([
-                'batch_id' => $batchId,
                 'log_type' => 'inventory',
                 'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' picked up by Auro Chocolate',
-                'severity' => 'info',
-                'created_at' => now()
+                'created_at' => now(),
+                'batch_id' => $batchId
             ]);
 
             // Delete the batch from inventory

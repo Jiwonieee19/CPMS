@@ -42,7 +42,6 @@ class WeatherAlertController extends Controller
             Logs::create([
                 'log_type' => 'weather',
                 'log_message' => 'Weather alert created: ' . substr($validated['alert_message'], 0, 50) . '... | Severity: ' . $validated['alert_severity'] . ' | Postpone: ' . $postponeDuration . ' | Timestamp: ' . $postponeTimestamp,
-                'severity' => 'warning',
                 'task' => 'weather data alert',
                 'created_at' => now()
             ]);

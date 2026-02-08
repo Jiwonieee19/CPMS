@@ -12,17 +12,16 @@ class Logs extends Model
     protected $keyType = 'int';
     
     protected $fillable = [
-        'staff_id',
         'log_type',
         'log_message',
-        'severity',
         'task',
         'batch_id',
         'equipment_id',
         'process_id',
         'performed_by_role',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'staff_id'
     ];
 
     /**

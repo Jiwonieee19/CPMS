@@ -56,7 +56,6 @@ class WeatherDataController extends Controller
             Logs::create([
                 'log_type' => 'weather',
                 'log_message' => 'Weather data recorded: ' . $tempMsg . ', ' . $humidityMsg . ', ' . $windMsg . ', Condition: ' . $validated['weather_condition'],
-                'severity' => 'info',
                 'created_at' => now()
             ]);
 
