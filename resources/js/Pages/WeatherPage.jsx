@@ -6,6 +6,7 @@ import '../Styles/scrollbar.css'
 export default function WeatherPage({ weather }) {
 
     const [activeTab, setActiveTab] = useState('temperature')
+    const [selectedDayIndex, setSelectedDayIndex] = useState(0)
 
     // ================= REAL WEATHER DATA =================
     const hours = weather?.forecast?.forecastday?.[0]?.hour || [];
@@ -43,8 +44,8 @@ export default function WeatherPage({ weather }) {
     };
 
     const getFooterLabel = () => {
-        if (activeTab === 'temperature') return 'Temperature (°C)';
-        if (activeTab === 'humidity') return 'Humidity (%)';
+        if (activeTab === 'temperature') return 'Temperature Degrees Celsius (°C)';
+        if (activeTab === 'humidity') return 'Humidity Percentage (%)';
         return 'Wind Speed (km/h)';
     };
 
@@ -145,7 +146,7 @@ export default function WeatherPage({ weather }) {
                 <div className="bg-[#3E2723] text-[#F5F5DC] p-6 rounded-lg">
                     <h2 className="text-3xl font-semibold mb-2 flex items-center gap-2">
                         <Cloud size={40} />
-                        HOURLY FORECAST
+                        HOURLY FORECAST GRAPH
                     </h2>
 
                     <p className="text-center text-xl text-[#E5B917] mb-4">
@@ -153,11 +154,24 @@ export default function WeatherPage({ weather }) {
                     </p>
 
                     <div
-                        className="border-2 border-[#65524F] rounded overflow-x-auto"
+                        className="border-2 border-[#65524F] rounded overflow-x-auto relative pt-10 pb-0"
                         style={{ width: `${visibleBars * barWidth}px` }}
                     >
+                        {/* Background stripes */}
                         <div
-                            className="flex items-end h-full gap-2 px-2"
+                            className="absolute inset-0 flex flex-col justify-between pointer-events-none"
+                            style={{ height: graphHeight }}
+                        >
+                            {[...Array(6)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="w-full border-1 border-[#65524F] opacity-50"
+                                />
+                            ))}
+                        </div>
+
+                        <div
+                            className="flex items-end h-full gap-2 px-2 relative z-10"
                             style={{ width: `${displayData.length * barWidth}px`, height: graphHeight }}
                         >
                             {displayData.map((data, index) => (
