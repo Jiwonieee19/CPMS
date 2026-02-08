@@ -72,6 +72,11 @@ class StaffsController extends Controller
             $currentUser = \Illuminate\Support\Facades\Session::get('user');
             $staffId = $currentUser['staff_id'] ?? null;
 
+            // For static admin (staff_id=0), store NULL to avoid foreign key constraint
+            if ($staffId === 0) {
+                $staffId = null;
+            }
+
             Logs::create([
                 'log_type' => 'account',
                 'log_message' => 'New staff account created: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,

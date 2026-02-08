@@ -121,7 +121,7 @@ export default function DashboardPage() {
                         <div className="bg-[#3E2723] text-[#F5F5DC] p-6 rounded-lg">
                             <h2 className="text-3xl font-semibold mb-4 flex items-center gap-2">
                                 <Cloud size={40} />
-                                WEATHER FORECAST
+                                RECENT WEATHER FORECAST
                             </h2>
                             <div className="border-b-3 mb-4 border-[#65524F]"></div>
                             <div className="flex justify-between text-lg">

@@ -183,22 +183,30 @@ class BatchesController extends Controller
                     'created_at' => now()
                 ]);
 
-                Logs::createWithStaff([
+                $currentUser = \Illuminate\Support\Facades\Session::get('user');
+                $staffId = $currentUser['staff_id'] ?? null;
+
+                // For static admin (staff_id=0), store NULL to avoid foreign key constraint
+                if ($staffId === 0) {
+                    $staffId = null;
+                }
+
+                Logs::create([
                     'log_type' => 'inventory',
                     'log_message' => 'New fresh batch added: BATCH-' . str_pad($batch->batch_id, 5, '0', STR_PAD_LEFT) . ' (' . $validated['initial_weight'] . ' kg)',
-                    'severity' => 'info',
                     'batch_id' => $batch->batch_id,
-                    'created_at' => now()
+                    'created_at' => now(),
+                    'staff_id' => $staffId
                 ]);
 
                 if ($deduction) {
-                    Logs::createWithStaff([
+                    Logs::create([
                         'log_type' => 'equipment_deduction',
                         'log_message' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for fresh batch",
-                        'severity' => 'info',
                         'batch_id' => $batch->batch_id,
                         'equipment_id' => $deduction['equipment']->equipment_id,
-                        'created_at' => now()
+                        'created_at' => now(),
+                        'staff_id' => $staffId
                     ]);
                 }
 
