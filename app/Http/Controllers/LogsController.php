@@ -148,15 +148,20 @@ class LogsController extends Controller
 
             $transformed = $logs->map(function ($log) {
                 $createdAt = ($log->created_at ?? now())->setTimezone('Asia/Manila');
-                // Get role from related staff member, or fall back to performed_by_role or 'System'
-                $performedByRole = 'System';
+                // Get role from related staff member, or fall back to performed_by_role or 'Admin'
+                $performedByRole = 'Admin';  // Default to Admin when staff is not explicitly set
                 
-                // Special case: static admin (staff_id = 0)
-                if ($log->staff_id === 0) {
+                // NULL staff_id means it was the static admin (converted from staff_id=0)
+                if ($log->staff_id === null) {
+                    $performedByRole = 'Admin';
+                } elseif ($log->staff_id === 0) {
+                    // Legacy: direct staff_id=0 (shouldn't happen with new code)
                     $performedByRole = 'Admin';
                 } elseif ($log->staff) {
-                    $performedByRole = ucfirst($log->staff->staff_role ?? 'system');
+                    // Use the related staff member's role from database
+                    $performedByRole = ucfirst($log->staff->staff_role ?? 'Admin');
                 } elseif ($log->performed_by_role) {
+                    // Fall back to performed_by_role field if it exists
                     $performedByRole = $log->performed_by_role;
                 }
                 
@@ -206,15 +211,20 @@ class LogsController extends Controller
                 default => 'Log'
             };
 
-            // Get role from related staff member, or fall back to performed_by_role or 'System'
-            $performedByRole = 'System';
+            // Get role from related staff member, or fall back to performed_by_role or 'Admin'
+            $performedByRole = 'Admin';  // Default to Admin when staff is not explicitly set
             
-            // Special case: static admin (staff_id = 0)
-            if ($log->staff_id === 0) {
+            // NULL staff_id means it was the static admin (converted from staff_id=0)
+            if ($log->staff_id === null) {
+                $performedByRole = 'Admin';
+            } elseif ($log->staff_id === 0) {
+                // Legacy: direct staff_id=0 (shouldn't happen with new code)
                 $performedByRole = 'Admin';
             } elseif ($log->staff) {
-                $performedByRole = ucfirst($log->staff->staff_role ?? 'system');
+                // Use the related staff member's role from database
+                $performedByRole = ucfirst($log->staff->staff_role ?? 'Admin');
             } elseif ($log->performed_by_role) {
+                // Fall back to performed_by_role field if it exists
                 $performedByRole = $log->performed_by_role;
             }
 

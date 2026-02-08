@@ -51,7 +51,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                     taskDescription: log.description || log.task || '',
                     timeSaved: log.timeSaved || '',
                     date: log.date || '',
-                    performedByRole: log.performedByRole || 'System',
+                    performedByRole: log.performedByRole || 'Admin',
                     type: log.type || 'Log'
                 });
             } catch (err) {
@@ -62,7 +62,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                     taskDescription: '',
                     timeSaved: '',
                     date: '',
-                    performedByRole: 'System',
+                    performedByRole: 'Admin',
                     type: 'Log'
                 });
             } finally {

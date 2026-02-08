@@ -217,7 +217,14 @@ class StaffsController extends Controller
             // Log the update
             $currentUser = \Illuminate\Support\Facades\Session::get('user');
             $currentUserId = $currentUser['staff_id'] ?? null;
-            if ($currentUserId !== null) {
+            
+            // For static admin (staff_id=0), store NULL to avoid foreign key constraint
+            // The LogsController will treat NULL as "Admin" role based on the role in session
+            if ($currentUserId === 0) {
+                $currentUserId = null;
+            }
+            
+            if ($currentUserId !== null || (isset($currentUser) && ($currentUser['staff_role'] === 'admin'))) {
                 Logs::create([
                     'log_type' => 'account',
                     'log_message' => $logMessage,
