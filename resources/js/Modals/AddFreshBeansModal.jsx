@@ -135,7 +135,7 @@ export default function AddFreshBeansModal({ isOpen, onClose, onAdded }) {
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                HARVEST DATE *
+                                HARVEST DATE
                             </label>
                             <input
                                 type="date"
@@ -149,7 +149,7 @@ export default function AddFreshBeansModal({ isOpen, onClose, onAdded }) {
                         </div>
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                INITIAL WEIGHT (KG) *
+                                INITIAL WEIGHT (KG)
                             </label>
                             <input
                                 type="number"
@@ -157,7 +157,7 @@ export default function AddFreshBeansModal({ isOpen, onClose, onAdded }) {
                                 value={formData.initial_weight}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
-                                placeholder="123.50"
+                                placeholder="123.50KG"
                                 step="0.01"
                                 min="0"
                                 disabled={isLoading}
@@ -169,7 +169,7 @@ export default function AddFreshBeansModal({ isOpen, onClose, onAdded }) {
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                SUPPLIER NAME *
+                                FROM
                             </label>
                             <input
                                 type="text"
@@ -177,7 +177,7 @@ export default function AddFreshBeansModal({ isOpen, onClose, onAdded }) {
                                 value={formData.supplier_name}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
-                                placeholder="Enter supplier name"
+                                placeholder="SUPPLIER NAME"
                                 disabled={isLoading}
                             />
                         </div>

@@ -266,7 +266,9 @@ export default function AccountsPage() {
                                             <div>{account.id}</div>
                                             <div>{account.fullname}</div>
                                             <div>{account.role}</div>
-                                            <div>{account.status}</div>
+                                            <div className={account.status.toLowerCase() === 'inactive' ? 'text-[#FF6769]' : ''}>
+                                                {account.status}
+                                            </div>
                                             <div className="flex justify-center gap-3">
                                                 <button
                                                     onClick={() => handleEdit(account.staff_id, account.status)}

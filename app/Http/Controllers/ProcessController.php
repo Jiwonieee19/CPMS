@@ -129,7 +129,7 @@ class ProcessController extends Controller
         }
 
         $equipmentInventory->quantity = $availableQuantity - $quantity;
-        $equipmentInventory->equipment_status = 'Available';
+        $equipmentInventory->equipment_status = EquipmentInventory::statusFromQuantity((int)$equipmentInventory->quantity);
         $equipmentInventory->save();
 
         return [

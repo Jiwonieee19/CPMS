@@ -52,7 +52,7 @@ class BatchesController extends Controller
         }
 
         $equipmentInventory->quantity = $availableQuantity - $quantity;
-        $equipmentInventory->equipment_status = 'Available';
+        $equipmentInventory->equipment_status = EquipmentInventory::statusFromQuantity((int)$equipmentInventory->quantity);
         $equipmentInventory->save();
 
         return [
@@ -379,7 +379,7 @@ class BatchesController extends Controller
                         
                         if ($currentQuantity >= $boxesUsed) {
                             $boxesInventory->quantity = $currentQuantity - $boxesUsed;
-                            $boxesInventory->equipment_status = 'Available';
+                            $boxesInventory->equipment_status = EquipmentInventory::statusFromQuantity((int)$boxesInventory->quantity);
                             $boxesInventory->save();
                             
                             // Log equipment deduction

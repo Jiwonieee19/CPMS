@@ -21,12 +21,17 @@ class EquipmentsController extends Controller
             $transformedEquipments = $equipments->map(function ($equipment) {
                 $inventory = $equipment->inventory;
                 $quantity = $inventory ? (int)($inventory->quantity ?? $inventory->equipment_status) : 0;
+                $status = EquipmentInventory::statusFromQuantity($quantity);
+                if ($inventory && $inventory->equipment_status !== $status) {
+                    $inventory->equipment_status = $status;
+                    $inventory->save();
+                }
                 return [
                     'id' => 'EQ-' . str_pad($equipment->equipment_id, 3, '0', STR_PAD_LEFT),
                     'item' => $equipment->equipment_name,
                     'equipment_type' => $equipment->equipment_type,
                     'quantity' => $quantity,
-                    'status' => 'Normal',
+                    'status' => $status,
                     'equipment_id' => $equipment->equipment_id
                 ];
             });
@@ -59,7 +64,7 @@ class EquipmentsController extends Controller
             $validated = $request->validate([
                 'equipment_name' => 'required|string|max:255',
                 'quantity' => 'required|integer|min:0',
-                'equipment_type' => 'nullable|string|in:sack,rack,boxes'
+                'equipment_type' => 'nullable|string|in:sack,rack,box'
             ]);
 
             $nameLower = strtolower($validated['equipment_name']);
@@ -69,20 +74,20 @@ class EquipmentsController extends Controller
             } elseif (str_contains($nameLower, 'rack')) {
                 $inferredType = 'rack';
             } elseif (str_contains($nameLower, 'box')) {
-                $inferredType = 'boxes';
+                $inferredType = 'box';
             }
 
             $equipmentType = $validated['equipment_type'] ?? $inferredType;
 
             $equipment = Equipments::create([
-                'equipment_name' => $validated['equipment_name'],
+                'equipment_name' => ucfirst($validated['equipment_name']),
                 'equipment_type' => $equipmentType
             ]);
 
             // Create equipment inventory entry with quantity
             EquipmentInventory::create([
                 'equipment_id' => $equipment->equipment_id,
-                'equipment_status' => 'Available',
+                'equipment_status' => EquipmentInventory::statusFromQuantity((int)$validated['quantity']),
                 'quantity' => $validated['quantity']
             ]);
 
@@ -130,7 +135,7 @@ class EquipmentsController extends Controller
             if (!$inventory) {
                 $inventory = EquipmentInventory::create([
                     'equipment_id' => $id,
-                    'equipment_status' => 'Available',
+                    'equipment_status' => EquipmentInventory::statusFromQuantity(0),
                     'quantity' => 0
                 ]);
             }
@@ -146,7 +151,7 @@ class EquipmentsController extends Controller
             // Update inventory quantity
             $currentQuantity = (int)($inventory->quantity ?? $inventory->equipment_status ?? 0);
             $inventory->quantity = $currentQuantity + (int)$validated['quantity'];
-            $inventory->equipment_status = 'Available';
+            $inventory->equipment_status = EquipmentInventory::statusFromQuantity((int)$inventory->quantity);
             $inventory->save();
 
             Logs::create([

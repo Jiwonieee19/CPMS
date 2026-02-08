@@ -21,4 +21,17 @@ class EquipmentInventory extends Model
     {
         return $this->belongsTo(Equipments::class, 'equipment_id', 'equipment_id');
     }
+
+    public static function statusFromQuantity($quantity)
+    {
+        if ($quantity < 30) {
+            return 'Low';
+        }
+
+        if ($quantity <= 200) {
+            return 'Normal';
+        }
+
+        return 'High';
+    }
 }

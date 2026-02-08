@@ -309,7 +309,13 @@ export default function InventoryPage() {
                                     <div>{item.id}</div>
                                     <div>{item.item}</div>
                                     <div>{item.quantity}</div>
-                                    <div className={activeTab === 'equipments' && item.status === 'Low' ? 'text-rose-400' : ''}>
+                                    <div className={
+                                        activeTab === 'equipments' ?
+                                            item.status === 'Low' ? 'text-[#FF6769] font-semibold' :
+                                                item.status === 'High' ? 'text-green-400 font-semibold' :
+                                                    'text-[#F5F5DC] font-semibold'
+                                            : ''
+                                    }>
                                         {item.status}
                                     </div>
                                     <div className="flex justify-center">
