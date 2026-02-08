@@ -11,6 +11,8 @@ export default function LoginPage() {
     });
 
     const [showForgetPasswordModal, setShowForgetPasswordModal] = useState(false);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,9 +22,43 @@ export default function LoginPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        window.location.href = '/dashboard';
+        setError('');
+        setIsLoading(true);
+
+        try {
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
+                },
+                body: JSON.stringify({
+                    staffid: formData.staffid,
+                    password: formData.password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Redirect to dashboard on successful login
+                window.location.href = data.redirect || '/dashboard';
+            } else {
+                // Show error message
+                setError(data.message || 'Invalid staff ID or password');
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('An error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleForgotPasswordClick = (e) => {
@@ -40,6 +76,12 @@ export default function LoginPage() {
                 </div>
 
                 <div className='bg-[#3E2723] rounded-xl mt-6 p-5'>
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                            {error}
+                        </div>
+                    )}
+
                     <div className="mb-4">
                         <label htmlFor="staffid" className="block text-[#F5F5DC] text-2xl font-semibold mb-3">
                             STAFF ID
@@ -94,9 +136,10 @@ export default function LoginPage() {
 
                     <button
                         onClick={handleSubmit}
-                        className="w-full bg-[#E5B917] text-[#3E2723] text-3xl font-bold pt-2 pb-3 rounded-lg hover:bg-[#F5F5DC] hover:text-[#E5B917] hover:ring-4 hover:ring-[#E5B917] transition duration-200"
+                        disabled={isLoading}
+                        className="w-full bg-[#E5B917] text-[#3E2723] text-3xl font-bold pt-2 pb-3 rounded-lg hover:bg-[#F5F5DC] hover:text-[#E5B917] hover:ring-4 hover:ring-[#E5B917] transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        LOGIN
+                        {isLoading ? 'LOGGING IN...' : 'LOGIN'}
                     </button>
                 </div>
             </div>

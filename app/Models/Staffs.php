@@ -18,4 +18,25 @@ class Staffs extends Model
         'staff_password',
         'staff_status'
     ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'staff_password',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'staff_password' => 'hashed',
+        ];
+    }
 }
