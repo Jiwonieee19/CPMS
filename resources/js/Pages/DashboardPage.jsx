@@ -10,6 +10,8 @@ export default function DashboardPage() {
     const [processLoading, setProcessLoading] = useState(true);
     const [logsData, setLogsData] = useState(null);
     const [logsLoading, setLogsLoading] = useState(true);
+    const [statusData, setStatusData] = useState(null);
+    const [statusLoading, setStatusLoading] = useState(true);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -68,6 +70,24 @@ export default function DashboardPage() {
         };
 
         fetchLogsData();
+    }, []);
+
+    useEffect(() => {
+        const fetchStatusData = async () => {
+            try {
+                const response = await fetch('/dashboard/status');
+                const result = await response.json();
+                if (result.data) {
+                    setStatusData(result.data);
+                }
+            } catch (error) {
+                console.error('Error fetching status data:', error);
+            } finally {
+                setStatusLoading(false);
+            }
+        };
+
+        fetchStatusData();
     }, []);
 
     const formatTime = (date) => {
@@ -232,24 +252,46 @@ export default function DashboardPage() {
                                 STATUS
                             </h2>
                             <div className="border-b-3 mb-4 border-[#65524F]"></div>
-                            <div className="space-y-2 text-lg">
-                                <div className="flex justify-between">
-                                    <span className="text-[#F5F5DC]">Bean Storage</span>
-                                    <span className="text-[#E5B917] font-semibold">Normal</span>
+                            {statusLoading ? (
+                                <div className="text-center text-lg py-10">Loading...</div>
+                            ) : statusData ? (
+                                <div className="space-y-2 text-lg">
+                                    <div className="flex justify-between">
+                                        <span className="text-[#F5F5DC]">Process</span>
+                                        <span className={`font-semibold ${statusData.process.color === 'yellow' ? 'text-[#E5B917]' :
+                                            statusData.process.color === 'green' ? 'text-green-400' :
+                                                statusData.process.color === 'red' ? 'text-red-400' :
+                                                    'text-gray-400'
+                                            }`}>{statusData.process.status}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-[#F5F5DC]">Equipments</span>
+                                        <span className={`font-semibold ${statusData.equipment.color === 'yellow' ? 'text-[#E5B917]' :
+                                            statusData.equipment.color === 'green' ? 'text-green-400' :
+                                                statusData.equipment.color === 'red' ? 'text-red-400' :
+                                                    'text-gray-400'
+                                            }`}>{statusData.equipment.status}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-[#F5F5DC]">Staffs</span>
+                                        <span className={`font-semibold ${statusData.staff.color === 'yellow' ? 'text-[#E5B917]' :
+                                            statusData.staff.color === 'green' ? 'text-green-400' :
+                                                statusData.staff.color === 'red' ? 'text-red-400' :
+                                                    'text-gray-400'
+                                            }`}>{statusData.staff.status}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-[#F5F5DC]">Weather</span>
+                                        <span className={`font-semibold ${statusData.weather.color === 'yellow' ? 'text-[#E5B917]' :
+                                            statusData.weather.color === 'green' ? 'text-green-400' :
+                                                statusData.weather.color === 'red' ? 'text-red-400' :
+                                                    'text-gray-400'
+                                            }`}>{statusData.weather.status}</span>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-[#F5F5DC]">Equipments</span>
-                                    <span className="text-red-400 font-semibold">Low</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-[#F5F5DC]">Staffs</span>
-                                    <span className="text-[#E5B917] font-semibold">High</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-[#F5F5DC]">Weather</span>
-                                    <span className="text-[#E5B917] font-semibold">Stable</span>
-                                </div>
-                            </div>
+                            ) : (
+                                <div className="text-center text-lg py-10">No status data available</div>
+                            )}
                         </div>
 
                         {/* Time */}

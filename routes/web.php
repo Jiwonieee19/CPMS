@@ -97,6 +97,7 @@ Route::get('/weather-data/range', [WeatherDataController::class, 'getByDateRange
 // Dashboard Routes
 Route::get('/dashboard/process-overview', [DashboardController::class, 'getProcessOverview'])->name('dashboard.process-overview');
 Route::get('/dashboard/logs-report', [DashboardController::class, 'getLogsReport'])->name('dashboard.logs-report');
+Route::get('/dashboard/status', [DashboardController::class, 'getStatus'])->name('dashboard.status');
 
 // API Routes (with CSRF protection) - Deprecated, use the route above
 Route::post('/api/staffs', [StaffsController::class, 'store']);
