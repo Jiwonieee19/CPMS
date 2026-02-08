@@ -10,6 +10,7 @@ use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\WeatherAlertController;
 use App\Http\Controllers\WeatherReportController;
 use App\Http\Controllers\WeatherDataController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return inertia('LoginPage');
@@ -92,6 +93,10 @@ Route::get('/weather-reports', [WeatherReportController::class, 'getAll'])->name
 Route::post('/weather-data/store', [WeatherDataController::class, 'store'])->name('weather-data.store');
 Route::get('/weather-data/latest', [WeatherDataController::class, 'getLatest'])->name('weather-data.latest');
 Route::get('/weather-data/range', [WeatherDataController::class, 'getByDateRange'])->name('weather-data.range');
+
+// Dashboard Routes
+Route::get('/dashboard/process-overview', [DashboardController::class, 'getProcessOverview'])->name('dashboard.process-overview');
+Route::get('/dashboard/logs-report', [DashboardController::class, 'getLogsReport'])->name('dashboard.logs-report');
 
 // API Routes (with CSRF protection) - Deprecated, use the route above
 Route::post('/api/staffs', [StaffsController::class, 'store']);
