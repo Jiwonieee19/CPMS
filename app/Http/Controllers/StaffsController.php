@@ -215,7 +215,8 @@ class StaffsController extends Controller
             $logMessage = 'Staff account updated: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ') (edited: ' . $changesText . ')';
 
             // Log the update
-            $currentUserId = getCurrentUserId();
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $currentUserId = $currentUser['staff_id'] ?? null;
             if ($currentUserId !== null) {
                 Logs::create([
                     'log_type' => 'account',
