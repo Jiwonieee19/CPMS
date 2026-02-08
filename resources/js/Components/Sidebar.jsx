@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import companyLogo from '../Assets/company-logo.png';
 import HelpSign from '../Assets/Icons/icon-help.png';
 import Door from '../Assets/Icons/icon-logout.png';
+import LogoutModal from '../Modals/LogoutModal';
 
 const LayoutDashboard = new URL('../Assets/icons/icon-dashboard.png', import.meta.url).href;
 const LayoutDashboardFocus = new URL('../Assets/icons/icon-dashboard-focus.png', import.meta.url).href;
@@ -64,6 +65,12 @@ const mainNavItems = [
 
 export default function Sidebar() {
     const hrefHere = window.location.pathname;
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+    const handleLogoutClick = (e) => {
+        e.preventDefault();
+        setShowLogoutModal(true);
+    };
 
     return (
         <div className="w-94 h-screen bg-[#311F1C] text-3xl text-[#F5F5DC] font-medium p-4">
@@ -84,13 +91,18 @@ export default function Sidebar() {
                 ))}
             </nav>
             <div className='bg-[#3E2723] p-4 my-1 mt-30 rounded-lg flex items-center justify-start gap-4'>
-                <a href="/logout" title="Logout" className="hover:opacity-80 transition-opacity">
+                <button onClick={handleLogoutClick} title="Logout" className="hover:opacity-80 transition-opacity">
                     <img src={Door} alt="Logout Logo" className="w-8 h-8" />
-                </a>
+                </button>
                 <a href="#" title="Help" className="hover:opacity-80 transition-opacity">
                     <img src={HelpSign} alt="Help Logo" className="w-8 h-8" />
                 </a>
             </div>
+
+            <LogoutModal
+                isOpen={showLogoutModal}
+                onClose={() => setShowLogoutModal(false)}
+            />
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import companyLogo from '../Assets/company-logo.png';
 import loginBackground from '../Assets/login-background.png';
+import ForgetPasswordModal from '../Modals/ForgetPasswordModal';
 
 export default function LoginPage() {
 
@@ -8,6 +9,8 @@ export default function LoginPage() {
         staffid: '',
         password: ''
     });
+
+    const [showForgetPasswordModal, setShowForgetPasswordModal] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,6 +23,11 @@ export default function LoginPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
         window.location.href = '/dashboard';
+    };
+
+    const handleForgotPasswordClick = (e) => {
+        e.preventDefault();
+        setShowForgetPasswordModal(true);
     };
 
     return (
@@ -79,9 +87,9 @@ export default function LoginPage() {
                     </div>
 
                     <div className="mb-6">
-                        <a href="#" className="text-sm text-[#F5F5DC] underline hover:text-[#E5B917] block text-left">
+                        <button onClick={handleForgotPasswordClick} className="text-sm text-[#F5F5DC] underline hover:text-[#E5B917] block text-left">
                             FORGOT PASSWORD?
-                        </a>
+                        </button>
                     </div>
 
                     <button
@@ -92,6 +100,11 @@ export default function LoginPage() {
                     </button>
                 </div>
             </div>
+
+            <ForgetPasswordModal
+                isOpen={showForgetPasswordModal}
+                onClose={() => setShowForgetPasswordModal(false)}
+            />
         </div>
     );
 }
