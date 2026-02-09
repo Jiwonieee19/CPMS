@@ -4,12 +4,23 @@ import Sidebar from '../Components/sidebar'
 import ProceedProcessModal from '../Modals/ProceedProcessModal'
 import GradingProcessModal from '../Modals/GradingProcessModal'
 import { useToast } from '../Components/ToastProvider'
-import { router } from '@inertiajs/react'
+import { router, usePage } from '@inertiajs/react'
 
 
 export default function ProcessPage() {
 
-    const [activeTab, setActiveTab] = useState('process')
+    const { auth } = usePage().props || {};
+    const role = (auth?.user?.staff_role ?? auth?.user?.role ?? '')
+        .toString()
+        .toLowerCase()
+        .replace(/_/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const canViewDriedTab = role === 'quality manager' || role === 'quality analyst' || role === 'admin';
+    const isQualityAnalystOnly = role === 'quality analyst';
+    const canViewProcessTab = !isQualityAnalystOnly;
+
+    const [activeTab, setActiveTab] = useState(isQualityAnalystOnly ? 'dried' : 'process')
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [isProceedProcessModalOpen, setIsProceedProcessModalOpen] = useState(false)
@@ -28,6 +39,15 @@ export default function ProcessPage() {
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, activeTab]);
+
+    useEffect(() => {
+        if (!canViewDriedTab && activeTab === 'dried') {
+            setActiveTab('process');
+        }
+        if (isQualityAnalystOnly && activeTab === 'process') {
+            setActiveTab('dried');
+        }
+    }, [activeTab, canViewDriedTab, isQualityAnalystOnly]);
 
     const fetchProcesses = useCallback(async () => {
         try {
@@ -172,27 +192,30 @@ export default function ProcessPage() {
                     <div className="flex items-center gap-6">
                         {/* Tabs */}
                         <div className="flex bg-[#3E2723] p-2 rounded-2xl gap-2">
-                            <button
-                                onClick={() => setActiveTab('process')}
-                                className={`px-10 py-2 rounded-lg font-semibold transition
-                                    ${activeTab === 'process'
-                                        ? 'bg-[#E5B917] text-[#3E2723]'
-                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
-                                    }`}
-                            >
-                                PROCESS
-                            </button>
-
-                            <button
-                                onClick={() => setActiveTab('dried')}
-                                className={`px-10 py-2 rounded-lg font-semibold transition
-                                    ${activeTab === 'dried'
-                                        ? 'bg-[#E5B917] text-[#3E2723]'
-                                        : 'text-[#F5F5DC] hover:bg-[#65524F]'
-                                    }`}
-                            >
-                                DRIED
-                            </button>
+                            {canViewProcessTab && (
+                                <button
+                                    onClick={() => setActiveTab('process')}
+                                    className={`px-10 py-2 rounded-lg font-semibold transition
+                                        ${activeTab === 'process'
+                                            ? 'bg-[#E5B917] text-[#3E2723]'
+                                            : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                        }`}
+                                >
+                                    PROCESS
+                                </button>
+                            )}
+                            {canViewDriedTab && (
+                                <button
+                                    onClick={() => setActiveTab('dried')}
+                                    className={`px-10 py-2 rounded-lg font-semibold transition
+                                        ${activeTab === 'dried'
+                                            ? 'bg-[#E5B917] text-[#3E2723]'
+                                            : 'text-[#F5F5DC] hover:bg-[#65524F]'
+                                        }`}
+                                >
+                                    DRIED
+                                </button>
+                            )}
                         </div>
 
                         {/* Search */}
