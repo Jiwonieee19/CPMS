@@ -192,7 +192,7 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="w-94 h-screen bg-[#311F1C] text-3xl text-[#F5F5DC] font-medium p-4">
+        <div className="w-94 min-h-screen bg-[#311F1C] text-3xl text-[#F5F5DC] font-medium p-4">
             <div className='bg-[#3E2723] p-5 my-7 rounded-xl'>
                 <img src={companyLogo} alt="Company Logo" className="" />
             </div>
