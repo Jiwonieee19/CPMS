@@ -94,12 +94,13 @@ export default function Sidebar() {
 
     const allowedTitles = roleNavAccess[role] || [];
     const isAdmin = role === 'admin';
-    const visibleNavItems = mainNavItems.filter((item) => {
+
+    const isItemAccessible = (item) => {
         if (item.title === 'Dashboard' || item.title === 'Logs') return true;
         if (!role) return true;
         if (isAdmin) return true;
         return allowedTitles.includes(item.title);
-    });
+    };
 
     const weatherNotificationStorageKey = useMemo(() => {
         const userId = auth?.user?.staff_id ?? auth?.user?.id ?? 'unknown';
@@ -197,17 +198,25 @@ export default function Sidebar() {
                 <img src={companyLogo} alt="Company Logo" className="" />
             </div>
             <nav className="space-y-2">
-                {visibleNavItems.map((item) => (
-                    <a
-                        key={item.href}
-                        href={item.href}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl pt-4 pb-5 transition-colors duration-200 ${item.href === hrefHere ? 'bg-[#E5B917] text-[#311F1C]' : 'hover:bg-[#3E2723]'
-                            }`}
-                    >
-                        <img src={item.href === hrefHere ? item.iconFocus : item.icon} alt={item.title} className="w-8 h-8 mt-1" />
-                        <span>{item.title}</span>
-                    </a>
-                ))}
+                {mainNavItems.map((item) => {
+                    const isAccessible = isItemAccessible(item);
+                    return (
+                        <a
+                            key={item.href}
+                            href={isAccessible ? item.href : '#'}
+                            onClick={(e) => !isAccessible && e.preventDefault()}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl pt-4 pb-5 transition-colors duration-200 ${!isAccessible
+                                    ? 'opacity-40 cursor-not-allowed pointer-events-none'
+                                    : item.href === hrefHere
+                                        ? 'bg-[#E5B917] text-[#311F1C]'
+                                        : 'hover:bg-[#3E2723]'
+                                }`}
+                        >
+                            <img src={item.href === hrefHere && isAccessible ? item.iconFocus : item.icon} alt={item.title} className="w-8 h-8 mt-1" />
+                            <span>{item.title}</span>
+                        </a>
+                    );
+                })}
             </nav>
             <div className='bg-[#3E2723] p-4 my-1 mt-30 rounded-lg flex items-center justify-start gap-4'>
                 <button onClick={handleLogoutClick} title="Logout" className="hover:opacity-80 transition-opacity">
