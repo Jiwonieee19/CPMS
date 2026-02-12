@@ -305,7 +305,7 @@ export default function AccountsPage() {
                     </div>
 
                     {/* Pagination */}
-                    <div className="flex justify-between items-center text-[#3E2723]">
+                    <div className="flex justify-between items-center text-[#3E2723] my-6">
                         <div className="text-lg">
                             Showing <span className="font-bold">{rangeStart} - {rangeEnd}</span> Accounts from <span className="font-bold">{totalAccounts}</span>
                         </div>

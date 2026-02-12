@@ -316,7 +316,7 @@ export default function LogsPage({ initialTab = 'weather' }) {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex justify-between items-center text-[#3E2723] mt-6">
+                <div className="flex justify-between items-center text-[#3E2723] my-6">
                     <div className="text-lg">
                         Showing <span className="font-bold">{rangeStart} - {rangeEnd}</span> of <span className="font-bold">{totalItems}</span>
                     </div>
