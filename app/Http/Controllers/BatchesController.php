@@ -307,8 +307,9 @@ class BatchesController extends Controller
                 // Calculate days since batch was created
                 $batch = $inventory->batch;
                 if ($batch && $batch->created_at) {
-                    $hoursElapsed = now()->diffInHours($batch->created_at);
-                    $dayCount = max(1, (int) ceil($hoursElapsed / 24));
+                    $createdDate = \Carbon\Carbon::parse($batch->created_at);
+                    $daysElapsed = (int) $createdDate->diffInDays(now());
+                    $dayCount = max(1, $daysElapsed + 1);
                 } else {
                     $dayCount = 1;
                 }

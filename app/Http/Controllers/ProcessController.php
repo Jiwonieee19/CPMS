@@ -29,8 +29,9 @@ class ProcessController extends Controller
                 
                 // Calculate day count (days since process created) starting from Day 1
                 if ($process->created_at) {
-                    $hoursElapsed = now()->diffInHours($process->created_at);
-                    $dayCount = max(1, (int) ceil($hoursElapsed / 24));
+                    $createdDate = \Carbon\Carbon::parse($process->created_at);
+                    $daysElapsed = (int) $createdDate->diffInDays(now());
+                    $dayCount = max(1, $daysElapsed + 1);
                 } else {
                     $dayCount = 1;
                 }
