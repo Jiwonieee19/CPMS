@@ -84,7 +84,7 @@ export default function WeatherPage({ weather }) {
     const handleNavigateToLogs = () => {
         router.visit('/logs?tab=weather');
     };
-
+    // TODO: DATABASE TABLE FOLLOWS, PERFORMED BY, DOWNLOADABLE
     return (
         <div className="flex min-h-screen">
             <Sidebar />
