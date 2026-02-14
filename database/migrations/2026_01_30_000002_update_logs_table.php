@@ -16,14 +16,11 @@ return new class extends Migration
             if (!Schema::hasColumn('logs', 'log_type')) {
                 $table->string('log_type')->nullable()->comment('Type of log: equipment_alert, batch_alert, etc');
             }
-            if (!Schema::hasColumn('logs', 'log_message')) {
-                $table->text('log_message')->nullable();
+            if (!Schema::hasColumn('logs', 'log_description')) {
+                $table->text('log_description')->nullable();
             }
-            if (!Schema::hasColumn('logs', 'severity')) {
-                $table->string('severity')->nullable()->comment('critical, warning, info');
-            }
-            if (!Schema::hasColumn('logs', 'task')) {
-                $table->string('task')->nullable()->comment('Task type: weather data alert, weather data notify, etc');
+            if (!Schema::hasColumn('logs', 'log_task')) {
+                $table->string('log_task')->nullable()->comment('Task type: weather data alert, weather data notify, etc');
             }
             if (!Schema::hasColumn('logs', 'batch_id')) {
                 $table->unsignedBigInteger('batch_id')->nullable();
@@ -36,6 +33,10 @@ return new class extends Migration
             if (!Schema::hasColumn('logs', 'process_id')) {
                 $table->unsignedBigInteger('process_id')->nullable();
                 $table->foreign('process_id')->references('process_id')->on('processes')->onDelete('set null');
+            }
+            if (!Schema::hasColumn('logs', 'staff_id')) {
+                $table->unsignedBigInteger('staff_id')->nullable();
+                $table->foreign('staff_id')->references('staff_id')->on('staffs')->onDelete('set null');
             }
         });
     }
@@ -58,14 +59,18 @@ return new class extends Migration
                 $table->dropForeign(['process_id']);
                 $table->dropColumn('process_id');
             }
+            if (Schema::hasColumn('logs', 'staff_id')) {
+                $table->dropForeign(['staff_id']);
+                $table->dropColumn('staff_id');
+            }
             if (Schema::hasColumn('logs', 'log_type')) {
                 $table->dropColumn('log_type');
             }
-            if (Schema::hasColumn('logs', 'log_message')) {
-                $table->dropColumn('log_message');
+            if (Schema::hasColumn('logs', 'log_description')) {
+                $table->dropColumn('log_description');
             }
-            if (Schema::hasColumn('logs', 'severity')) {
-                $table->dropColumn('severity');
+            if (Schema::hasColumn('logs', 'log_task')) {
+                $table->dropColumn('log_task');
             }
         });
     }

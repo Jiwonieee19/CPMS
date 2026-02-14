@@ -53,15 +53,17 @@ class WeatherDataController extends Controller
                 $windMsg .= ' - ' . $validated['wind_speed_end'] . ' m/s';
             }
             
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $staffId = $currentUser['staff_id'] ?? null;
+            if ($staffId === 0) {
+                $staffId = null;
+            }
+
             Logs::create([
                 'log_type' => 'weather',
-                'log_message' => 'Weather data recorded: ' . $tempMsg . ', ' . $humidityMsg . ', ' . $windMsg . ', Condition: ' . $validated['weather_condition'],
-                'created_at' => now()
-            ]);
-
-            return response()->json([
-                'message' => 'Weather data stored successfully',
-                'data' => $weatherData
+                'log_description' => 'Weather data recorded: ' . $tempMsg . ', ' . $humidityMsg . ', ' . $windMsg . ', Condition: ' . $validated['weather_condition'],
+                'created_at' => now(),
+                'staff_id' => $staffId
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

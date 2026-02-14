@@ -13,12 +13,11 @@ class Logs extends Model
     
     protected $fillable = [
         'log_type',
-        'log_message',
-        'task',
+        'log_description',
+        'log_task',
         'batch_id',
         'equipment_id',
         'process_id',
-        'performed_by_role',
         'created_at',
         'updated_at',
         'staff_id'

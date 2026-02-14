@@ -79,7 +79,7 @@ class StaffsController extends Controller
 
             Logs::create([
                 'log_type' => 'account',
-                'log_message' => 'New staff account created: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                'log_description' => 'New staff account created: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
                 'created_at' => now(),
                 'staff_id' => $staffId
             ]);
@@ -232,7 +232,7 @@ class StaffsController extends Controller
             if ($currentUserId !== null || (isset($currentUser) && ($currentUser['staff_role'] === 'admin'))) {
                 Logs::create([
                     'log_type' => 'account',
-                    'log_message' => $logMessage,
+                    'log_description' => $logMessage,
                     'created_at' => now(),
                     'staff_id' => $currentUserId
                 ]);
@@ -274,11 +274,17 @@ class StaffsController extends Controller
             ]);
 
             $staffIdPadded = str_pad($staff->staff_id, 5, '0', STR_PAD_LEFT);
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $currentUserId = $currentUser['staff_id'] ?? null;
+            if ($currentUserId === 0) {
+                $currentUserId = null;
+            }
+            
             Logs::create([
                 'log_type' => 'account',
-                'log_message' => 'Staff account set to inactive: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ')',
+                'log_description' => 'Staff account set to inactive: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ')',
                 'created_at' => now(),
-                'staff_id' => getCurrentUserId()
+                'staff_id' => $currentUserId
             ]);
             
             return response()->json([

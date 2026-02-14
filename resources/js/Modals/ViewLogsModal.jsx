@@ -178,7 +178,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         readOnly
                                         rows="6"
                                         className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default resize-none whitespace-pre-wrap"
-                                        placeholder="Temperature Check"
+                                        placeholder="Task description not available"
                                     />
                                 </div>
                             </div>

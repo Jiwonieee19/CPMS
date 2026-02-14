@@ -23,8 +23,11 @@ class WeatherAlertController extends Controller
             ]);
 
             // Get authenticated staff_id from session or request
-            $staffId = auth()->check() ? auth()->user()->id : null;
-
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $staffId = $currentUser['staff_id'] ?? (auth()->check() ? auth()->user()->id : null);
+            if ($staffId === 0) {
+                $staffId = null;
+            }
             // Format alert_action from postpone details
             $postponeDuration = $validated['postpone_duration'] ?? 'N/A';
             $postponeTimestamp = $validated['postpone_timestamp'] ?? 'N/A';
@@ -41,9 +44,10 @@ class WeatherAlertController extends Controller
 
             Logs::create([
                 'log_type' => 'weather',
-                'log_message' => 'Weather alert created: ' . substr($validated['alert_message'], 0, 50) . '... | Severity: ' . $validated['alert_severity'] . ' | Postpone: ' . $postponeDuration . ' | Timestamp: ' . $postponeTimestamp,
-                'task' => 'weather data alert',
-                'created_at' => now()
+                'log_description' => 'Weather alert created: ' . substr($validated['alert_message'], 0, 50) . '... | Severity: ' . $validated['alert_severity'] . ' | Postpone: ' . $postponeDuration . ' | Timestamp: ' . $postponeTimestamp,
+                'log_task' => 'weather data alert',
+                'created_at' => now(),
+                'staff_id' => $staffId
             ]);
 
             return response()->json([

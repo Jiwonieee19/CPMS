@@ -48,8 +48,8 @@ class ProcessController extends Controller
                         ->get();
                     
                     foreach ($rackDeductionLogs as $log) {
-                        // Extract quantity from log message (e.g., "Deducted 4 rack for processing")
-                        preg_match('/Deducted (\d+)/', $log->log_message, $matches);
+                        // Extract quantity from log description (e.g., "Deducted 4 rack for processing")
+                        preg_match('/Deducted (\d+)/', $log->log_description, $matches);
                         if (isset($matches[1])) {
                             $racksUsed += (int)$matches[1];
                         }
@@ -201,24 +201,33 @@ class ProcessController extends Controller
 
                 DB::commit();
 
+                // Get current user info
+                $currentUser = \Illuminate\Support\Facades\Session::get('user');
+                $staffId = $currentUser['staff_id'] ?? null;
+                if ($staffId === 0) {
+                    $staffId = null;
+                }
+
                 // Log deductions after successful commit
                 foreach ($deductions as $deduction) {
                     Logs::create([
                         'log_type' => 'equipment_deduction',
-                        'log_message' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for processing",
+                        'log_description' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for processing",
                         'created_at' => now(),
                         'batch_id' => $batchId,
-                        'equipment_id' => $deduction['equipment']->equipment_id
+                        'equipment_id' => $deduction['equipment']->equipment_id,
+                        'staff_id' => $staffId
                     ]);
                 }
 
                 Logs::create([
                     'log_type' => 'process',
-                    'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' proceeded to ' . $nextStatus,
+                    'log_description' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' proceeded to ' . $nextStatus,
                     'severity' => 'info',
                     'batch_id' => $batchId,
                     'process_id' => $process->process_id,
-                    'created_at' => now()
+                    'created_at' => now(),
+                    'staff_id' => $staffId
                 ]);
 
                 return response()->json([
@@ -228,7 +237,12 @@ class ProcessController extends Controller
                 ], 200);
             } catch (\RuntimeException $e) {
                 DB::rollBack();
-
+                // Get current user info
+                $currentUser = \Illuminate\Support\Facades\Session::get('user');
+                $staffId = $currentUser['staff_id'] ?? null;
+                if ($staffId === 0) {
+                    $staffId = null;
+                }
                 $parts = explode('|', $e->getMessage());
                 $code = $parts[0] ?? 'EQUIPMENT_ERROR';
                 $equipmentType = $parts[1] ?? 'unknown';
@@ -247,10 +261,11 @@ class ProcessController extends Controller
 
                 Logs::create([
                     'log_type' => 'equipment_alert',
-                    'log_message' => $message,
+                    'log_description' => $message,
                     'created_at' => now(),
                     'batch_id' => $batchId,
-                    'equipment_id' => $equipment ? $equipment->equipment_id : null
+                    'equipment_id' => $equipment ? $equipment->equipment_id : null,
+                    'staff_id' => $staffId ?? null
                 ]);
 
                 return response()->json([
@@ -285,6 +300,11 @@ class ProcessController extends Controller
                 'process_id' => 'required|integer'
             ]);
 
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $staffId = $currentUser['staff_id'] ?? null;
+            if ($staffId === 0) {
+                $staffId = null;
+            }
             // Find process
             $process = Process::findOrFail($processId);
             $batchId = $process->batch_id;
@@ -320,9 +340,10 @@ class ProcessController extends Controller
 
             Logs::create([
                 'log_type' => 'process',
-                'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' completed to ' . $completedStatus,
+                'log_description' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' completed to ' . $completedStatus,
                 'created_at' => now(),
-                'batch_id' => $batchId
+                'batch_id' => $batchId,
+                'staff_id' => $staffId
             ]);
 
             return response()->json([

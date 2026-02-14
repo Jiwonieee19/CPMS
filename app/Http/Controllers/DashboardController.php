@@ -107,26 +107,26 @@ class DashboardController extends Controller
             // Count different log types/tasks
             $stats = [
                 'batch_fermented' => DB::table('logs')
-                    ->whereRaw('LOWER(log_message) LIKE ?', ['%completed to fermented%'])
+                    ->whereRaw('LOWER(log_description) LIKE ?', ['%completed to fermented%'])
                     ->count(),
                 'batch_dried' => DB::table('logs')
-                    ->whereRaw('LOWER(log_message) LIKE ?', ['%completed to dried%'])
+                    ->whereRaw('LOWER(log_description) LIKE ?', ['%completed to dried%'])
                     ->count(),
                 'batch_graded' => DB::table('logs')
-                    ->whereRaw('LOWER(log_message) LIKE ?', ['%graded%'])
+                    ->whereRaw('LOWER(log_description) LIKE ?', ['%graded%'])
                     ->where('log_type', 'process')
                     ->count(),
                 'account_edited' => DB::table('logs')
                     ->where('log_type', 'account')
-                    ->whereRaw('LOWER(log_message) LIKE ?', ['%updated%'])
+                    ->whereRaw('LOWER(log_description) LIKE ?', ['%updated%'])
                     ->count(),
                 'account_added' => DB::table('logs')
                     ->where('log_type', 'account')
-                    ->whereRaw('LOWER(log_message) LIKE ?', ['%new staff account%'])
-                    ->orWhereRaw('LOWER(log_message) LIKE ?', ['%account added%'])
+                    ->whereRaw('LOWER(log_description) LIKE ?', ['%new staff account%'])
+                    ->orWhereRaw('LOWER(log_description) LIKE ?', ['%account added%'])
                     ->count(),
                 'stock_added' => DB::table('logs')
-                    ->whereRaw('LOWER(log_message) LIKE ?', ['%stock added%'])
+                    ->whereRaw('LOWER(log_description) LIKE ?', ['%stock added%'])
                     ->count()
             ];
             

@@ -190,10 +190,9 @@ class BatchesController extends Controller
                 if ($staffId === 0) {
                     $staffId = null;
                 }
-
                 Logs::create([
                     'log_type' => 'inventory',
-                    'log_message' => 'New fresh batch added: BATCH-' . str_pad($batch->batch_id, 5, '0', STR_PAD_LEFT) . ' (' . $validated['initial_weight'] . ' kg)',
+                    'log_description' => 'New fresh batch added: BATCH-' . str_pad($batch->batch_id, 5, '0', STR_PAD_LEFT) . ' (' . $validated['initial_weight'] . ' kg)',
                     'batch_id' => $batch->batch_id,
                     'created_at' => now(),
                     'staff_id' => $staffId
@@ -202,7 +201,7 @@ class BatchesController extends Controller
                 if ($deduction) {
                     Logs::create([
                         'log_type' => 'equipment_deduction',
-                        'log_message' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for fresh batch",
+                        'log_description' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for fresh batch",
                         'batch_id' => $batch->batch_id,
                         'equipment_id' => $deduction['equipment']->equipment_id,
                         'created_at' => now(),
@@ -234,11 +233,17 @@ class BatchesController extends Controller
                     default => 'Equipment error occurred'
                 };
 
+                $currentUser = \Illuminate\Support\Facades\Session::get('user');
+                $staffIdLog = $currentUser['staff_id'] ?? null;
+                if ($staffIdLog === 0) {
+                    $staffIdLog = null;
+                }
                 Logs::create([
                     'log_type' => 'equipment_alert',
-                    'log_message' => $message,
+                    'log_description' => $message,
                     'created_at' => now(),
-                    'equipment_id' => $equipment ? $equipment->equipment_id : null
+                    'equipment_id' => $equipment ? $equipment->equipment_id : null,
+                    'staff_id' => $staffIdLog
                 ]);
 
                 return response()->json([
@@ -326,8 +331,8 @@ class BatchesController extends Controller
                         ->get();
                     
                     foreach ($rackDeductionLogs as $log) {
-                        // Extract quantity from log message (e.g., "Deducted 4 rack for processing")
-                        preg_match('/Deducted (\d+)/', $log->log_message, $matches);
+                        // Extract quantity from log description (e.g., "Deducted 4 rack for processing")
+                        preg_match('/Deducted (\d+)/', $log->log_description, $matches);
                         if (isset($matches[1])) {
                             $racksUsed += (int)$matches[1];
                         }
@@ -363,6 +368,12 @@ class BatchesController extends Controller
             // Extract batch_id from formatted ID or use it directly
             $batchId = is_numeric($id) ? $id : (int)str_replace('BATCH-', '', $id);
             
+            // Get current user info for logging
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $staffId = $currentUser['staff_id'] ?? null;
+            if ($staffId === 0) {
+                $staffId = null;
+            }
             $batch = Batches::findOrFail($batchId);
             $inventory = BatchInventory::where('batch_id', $batchId)->first();
             
@@ -393,10 +404,11 @@ class BatchesController extends Controller
                             // Log equipment deduction
                             Logs::create([
                                 'log_type' => 'equipment_deduction',
-                                'log_message' => 'Deducted ' . $boxesUsed . ' boxes for grading batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT),
+                                'log_description' => 'Deducted ' . $boxesUsed . ' boxes for grading batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT),
                                 'created_at' => now(),
                                 'batch_id' => $batchId,
-                                'equipment_id' => $boxesEquipment->equipment_id
+                                'equipment_id' => $boxesEquipment->equipment_id,
+                                'staff_id' => $staffId
                             ]);
                         }
                     }
@@ -420,9 +432,10 @@ class BatchesController extends Controller
             // Log the grading activity
             Logs::create([
                 'log_type' => 'process',
-                'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' graded - Grade A: ' . (int)($request->input('grade_a') ?? 0) . ', Grade B: ' . (int)($request->input('grade_b') ?? 0) . ', Reject: ' . (int)($request->input('reject') ?? 0),
+                'log_description' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' graded - Grade A: ' . (int)($request->input('grade_a') ?? 0) . ', Grade B: ' . (int)($request->input('grade_b') ?? 0) . ', Reject: ' . (int)($request->input('reject') ?? 0),
                 'created_at' => now(),
-                'batch_id' => $batchId
+                'batch_id' => $batchId,
+                'staff_id' => $staffId
             ]);
 
             return response()->json([
@@ -446,6 +459,12 @@ class BatchesController extends Controller
             // Extract batch_id from formatted ID or use it directly
             $batchId = is_numeric($id) ? $id : (int)str_replace('BATCH-', '', $id);
             
+            // Get current user info for logging
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $staffId = $currentUser['staff_id'] ?? null;
+            if ($staffId === 0) {
+                $staffId = null;
+            }
             $batch = Batches::findOrFail($batchId);
             $inventory = BatchInventory::where('batch_id', $batchId)->first();
             
@@ -458,9 +477,10 @@ class BatchesController extends Controller
             // Log the pickup activity
             Logs::create([
                 'log_type' => 'inventory',
-                'log_message' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' picked up by Auro Chocolate',
+                'log_description' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' picked up by Auro Chocolate',
                 'created_at' => now(),
-                'batch_id' => $batchId
+                'batch_id' => $batchId,
+                'staff_id' => $staffId
             ]);
 
             // Delete the batch from inventory

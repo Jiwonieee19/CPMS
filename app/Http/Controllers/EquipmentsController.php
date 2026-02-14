@@ -91,11 +91,18 @@ class EquipmentsController extends Controller
                 'quantity' => $validated['quantity']
             ]);
 
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $staffId = $currentUser['staff_id'] ?? null;
+            if ($staffId === 0) {
+                $staffId = null;
+            }
+
             Logs::create([
                 'log_type' => 'inventory',
-                'log_message' => 'New equipment added: ' . $equipment->equipment_name . ' (Qty: ' . $validated['quantity'] . ')',
+                'log_description' => 'New equipment added: ' . $equipment->equipment_name . ' (Qty: ' . $validated['quantity'] . ')',
                 'created_at' => now(),
-                'equipment_id' => $equipment->equipment_id
+                'equipment_id' => $equipment->equipment_id,
+                'staff_id' => $staffId
             ]);
 
             return response()->json([
@@ -153,11 +160,18 @@ class EquipmentsController extends Controller
             $inventory->equipment_status = EquipmentInventory::statusFromQuantity((int)$inventory->quantity);
             $inventory->save();
 
+            $currentUser = \Illuminate\Support\Facades\Session::get('user');
+            $staffId = $currentUser['staff_id'] ?? null;
+            if ($staffId === 0) {
+                $staffId = null;
+            }
+
             Logs::create([
                 'log_type' => 'inventory',
-                'log_message' => 'Stock added for ' . $equipment->equipment_name . ' (+' . $validated['quantity'] . ')',
+                'log_description' => 'Stock added for ' . $equipment->equipment_name . ' (+' . $validated['quantity'] . ')',
                 'created_at' => now(),
-                'equipment_id' => $equipment->equipment_id
+                'equipment_id' => $equipment->equipment_id,
+                'staff_id' => $staffId
             ]);
 
             return response()->json([

@@ -10,22 +10,22 @@ class LogsController extends Controller
     /**
      * Generate simplified task description from log message
      */
-    private function getSimplifiedTask($logMessage, $logType, $task = null)
+    private function getSimplifiedTask($logDescription, $logType, $logTask = null)
     {
         // Account logs
-        if (stripos($logMessage, 'new staff account') !== false || stripos($logMessage, 'account added') !== false) {
+        if (stripos($logDescription, 'new staff account') !== false || stripos($logDescription, 'account added') !== false) {
             return 'Account Added';
         }
-        if (stripos($logMessage, 'staff account updated') !== false || stripos($logMessage, 'account updated') !== false || stripos($logMessage, 'account edited') !== false || stripos($logMessage, 'staff account edited') !== false) {
-            // Extract account ID and changes from log message
+        if (stripos($logDescription, 'staff account updated') !== false || stripos($logDescription, 'account updated') !== false || stripos($logDescription, 'account edited') !== false || stripos($logDescription, 'staff account edited') !== false) {
+            // Extract account ID and changes from log description
             $accId = '';
             $changes = '';
             
-            if (preg_match('/\(acc-(\d+)\)/', $logMessage, $matches)) {
+            if (preg_match('/\(acc-(\d+)\)/', $logDescription, $matches)) {
                 $accId = 'acc-' . $matches[1];
             }
             
-            if (preg_match('/\(edited: ([^)]+)\)/', $logMessage, $matches)) {
+            if (preg_match('/\(edited: ([^)]+)\)/', $logDescription, $matches)) {
                 $rawChanges = trim($matches[1]);
                 // Extract just the field names, remove old->new values like "role:staff->quality analyst"
                 $changes = preg_replace('/:[^,]+/', '', $rawChanges);
@@ -37,75 +37,75 @@ class LogsController extends Controller
             
             return 'Account Edited';
         }
-        if (stripos($logMessage, 'deactivated') !== false) {
+        if (stripos($logDescription, 'deactivated') !== false) {
             return 'Account Deactivated';
         }
-        if (stripos($logMessage, 'reactivated') !== false || stripos($logMessage, 'activated') !== false) {
+        if (stripos($logDescription, 'reactivated') !== false || stripos($logDescription, 'activated') !== false) {
             return 'Account Reactivated';
         }
 
         // Inventory logs - Batch operations
-        if (stripos($logMessage, 'fresh batch added') !== false) {
+        if (stripos($logDescription, 'fresh batch added') !== false) {
             return 'Fresh Batch Added';
         }
-        if (stripos($logMessage, 'picked up') !== false) {
+        if (stripos($logDescription, 'picked up') !== false) {
             return 'Batch Picked Up';
         }
 
         // Equipment operations
-        if (stripos($logMessage, 'new equipment added') !== false) {
+        if (stripos($logDescription, 'new equipment added') !== false) {
             return 'Equipment Added';
         }
-        if (stripos($logMessage, 'stock-in') !== false || stripos($logMessage, 'stock added') !== false) {
+        if (stripos($logDescription, 'stock-in') !== false || stripos($logDescription, 'stock added') !== false) {
             return 'Stock Added';
         }
-        if (stripos($logMessage, 'deducted') !== false && $logType === 'equipment_deduction') {
+        if (stripos($logDescription, 'deducted') !== false && $logType === 'equipment_deduction') {
             return 'Equipment Deducted';
         }
 
         // Equipment alerts
         if ($logType === 'equipment_alert') {
-            if (stripos($logMessage, 'insufficient') !== false) {
+            if (stripos($logDescription, 'insufficient') !== false) {
                 return 'Equipment Alert: Insufficient Stock';
             }
             return 'Equipment Alert';
         }
 
         // Process logs
-        if (stripos($logMessage, 'proceeded to Fermenting') !== false) {
+        if (stripos($logDescription, 'proceeded to Fermenting') !== false) {
             return 'Batch Fermenting';
         }
-        if (stripos($logMessage, 'completed to Fermented') !== false) {
+        if (stripos($logDescription, 'completed to Fermented') !== false) {
             return 'Batch Fermented';
         }
-        if (stripos($logMessage, 'proceeded to Drying') !== false) {
+        if (stripos($logDescription, 'proceeded to Drying') !== false) {
             return 'Batch Drying';
         }
-        if (stripos($logMessage, 'completed to Dried') !== false) {
+        if (stripos($logDescription, 'completed to Dried') !== false) {
             return 'Batch Dried';
         }
-        if (stripos($logMessage, 'graded') !== false) {
+        if (stripos($logDescription, 'graded') !== false) {
             return 'Batch Graded';
         }
 
         // Weather logs
         if ($logType === 'weather_alert') {
-            if (stripos($logMessage, 'high temperature') !== false) {
+            if (stripos($logDescription, 'high temperature') !== false) {
                 return 'Weather Alert: High Temperature';
             }
-            if (stripos($logMessage, 'high humidity') !== false) {
+            if (stripos($logDescription, 'high humidity') !== false) {
                 return 'Weather Alert: High Humidity';
             }
-            if (stripos($logMessage, 'rain') !== false) {
+            if (stripos($logDescription, 'rain') !== false) {
                 return 'Weather Alert: Rain Detected';
             }
             return 'Weather Alert';
         }
         if ($logType === 'weather') {
-            if ($task === 'weather data alert') {
+            if ($logTask === 'weather data alert') {
                 return 'Weather Data Alert';
             }
-            if ($task === 'weather data notify') {
+            if ($logTask === 'weather data notify') {
                 return 'Weather Data Notify';
             }
             return 'Weather Data Logged';
@@ -148,29 +148,23 @@ class LogsController extends Controller
 
             $transformed = $logs->map(function ($log) {
                 $createdAt = ($log->created_at ?? now())->setTimezone('Asia/Manila');
-                // Get role from related staff member, or fall back to performed_by_role or 'Admin'
-                $performedByRole = 'Admin';  // Default to Admin when staff is not explicitly set
+                // Get performer info from related staff member, or default to Admin
+                $performedByRole = 'Admin';
                 
-                // NULL staff_id means it was the static admin (converted from staff_id=0)
-                if ($log->staff_id === null) {
-                    $performedByRole = 'Admin';
-                } elseif ($log->staff_id === 0) {
-                    // Legacy: direct staff_id=0 (shouldn't happen with new code)
-                    $performedByRole = 'Admin';
-                } elseif ($log->staff) {
-                    // Use the related staff member's role from database
-                    $performedByRole = ucfirst($log->staff->staff_role ?? 'Admin');
-                } elseif ($log->performed_by_role) {
-                    // Fall back to performed_by_role field if it exists
-                    $performedByRole = $log->performed_by_role;
+                // If staff_id exists and staff relationship is loaded
+                if ($log->staff_id && $log->staff) {
+                    // Use the related staff member's lastname and role from database
+                    $lastname = $log->staff->staff_lastname ?? 'Unknown';
+                    $role = ucfirst($log->staff->staff_role ?? 'staff');
+                    $performedByRole = "{$lastname} ({$role})";
                 }
                 
                 return [
                     'id' => 'LOG-' . str_pad($log->log_id, 5, '0', STR_PAD_LEFT),
                     'log_id' => $log->log_id,
-                    'task' => $this->getSimplifiedTask($log->log_message ?? '', $log->log_type ?? '', $log->task ?? null),
+                    'task' => $this->getSimplifiedTask($log->log_description ?? '', $log->log_type ?? '', $log->log_task ?? null),
                     'batch_id' => $log->batch_id ? 'batch-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT) : null,
-                    'timeSaved' => $createdAt->format('Y-m-d H:i A'),
+                    'timeSaved' => $createdAt->format('Y-m-d h:i A'),
                     'date' => $createdAt->format('Y-m-d'),
                     'performedByRole' => $performedByRole
                 ];
@@ -211,43 +205,37 @@ class LogsController extends Controller
                 default => 'Log'
             };
 
-            // Get role from related staff member, or fall back to performed_by_role or 'Admin'
-            $performedByRole = 'Admin';  // Default to Admin when staff is not explicitly set
+            // Get performer info from related staff member, or default to Admin
+            $performedByRole = 'Admin';
             
-            // NULL staff_id means it was the static admin (converted from staff_id=0)
-            if ($log->staff_id === null) {
-                $performedByRole = 'Admin';
-            } elseif ($log->staff_id === 0) {
-                // Legacy: direct staff_id=0 (shouldn't happen with new code)
-                $performedByRole = 'Admin';
-            } elseif ($log->staff) {
-                // Use the related staff member's role from database
-                $performedByRole = ucfirst($log->staff->staff_role ?? 'Admin');
-            } elseif ($log->performed_by_role) {
-                // Fall back to performed_by_role field if it exists
-                $performedByRole = $log->performed_by_role;
+            // If staff_id exists and staff relationship is loaded
+            if ($log->staff_id && $log->staff) {
+                // Use the related staff member's lastname and role from database
+                $lastname = $log->staff->staff_lastname ?? 'Unknown';
+                $role = ucfirst($log->staff->staff_role ?? 'staff');
+                $performedByRole = "{$lastname} ({$role})";
             }
 
             // For account logs, create formal description
-            $description = $log->log_message ?? 'Log entry';
-            if ($log->log_type === 'account' && stripos($log->log_message, 'updated') !== false) {
+            $description = $log->log_description ?? 'Log entry';
+            if ($log->log_type === 'account' && stripos($log->log_description, 'updated') !== false) {
                 // Parse log message for staff name, account ID, and changes
                 $staffName = '';
                 $accId = '';
                 $changesFormatted = '';
                 
                 // Extract staff name
-                if (preg_match('/Staff account updated: ([^(]+)/', $log->log_message, $matches)) {
+                if (preg_match('/Staff account updated: ([^(]+)/', $log->log_description, $matches)) {
                     $staffName = trim($matches[1]);
                 }
                 
                 // Extract account ID
-                if (preg_match('/\(acc-(\d+)\)/', $log->log_message, $matches)) {
+                if (preg_match('/\(acc-(\d+)\)/', $log->log_description, $matches)) {
                     $accId = $matches[1];
                 }
                 
                 // Extract changes and format them
-                if (preg_match('/\(edited: ([^)]+)\)/', $log->log_message, $matches)) {
+                if (preg_match('/\(edited: ([^)]+)\)/', $log->log_description, $matches)) {
                     $rawChanges = trim($matches[1]);
                     $changeList = explode(', ', $rawChanges);
                     $formattedChanges = [];
@@ -292,7 +280,7 @@ class LogsController extends Controller
 
             // For weather logs, include timestamp and field details in description
             if (in_array($log->log_type, ['weather', 'weather_alert'])) {
-                $baseMessage = $log->log_message;
+                $baseMessage = $log->log_description;
                 
                 // Extract parts from message
                 $message = '';
@@ -320,7 +308,7 @@ class LogsController extends Controller
                 }
                 
                 // Determine if this is an alert or notify to set appropriate time label
-                $timeLabel = ($log->task === 'weather data alert') ? 'Postpone Time:' : 'Drying Time:';
+                $timeLabel = ($log->log_task === 'weather data alert') ? 'Postpone Time:' : 'Drying Time:';
                 
                 // Format as multiple lines
                 $description = $message . "\n";
@@ -342,9 +330,9 @@ class LogsController extends Controller
                 'message' => 'Log retrieved successfully',
                 'log' => [
                     'id' => 'LOG-' . str_pad($log->log_id, 5, '0', STR_PAD_LEFT),
-                    'task' => $log->log_message ?? 'Log entry',
+                    'task' => $log->log_description ?? 'Log entry',
                     'description' => $description,
-                    'timeSaved' => $createdAt->format('Y-m-d H:i A'),
+                    'timeSaved' => $createdAt->format('Y-m-d h:i A'),
                     'date' => $createdAt->format('Y-m-d'),
                     'performedByRole' => $performedByRole,
                     'type' => $typeLabel
