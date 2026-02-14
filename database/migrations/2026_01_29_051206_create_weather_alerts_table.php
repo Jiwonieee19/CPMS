@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('batch_id')->nullable();
             $table->foreign('batch_id')->references('batch_id')->on('batches')->onDelete('set null');
             $table->unsignedBigInteger('staff_id')->nullable();
-            $table->foreign('staff_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('staff_id')->references('staff_id')->on('staffs')->onDelete('set null');
             $table->timestamps();
         });
     }
