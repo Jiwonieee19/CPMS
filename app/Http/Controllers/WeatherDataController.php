@@ -59,11 +59,19 @@ class WeatherDataController extends Controller
                 $staffId = null;
             }
 
-            Logs::create([
-                'log_type' => 'weather',
-                'log_description' => 'Weather data recorded: ' . $tempMsg . ', ' . $humidityMsg . ', ' . $windMsg . ', Condition: ' . $validated['weather_condition'],
-                'created_at' => now(),
-                'staff_id' => $staffId
+            $shouldLog = $request->boolean('log_weather_data', true);
+            if ($shouldLog) {
+                Logs::create([
+                    'log_type' => 'weather',
+                    'log_description' => 'Weather data recorded: ' . $tempMsg . ', ' . $humidityMsg . ', ' . $windMsg . ', Condition: ' . $validated['weather_condition'],
+                    'created_at' => now(),
+                    'staff_id' => $staffId
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Weather data stored successfully',
+                'data' => $weatherData
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

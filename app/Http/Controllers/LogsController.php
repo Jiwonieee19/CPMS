@@ -288,6 +288,9 @@ class LogsController extends Controller
                 $postpone = '';
                 $action = '';
                 $timestamp = '';
+                $temp = '';
+                $humidity = '';
+                $wind = '';
                 
                 if (preg_match('/^([^|]+)/', $baseMessage, $matches)) {
                     $message = trim($matches[1]);
@@ -303,6 +306,15 @@ class LogsController extends Controller
                 if (preg_match('/Action:\s*([^|]+)/', $baseMessage, $matches)) {
                     $action = trim($matches[1]);
                 }
+                if (preg_match('/Temp:\s*([^|]+)/', $baseMessage, $matches)) {
+                    $temp = trim($matches[1]);
+                }
+                if (preg_match('/Humidity:\s*([^|]+)/', $baseMessage, $matches)) {
+                    $humidity = trim($matches[1]);
+                }
+                if (preg_match('/Wind:\s*([^|]+)/', $baseMessage, $matches)) {
+                    $wind = trim($matches[1]);
+                }
                 if (preg_match('/Timestamp:\s*(.+)$/', $baseMessage, $matches)) {
                     $timestamp = trim($matches[1]);
                 }
@@ -315,8 +327,15 @@ class LogsController extends Controller
                 if ($severity || $postpone) {
                     $details = [];
                     if ($severity) $details[] = "Severity: " . $severity;
-                    if ($postpone) $details[] = "Postpone: " . $postpone;
-                    $description .= " " . implode(" , ", $details) . "\n";
+                    $description .= implode(" , ", $details) . "\n";
+                }
+                if ($action && $log->log_task === 'weather data alert') {
+                    $description .= "Action: " . $action . "\n";
+                }
+                if ($temp || $humidity || $wind) {
+                    if ($temp) $description .= "Temp: " . $temp . "\n";
+                    if ($humidity) $description .= "Humidity: " . $humidity . "\n";
+                    if ($wind) $description .= "Wind: " . $wind . "\n";
                 }
                 // Only add time if we have a valid timestamp from the log
                 if ($timestamp && $timestamp !== 'N/A' && !empty(trim($timestamp))) {

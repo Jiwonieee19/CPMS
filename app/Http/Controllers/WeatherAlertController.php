@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WeatherAlert;
+use App\Models\WeatherData;
 use App\Models\Logs;
 use Illuminate\Http\Request;
 
@@ -33,6 +34,24 @@ class WeatherAlertController extends Controller
             $postponeTimestamp = $validated['postpone_timestamp'] ?? 'N/A';
             $alertAction = 'Postpone Duration: ' . $postponeDuration . ' | Postpone Timestamp: ' . $postponeTimestamp;
 
+            $weatherSummary = '';
+            if (!empty($validated['weather_id'])) {
+                $weatherData = WeatherData::find($validated['weather_id']);
+                if ($weatherData) {
+                    $tempRange = $weatherData->temperature_end !== null
+                        ? $weatherData->temperature . '°C - ' . $weatherData->temperature_end . '°C'
+                        : $weatherData->temperature . '°C';
+                    $humidityRange = $weatherData->humidity_end !== null
+                        ? $weatherData->humidity . '% - ' . $weatherData->humidity_end . '%'
+                        : $weatherData->humidity . '%';
+                    $windRange = $weatherData->wind_speed_end !== null
+                        ? $weatherData->wind_speed . ' m/s - ' . $weatherData->wind_speed_end . ' m/s'
+                        : $weatherData->wind_speed . ' m/s';
+
+                    $weatherSummary = ' | Temp: ' . $tempRange . ' | Humidity: ' . $humidityRange . ' | Wind: ' . $windRange;
+                }
+            }
+
             $alert = WeatherAlert::create([
                 'alert_message' => $validated['alert_message'],
                 'alert_severity' => $validated['alert_severity'] ?? 'medium',
@@ -44,7 +63,7 @@ class WeatherAlertController extends Controller
 
             Logs::create([
                 'log_type' => 'weather',
-                'log_description' => 'Weather alert created: ' . substr($validated['alert_message'], 0, 50) . '... | Severity: ' . $validated['alert_severity'] . ' | Postpone: ' . $postponeDuration . ' | Timestamp: ' . $postponeTimestamp,
+                'log_description' => 'Weather alert created: ' . substr($validated['alert_message'], 0, 50) . '... | Severity: ' . $validated['alert_severity'] . ' | Postpone: ' . $postponeDuration . $weatherSummary . ' | Timestamp: ' . $postponeTimestamp,
                 'log_task' => 'weather data alert',
                 'created_at' => now(),
                 'staff_id' => $staffId

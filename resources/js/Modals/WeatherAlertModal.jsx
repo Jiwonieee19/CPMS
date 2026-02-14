@@ -131,7 +131,8 @@ export default function WeatherAlertModal({ isOpen, onClose }) {
                 weather_condition: 'Alert Triggered',
                 temperature_end: 29.2,
                 humidity_end: 78,
-                wind_speed_end: 13.8
+                wind_speed_end: 13.8,
+                log_weather_data: false
             });
 
             const weatherId = weatherDataResponse.data.data.weather_id;

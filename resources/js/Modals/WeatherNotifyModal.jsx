@@ -129,7 +129,8 @@ export default function WeatherNotifyModal({ isOpen, onClose }) {
                 weather_condition: 'Good Weather Detected',
                 temperature_end: 27.5,
                 humidity_end: 56,
-                wind_speed_end: 7.3
+                wind_speed_end: 7.3,
+                log_weather_data: false
             });
 
             const weatherId = weatherDataResponse.data.data.weather_id;
