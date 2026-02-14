@@ -222,7 +222,7 @@ class ProcessController extends Controller
 
                 Logs::create([
                     'log_type' => 'process',
-                    'log_description' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' proceeded to ' . $nextStatus,
+                    'log_description' => 'BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' proceeded to ' . $nextStatus,
                     'severity' => 'info',
                     'batch_id' => $batchId,
                     'process_id' => $process->process_id,

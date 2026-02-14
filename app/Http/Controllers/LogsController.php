@@ -264,8 +264,12 @@ class LogsController extends Controller
             if ($log->batch_id) {
                 $formattedBatchId = 'batch-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT);
                 
+                // Skip if batch ID is already formatted (BATCH-xxxxx) in the description (e.g., from ProcessController)
+                if (preg_match('/BATCH-\d{5}/', $description)) {
+                    // Batch ID already present, don't append
+                }
                 // If the message mentions "fresh batch", replace with "fresh batch-00009"
-                if (stripos($description, 'fresh batch') !== false) {
+                elseif (stripos($description, 'fresh batch') !== false) {
                     $description = preg_replace('/fresh batch(?!\-)/i', 'fresh ' . $formattedBatchId, $description);
                 }
                 // Else if it mentions standalone "batch", replace with "batch-00009"
