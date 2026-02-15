@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Package, Plus, ArrowLeft, Box, PlusCircle, CheckCircle, Truck, Cloud, Clock, FileText, Eye, User } from 'lucide-react'
+import { Package, Plus, ArrowLeft, Box, PlusCircle, CheckCircle, Truck, Cloud, Clock, FileText, Eye, User, Download } from 'lucide-react'
 import { usePage } from '@inertiajs/react'
 import Sidebar from '../Components/sidebar'
 import ViewLogsModal from '../Modals/ViewLogsModal'
+import LogsExportProvider, { useLogsExport } from '../Components/LogsExport'
 
 
-export default function LogsPage({ initialTab = 'weather' }) {
+function LogsPageContent({ initialTab = 'weather' }) {
 
     const { url } = usePage()
     const queryParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
@@ -29,6 +30,7 @@ export default function LogsPage({ initialTab = 'weather' }) {
     }, [searchTerm, activeTab]);
 
     const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href
+    const { downloadLog } = useLogsExport()
 
     const fetchLogs = useCallback(async () => {
         try {
@@ -103,6 +105,10 @@ export default function LogsPage({ initialTab = 'weather' }) {
     const handleViewLog = (id) => {
         setSelectedLogId(id);
         setIsViewLogsModalOpen(true);
+    };
+
+    const handleDownloadLog = (logItem) => {
+        downloadLog(logItem, activeTab)
     };
 
     const handleSort = (column) => {
@@ -298,11 +304,16 @@ export default function LogsPage({ initialTab = 'weather' }) {
                                     </div>
                                     <div>{item.timeSaved}</div>
                                     <div>{item.date}</div>
-                                    <div className="flex justify-center">
+                                    <div className="flex justify-center gap-4">
                                         <Eye
                                             size={28}
                                             className="cursor-pointer hover:scale-110 transition text-[#F5F5DC]"
                                             onClick={() => handleViewLog(item.log_id ?? item.id)}
+                                        />
+                                        <Download
+                                            size={28}
+                                            className="cursor-pointer hover:scale-110 transition text-[#F5F5DC]"
+                                            onClick={() => handleDownloadLog(item)}
                                         />
                                     </div>
                                 </div>
@@ -360,5 +371,13 @@ export default function LogsPage({ initialTab = 'weather' }) {
                 logId={selectedLogId}
             />
         </div>
+    )
+}
+
+export default function LogsPage({ initialTab = 'weather' }) {
+    return (
+        <LogsExportProvider>
+            <LogsPageContent initialTab={initialTab} />
+        </LogsExportProvider>
     )
 }
