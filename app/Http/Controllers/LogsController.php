@@ -242,21 +242,21 @@ class LogsController extends Controller
                     
                     foreach ($changeList as $change) {
                         if ($change === 'password') {
-                            $formattedChanges[] = 'password';
+                            $formattedChanges[] = '- password';
                         } elseif (strpos($change, ':') !== false) {
                             // Format is "field:oldValue->newValue"
                             list($field, $values) = explode(':', $change, 2);
                             list($oldVal, $newVal) = explode('->', $values, 2);
-                            $formattedChanges[] = "{$field} from {$oldVal} to {$newVal}";
+                            $formattedChanges[] = "- {$field} from {$oldVal} to {$newVal}";
                         }
                     }
                     
-                    $changesFormatted = implode(', ', $formattedChanges);
+                    $changesFormatted = implode("\n", $formattedChanges);
                 }
                 
-                // Create formal sentence description
+                // Create formal sentence description with line breaks
                 if ($staffName && $accId && $changesFormatted) {
-                    $description = "The staff account of {$staffName} with account ID {$accId} has been updated. Changes made: {$changesFormatted}.";
+                    $description = "The staff account of {$staffName} with account ID {$accId} has been updated.\n\nChanges made:\n{$changesFormatted}";
                 }
             }
             
