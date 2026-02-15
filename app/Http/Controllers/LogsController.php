@@ -262,7 +262,7 @@ class LogsController extends Controller
             
             // For logs with batch_id, append or replace batch ID in description
             if ($log->batch_id) {
-                $formattedBatchId = 'batch-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT);
+                $formattedBatchId = 'BATCH-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT);
                 
                 // Skip if batch ID is already formatted (BATCH-xxxxx) in the description (e.g., from ProcessController)
                 if (preg_match('/BATCH-\d{5}/', $description)) {
@@ -278,7 +278,7 @@ class LogsController extends Controller
                 }
                 // Otherwise, append the batch ID at the end
                 else {
-                    $description .= ' for ' . $formattedBatchId;
+                    $description .= ' of ' . $formattedBatchId;
                 }
             }
 
