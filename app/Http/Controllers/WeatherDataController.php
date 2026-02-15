@@ -37,38 +37,6 @@ class WeatherDataController extends Controller
                 'weather_condition_end' => $validated['weather_condition_end'] ?? null
             ]);
 
-            // Build log message with ranges if end values exist
-            $tempMsg = 'Temp ' . $validated['temperature'] . '°C';
-            if (isset($validated['temperature_end'])) {
-                $tempMsg .= ' - ' . $validated['temperature_end'] . '°C';
-            }
-            
-            $humidityMsg = 'Humidity ' . $validated['humidity'] . '%';
-            if (isset($validated['humidity_end'])) {
-                $humidityMsg .= ' - ' . $validated['humidity_end'] . '%';
-            }
-            
-            $windMsg = 'Wind Speed ' . $validated['wind_speed'] . ' m/s';
-            if (isset($validated['wind_speed_end'])) {
-                $windMsg .= ' - ' . $validated['wind_speed_end'] . ' m/s';
-            }
-            
-            $currentUser = \Illuminate\Support\Facades\Session::get('user');
-            $staffId = $currentUser['staff_id'] ?? null;
-            if ($staffId === 0) {
-                $staffId = null;
-            }
-
-            $shouldLog = $request->boolean('log_weather_data', true);
-            if ($shouldLog) {
-                Logs::create([
-                    'log_type' => 'weather',
-                    'log_description' => 'Weather data recorded: ' . $tempMsg . ', ' . $humidityMsg . ', ' . $windMsg . ', Condition: ' . $validated['weather_condition'],
-                    'created_at' => now(),
-                    'staff_id' => $staffId
-                ]);
-            }
-
             return response()->json([
                 'message' => 'Weather data stored successfully',
                 'data' => $weatherData

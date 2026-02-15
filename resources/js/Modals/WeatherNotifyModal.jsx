@@ -121,21 +121,7 @@ export default function WeatherNotifyModal({ isOpen, onClose }) {
         setError('');
 
         try {
-            // First, create weather data entry to get weather_id
-            const weatherDataResponse = await axios.post('/weather-data/store', {
-                temperature: 26.5,
-                humidity: 65,
-                wind_speed: 8.5,
-                weather_condition: 'Good Weather Detected',
-                temperature_end: 27.5,
-                humidity_end: 56,
-                wind_speed_end: 7.3,
-                log_weather_data: false
-            });
-
-            const weatherId = weatherDataResponse.data.data.weather_id;
-
-            // Then create the report with the weather_id
+            // Create the report
             const response = await axios.post('/weather-reports/store', {
                 report_message: message,
                 report_action: `Max Duration: ${maxDuration || 'N/A'}, Optimal Time: ${optimalTime || 'N/A'}`,

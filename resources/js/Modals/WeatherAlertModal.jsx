@@ -123,21 +123,7 @@ export default function WeatherAlertModal({ isOpen, onClose }) {
         setError('');
 
         try {
-            // First, create weather data entry to get weather_id
-            const weatherDataResponse = await axios.post('/weather-data/store', {
-                temperature: 28.5,
-                humidity: 75,
-                wind_speed: 12.5,
-                weather_condition: 'Alert Triggered',
-                temperature_end: 29.2,
-                humidity_end: 78,
-                wind_speed_end: 13.8,
-                log_weather_data: false
-            });
-
-            const weatherId = weatherDataResponse.data.data.weather_id;
-
-            // Then create the alert with the weather_id
+            // Create the alert
             const response = await axios.post('/weather-alerts/store', {
                 alert_message: message,
                 alert_severity: severity,
