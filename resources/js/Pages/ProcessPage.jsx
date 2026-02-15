@@ -179,10 +179,10 @@ export default function ProcessPage() {
     };
 
     return (
-        <div className="flex min-h-screen">
+        <div className="min-h-screen bg-[#F5F5DC]">
             <Sidebar />
 
-            <div className="flex-1 px-14 pt-14 bg-[#F5F5DC]">
+            <div className="ml-96 px-14 pt-14 pb-10 bg-[#F5F5DC]">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">
                     PROCESS MANAGEMENT
                 </h1>
@@ -334,7 +334,7 @@ export default function ProcessPage() {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex justify-between items-center text-[#3E2723] my-6">
+                <div className="flex justify-between items-center text-[#3E2723] mt-6">
                     <div className="text-lg">
                         Showing <span className="font-bold">{rangeStart} - {rangeEnd}</span> of <span className="font-bold">{totalItems}</span>
                     </div>

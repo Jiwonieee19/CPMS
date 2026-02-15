@@ -160,9 +160,9 @@ export default function AccountsPage() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col md:flex-row">
+        <div className="min-h-screen bg-[#F5F5DC]">
             <Sidebar />
-            <div className="flex-1 px-14 pt-14 bg-[#F5F5DC] min-h-screen">
+            <div className="ml-96 px-14 pt-14 pb-10 bg-[#F5F5DC] min-h-screen">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-8">ACCOUNT MANAGEMENT</h1>
                 <div className="space-y-6">
                     {/* Error Message */}
@@ -305,7 +305,7 @@ export default function AccountsPage() {
                     </div>
 
                     {/* Pagination */}
-                    <div className="flex justify-between items-center text-[#3E2723] my-6">
+                    <div className="flex justify-between items-center text-[#3E2723] mt-6">
                         <div className="text-lg">
                             Showing <span className="font-bold">{rangeStart} - {rangeEnd}</span> Accounts from <span className="font-bold">{totalAccounts}</span>
                         </div>

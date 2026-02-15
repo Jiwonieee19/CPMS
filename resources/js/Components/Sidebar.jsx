@@ -193,7 +193,7 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="w-94 min-h-screen bg-[#311F1C] text-3xl text-[#F5F5DC] font-medium p-4">
+        <div className="fixed left-0 top-0 h-screen w-94 bg-[#311F1C] text-3xl text-[#F5F5DC] font-medium p-4 overflow-y-auto">
             <div className='bg-[#3E2723] p-5 my-7 rounded-xl'>
                 <img src={companyLogo} alt="Company Logo" className="" />
             </div>
@@ -206,10 +206,10 @@ export default function Sidebar() {
                             href={isAccessible ? item.href : '#'}
                             onClick={(e) => !isAccessible && e.preventDefault()}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl pt-4 pb-5 transition-colors duration-200 ${!isAccessible
-                                    ? 'opacity-40 cursor-not-allowed pointer-events-none'
-                                    : item.href === hrefHere
-                                        ? 'bg-[#E5B917] text-[#311F1C]'
-                                        : 'hover:bg-[#3E2723]'
+                                ? 'opacity-40 cursor-not-allowed pointer-events-none'
+                                : item.href === hrefHere
+                                    ? 'bg-[#E5B917] text-[#311F1C]'
+                                    : 'hover:bg-[#3E2723]'
                                 }`}
                         >
                             <img src={item.href === hrefHere && isAccessible ? item.iconFocus : item.icon} alt={item.title} className="w-8 h-8 mt-1" />

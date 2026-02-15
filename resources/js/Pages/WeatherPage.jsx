@@ -86,10 +86,10 @@ export default function WeatherPage({ weather }) {
     };
 
     return (
-        <div className="flex min-h-screen">
+        <div className="min-h-screen bg-[#F5F5DC]">
             <Sidebar />
 
-            <div className="flex-1 pt-14 px-14 bg-[#F5F5DC]">
+            <div className="ml-96 pt-14 px-10 bg-[#F5F5DC]">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">
                     WEATHER MONITORING
                 </h1>

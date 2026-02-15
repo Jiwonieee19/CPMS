@@ -108,10 +108,9 @@ export default function DashboardPage() {
         : 50;
 
     return (
-
-        <div className="flex min-h-screen flex-col md:flex-row">
+        <div className="min-h-screen bg-[#F5F5DC]">
             <Sidebar />
-            <div className="flex-1 p-14 bg-[#F5F5DC] min-h-screen">
+            <div className="ml-96 p-14 bg-[#F5F5DC] min-h-screen">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-8">DASHBOARD</h1>
 
                 <div className="grid gap-6 lg:grid-cols-[1.7fr_1fr]">
