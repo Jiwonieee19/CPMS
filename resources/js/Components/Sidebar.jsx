@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { usePage } from '@inertiajs/react';
 import companyLogo from '../Assets/company-logo.png';
 import HelpSign from '../Assets/Icons/icon-help.png';
@@ -227,10 +228,13 @@ export default function Sidebar() {
                 </a>
             </div>
 
-            <LogoutModal
-                isOpen={showLogoutModal}
-                onClose={() => setShowLogoutModal(false)}
-            />
+            {createPortal(
+                <LogoutModal
+                    isOpen={showLogoutModal}
+                    onClose={() => setShowLogoutModal(false)}
+                />,
+                document.body
+            )}
 
             <WeatherGeneralNotificationModal
                 isOpen={isWeatherNotificationOpen}
