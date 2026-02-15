@@ -432,7 +432,7 @@ class BatchesController extends Controller
             // Log the grading activity
             Logs::create([
                 'log_type' => 'process',
-                'log_description' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' graded - Grade A: ' . (int)($request->input('grade_a') ?? 0) . ', Grade B: ' . (int)($request->input('grade_b') ?? 0) . ', Reject: ' . (int)($request->input('reject') ?? 0),
+                'log_description' => 'BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . " graded:\n- Grade A: " . (int)($request->input('grade_a') ?? 0) . "\n- Grade B: " . (int)($request->input('grade_b') ?? 0) . "\n- Reject: " . (int)($request->input('reject') ?? 0),
                 'created_at' => now(),
                 'batch_id' => $batchId,
                 'staff_id' => $staffId
