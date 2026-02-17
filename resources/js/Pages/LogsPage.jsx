@@ -304,10 +304,10 @@ function LogsPageContent({ initialTab = 'weather' }) {
                                     </div>
                                     <div>{item.timeSaved}</div>
                                     <div>{item.date}</div>
-                                    <div className="flex justify-center gap-4">
+                                    <div className="flex justify-center gap-3">
                                         <Eye
                                             size={28}
-                                            className="cursor-pointer hover:scale-110 transition text-[#F5F5DC]"
+                                            className="cursor-pointer hover:scale-110 transition text-[#F5F5DC] relative top-[3px]"
                                             onClick={() => handleViewLog(item.log_id ?? item.id)}
                                         />
                                         <Download
