@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { X, RotateCcw } from 'lucide-react';
 import { useToast } from '../Components/ToastProvider';
 
-export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusUpdated }) {
+export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusUpdated, accountsData }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const [staffName, setStaffName] = useState('');
     const [staffStatus, setStaffStatus] = useState('active');
+    const [staffRole, setStaffRole] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [roleConflict, setRoleConflict] = useState(null);
     const toast = useToast();
 
     // Handle mount/unmount with fade/scale transitions
@@ -32,6 +34,7 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                 setIsLoading(true);
                 setError(null);
                 setStaffName('');
+                setRoleConflict(null);
 
                 const response = await fetch(`/staffs/${staffId}`);
                 if (!response.ok) {
@@ -42,8 +45,23 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                 const staff = data.staff || {};
 
                 setStaffName(staff.fullname || `${staff.first_name || ''} ${staff.last_name || ''}`.trim());
+                setStaffRole(staff.role || '');
                 // Backend returns status with ucfirst (Active/Inactive), convert to lowercase for comparison
-                setStaffStatus((staff.status || 'active').toLowerCase());
+                const status = (staff.status || 'active').toLowerCase();
+                setStaffStatus(status);
+
+                // Check for role conflict if trying to reactivate
+                if (status === 'inactive' && staff.role) {
+                    const uniqueRoles = ['Account Manager', 'Inventory Manager', 'Weather Analyst', 'Process Manager', 'Quality Analyst'];
+                    if (uniqueRoles.includes(staff.role)) {
+                        const isRoleTaken = accountsData && Array.isArray(accountsData) && accountsData.some(
+                            account => account.status?.toLowerCase() === 'active' && account.role === staff.role
+                        );
+                        if (isRoleTaken) {
+                            setRoleConflict(staff.role);
+                        }
+                    }
+                }
             } catch (err) {
                 console.error('Error loading staff:', err);
                 setError('Failed to load staff name');
@@ -54,7 +72,7 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
         };
 
         fetchStaff();
-    }, [isOpen, staffId]);
+    }, [isOpen, staffId, accountsData]);
 
     const handleConfirm = () => {
         const updateStatus = async () => {
@@ -68,13 +86,21 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                     ?.querySelector('meta[name="csrf-token"]')
                     ?.getAttribute('content');
 
+                // Build payload
+                const payload = { staff_status: newStatus };
+
+                // If reactivating with a role conflict, change role to Staff
+                if (newStatus === 'active' && roleConflict) {
+                    payload.staff_role = 'Staff';
+                }
+
                 const response = await fetch(`/staffs/${staffId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
                     },
-                    body: JSON.stringify({ staff_status: newStatus })
+                    body: JSON.stringify(payload)
                 });
 
                 if (!response.ok) {
@@ -85,7 +111,11 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                     onStatusUpdated();
                 }
 
-                toast.success(`Staff set to ${newStatus} successfully!`);
+                const message = roleConflict
+                    ? `Staff reactivated and role changed to Staff successfully!`
+                    : `Staff set to ${newStatus} successfully!`;
+
+                toast.success(message);
                 onClose();
             } catch (err) {
                 console.error('Error updating staff:', err);
@@ -145,6 +175,17 @@ export default function DeleteAccountModal({ isOpen, onClose, staffId, onStatusU
                     <p className="text-[#E5B917] text-sm font-semibold">
                         {isLoading ? 'Loading staff...' : staffName ? `Staff: ${staffName}` : `Staff ID: ${staffId}`}
                     </p>
+
+                    {/* Role Conflict Warning */}
+                    {roleConflict && (
+                        <div className="bg-yellow-900/40 border-2 border-yellow-600 text-yellow-200 px-4 py-3 rounded mt-4 mb-4">
+                            <p className="font-semibold">⚠ Role Change Required</p>
+                            <p className="text-sm mt-1">
+                                The role "<strong>{roleConflict}</strong>" is currently assigned to another active account. This account's role will be changed to "<strong>Staff</strong>" upon reactivation.
+                            </p>
+                        </div>
+                    )}
+
                     <p className="text-[#F5F5DC] text-sm mt-4">
                         {staffStatus === 'inactive'
                             ? 'This account will be reactivated and can access the system.'
