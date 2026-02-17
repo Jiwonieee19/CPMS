@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Demo data disabled
+        /*
         $now = Carbon::now();
 
         if (DB::table('users')->count() === 0) {
@@ -302,5 +304,6 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+        */
     }
 }

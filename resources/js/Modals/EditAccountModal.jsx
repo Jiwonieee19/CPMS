@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useToast } from '../Components/ToastProvider';
 
-export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }) {
+export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated, accountsData }) {
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -238,6 +238,28 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
         onClose();
     };
 
+    // Get taken unique roles (excluding current staff's role and inactive accounts)
+    const getTakenRoles = () => {
+        const uniqueRoles = ['Account Manager', 'Inventory Manager', 'Weather Analyst', 'Process Manager', 'Quality Analyst'];
+        const takenRoles = new Set();
+
+        if (accountsData && Array.isArray(accountsData)) {
+            accountsData.forEach(account => {
+                // Skip current staff and inactive accounts
+                if (account.staff_id !== staffId && account.status?.toLowerCase() === 'active') {
+                    const role = account.role;
+                    if (uniqueRoles.includes(role)) {
+                        takenRoles.add(role);
+                    }
+                }
+            });
+        }
+
+        return takenRoles;
+    };
+
+    const takenRoles = getTakenRoles();
+
     if (!isRendering) return null;
 
     return (
@@ -353,11 +375,11 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated }
                             >
                                 <option value="">Select Role</option>
                                 <option value="Staff">Staff</option>
-                                <option value="Quality Analyst">Quality Analyst</option>
-                                <option value="Weather Analyst">Weather Analyst</option>
-                                <option value="Process Manager">Process Manager</option>
-                                <option value="Inventory Manager">Inventory Manager</option>
-                                <option value="Account Manager">Account Manager</option>
+                                <option value="Quality Analyst" disabled={takenRoles.has('Quality Analyst')} className={takenRoles.has('Quality Analyst') ? 'opacity-50 cursor-not-allowed' : ''}>Quality Analyst{takenRoles.has('Quality Analyst') ? ' (Taken)' : ''}</option>
+                                <option value="Weather Analyst" disabled={takenRoles.has('Weather Analyst')} className={takenRoles.has('Weather Analyst') ? 'opacity-50 cursor-not-allowed' : ''}>Weather Analyst{takenRoles.has('Weather Analyst') ? ' (Taken)' : ''}</option>
+                                <option value="Process Manager" disabled={takenRoles.has('Process Manager')} className={takenRoles.has('Process Manager') ? 'opacity-50 cursor-not-allowed' : ''}>Process Manager{takenRoles.has('Process Manager') ? ' (Taken)' : ''}</option>
+                                <option value="Inventory Manager" disabled={takenRoles.has('Inventory Manager')} className={takenRoles.has('Inventory Manager') ? 'opacity-50 cursor-not-allowed' : ''}>Inventory Manager{takenRoles.has('Inventory Manager') ? ' (Taken)' : ''}</option>
+                                <option value="Account Manager" disabled={takenRoles.has('Account Manager')} className={takenRoles.has('Account Manager') ? 'opacity-50 cursor-not-allowed' : ''}>Account Manager{takenRoles.has('Account Manager') ? ' (Taken)' : ''}</option>
                             </select>
                         </div>
                     </div>
