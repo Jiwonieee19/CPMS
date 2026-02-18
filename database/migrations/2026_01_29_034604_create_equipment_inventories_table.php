@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('equipment_id');
             $table->foreign('equipment_id')->references('equipment_id')->on('equipments')-> onDelete('cascade');
             $table->string('equipment_status');
+            $table->integer('quantity')->default(0)->comment('Available quantity of equipment');
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
         });

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('equipments', function (Blueprint $table) {
             $table->id('equipment_id');
             $table->string('equipment_name');
+            $table->string('equipment_type')->nullable()->comment('sack or rack');
             $table->timestamp('created_at')->nullable();
         });
     }
