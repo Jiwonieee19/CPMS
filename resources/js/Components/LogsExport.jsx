@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext } from 'react'
 import { useToast } from './ToastProvider'
 import { jsPDF } from 'jspdf'
+import companyLogo from '../Assets/company-logo.png';
 
 const LogsExportContext = createContext(null)
 
@@ -14,6 +15,33 @@ export const useLogsExport = () => {
 
 export default function LogsExportProvider({ children }) {
     const toast = useToast()
+
+    const loadImageAsDataUrl = async (imageUrl) => {
+        const response = await fetch(imageUrl)
+        if (!response.ok) {
+            throw new Error('Failed to load company logo')
+        }
+
+        const blob = await response.blob()
+
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result)
+            reader.onerror = reject
+            reader.readAsDataURL(blob)
+        })
+    }
+
+    const getImageDimensions = (imageDataUrl) => {
+        return new Promise((resolve, reject) => {
+            const image = new Image()
+            image.onload = () => {
+                resolve({ width: image.width, height: image.height })
+            }
+            image.onerror = reject
+            image.src = imageDataUrl
+        })
+    }
 
     const downloadLog = useCallback(async (logItem, logType) => {
         try {
@@ -37,19 +65,27 @@ export default function LogsExportProvider({ children }) {
             const margin = 20
             const contentWidth = pageWidth - (margin * 2)
             let yPosition = margin
+            const logoDataUrl = await loadImageAsDataUrl(companyLogo).catch(() => null)
+            const logoOriginalSize = logoDataUrl ? await getImageDimensions(logoDataUrl).catch(() => null) : null
 
             // Header - Company/System Title
             pdf.setFillColor(62, 39, 35) // #3E2723
             pdf.rect(0, 0, pageWidth, 40, 'F')
 
-            pdf.setTextColor(229, 185, 23) // #E5B917
-            pdf.setFontSize(24)
-            pdf.setFont('helvetica', 'bold')
-            pdf.text('CACAO PROCESSING', pageWidth / 2, 20, { align: 'center' })
-            pdf.setFontSize(16)
-            pdf.text('MANAGEMENT SYSTEM', pageWidth / 2, 30, { align: 'center' })
+            if (logoDataUrl && logoOriginalSize?.width && logoOriginalSize?.height) {
+                const maxLogoWidth = 73
+                const maxLogoHeight = 61
+                const widthScale = maxLogoWidth / logoOriginalSize.width
+                const heightScale = maxLogoHeight / logoOriginalSize.height
+                const scale = Math.min(widthScale, heightScale)
 
-            yPosition = 55
+                const logoWidth = logoOriginalSize.width * scale
+                const logoHeight = logoOriginalSize.height * scale
+                const logoX = (pageWidth - logoWidth) / 2
+                pdf.addImage(logoDataUrl, 'PNG', logoX, 7, logoWidth, logoHeight)
+            }
+
+            yPosition = 65
 
             // Document Title
             pdf.setTextColor(62, 39, 35) // #3E2723
@@ -58,6 +94,12 @@ export default function LogsExportProvider({ children }) {
             pdf.text('SYSTEM LOG REPORT', pageWidth / 2, yPosition, { align: 'center' })
 
             yPosition += 15
+
+            // Details Section
+            pdf.setFont('helvetica', 'bold')
+            pdf.setFontSize(12)
+            pdf.text('LOG DETAILS:', margin, yPosition)
+            yPosition += 8
 
             // Divider line
             pdf.setDrawColor(229, 185, 23) // #E5B917
@@ -124,10 +166,10 @@ export default function LogsExportProvider({ children }) {
 
             yPosition += 10
 
-            // Details Section
+            // Message Section
             pdf.setFont('helvetica', 'bold')
             pdf.setFontSize(12)
-            pdf.text('LOG DETAILS:', margin, yPosition)
+            pdf.text('LOG MESSAGE:', margin, yPosition)
             yPosition += 8
 
             // Details box
@@ -165,7 +207,10 @@ export default function LogsExportProvider({ children }) {
                 minute: '2-digit'
             })
             pdf.text(`Generated on ${currentDate}`, pageWidth / 2, footerY, { align: 'center' })
-            pdf.text('Cacao Processing Management System', pageWidth / 2, footerY + 5, { align: 'center' })
+            pdf.setFontSize(14)
+            pdf.setFont('helvetica', 'bold')
+            pdf.setTextColor(62, 39, 35)
+            pdf.text('CACAO PROCESSING MANAGEMENT SYSTEM', pageWidth / 2, footerY + 7, { align: 'center' })
 
             // Save PDF
             pdf.save(`log_${log.id || logItem.id}_${new Date().toISOString().split('T')[0]}.pdf`)
