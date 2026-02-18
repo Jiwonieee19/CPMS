@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Batches;
 use App\Models\BatchInventory;
+use App\Models\BatchTransferLine;
+use App\Models\BatchStockOutLine;
 use App\Models\Equipments;
 use App\Models\EquipmentInventory;
 use App\Models\Logs;
@@ -172,6 +174,7 @@ class BatchesController extends Controller
                     'harvest_date' => $validated['harvest_date'],
                     'initial_condition' => 'Fresh',
                     'initial_weight' => $validated['initial_weight'],
+                    'supplier_name' => $validated['supplier_name'],
                     'created_at' => now()
                 ]);
 
@@ -374,7 +377,7 @@ class BatchesController extends Controller
             if ($staffId === 0) {
                 $staffId = null;
             }
-            $batch = Batches::findOrFail($batchId);
+            Batches::findOrFail($batchId);
             $inventory = BatchInventory::where('batch_id', $batchId)->first();
             
             if (!$inventory) {
@@ -415,9 +418,18 @@ class BatchesController extends Controller
                 }
             }
 
+            $previousStatus = $inventory->batch_status;
+
             // Update batch inventory status to Graded
             $inventory->batch_status = 'Graded';
             $inventory->save();
+
+            BatchTransferLine::create([
+                'batch_inventory_id' => $inventory->batch_inventory_id,
+                'batch_transfer_date' => now(),
+                'batch_transfer_from' => $previousStatus,
+                'batch_transfer_to' => 'Graded',
+            ]);
 
             // Create quality grading record
             DB::table('quality_gradings')->insert([
@@ -473,6 +485,11 @@ class BatchesController extends Controller
                     'message' => 'Batch inventory not found'
                 ], 404);
             }
+
+            BatchStockOutLine::create([
+                'batch_id' => $batchId,
+                'stock_out_date' => now()
+            ]);
 
             // Log the pickup activity
             Logs::create([

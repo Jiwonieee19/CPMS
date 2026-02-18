@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Batches;
 use App\Models\Logs;
 use Illuminate\Http\Request;
 
@@ -188,6 +189,7 @@ class LogsController extends Controller
     {
         try {
             $log = Logs::with('staff')->find($id);
+            $supplierName = null;
 
             if (!$log) {
                 return response()->json([
@@ -263,6 +265,7 @@ class LogsController extends Controller
             // For logs with batch_id, append or replace batch ID in description
             if ($log->batch_id) {
                 $formattedBatchId = 'BATCH-' . str_pad($log->batch_id, 5, '0', STR_PAD_LEFT);
+                $supplierName = Batches::where('batch_id', $log->batch_id)->value('supplier_name');
                 
                 // Skip if batch ID is already formatted (BATCH-xxxxx) in the description (e.g., from ProcessController)
                 if (preg_match('/BATCH-\d{5}/', $description)) {
@@ -355,6 +358,7 @@ class LogsController extends Controller
                     'id' => 'LOG-' . str_pad($log->log_id, 5, '0', STR_PAD_LEFT),
                     'task' => $log->log_description ?? 'Log entry',
                     'description' => $description,
+                    'supplierName' => $supplierName,
                     'timeSaved' => $createdAt->format('Y-m-d h:i A'),
                     'date' => $createdAt->format('Y-m-d'),
                     'performedByRole' => $performedByRole,

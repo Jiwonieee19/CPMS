@@ -8,15 +8,15 @@ class BatchStockOutLine extends Model
 {
     protected $table = 'batch_stock_out_line';
     protected $primaryKey = 'batch_stock_out_id';
+    public $timestamps = false;
 
     protected $fillable = [
-        'batch_inventory_id',
-        'stock_out_weight',
+        'batch_id',
         'stock_out_date'
     ];
 
-    public function batchInventory()
+    public function batch()
     {
-        return $this->belongsTo(BatchInventory::class, 'batch_inventory_id', 'batch_inventory_id');
+        return $this->belongsTo(Batches::class, 'batch_id', 'batch_id');
     }
 }

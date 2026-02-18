@@ -14,6 +14,7 @@ class Batches extends Model
         'harvest_date',
         'initial_condition',
         'initial_weight',
+        'supplier_name',
         'created_at'
     ];
 

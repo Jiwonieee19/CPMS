@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Batches;
+use App\Models\BatchTransferLine;
 use App\Models\Process;
 use App\Models\BatchInventory;
 use App\Models\Equipments;
@@ -199,6 +200,13 @@ class ProcessController extends Controller
                 $inventory->batch_status = $nextStatus;
                 $inventory->save();
 
+                BatchTransferLine::create([
+                    'batch_inventory_id' => $inventory->batch_inventory_id,
+                    'batch_transfer_date' => now(),
+                    'batch_transfer_from' => $currentStatus,
+                    'batch_transfer_to' => $nextStatus,
+                ]);
+
                 DB::commit();
 
                 // Get current user info
@@ -334,6 +342,13 @@ class ProcessController extends Controller
             // Update inventory status
             $inventory->batch_status = $completedStatus;
             $inventory->save();
+
+            BatchTransferLine::create([
+                'batch_inventory_id' => $inventory->batch_inventory_id,
+                'batch_transfer_date' => now(),
+                'batch_transfer_from' => $currentStatus,
+                'batch_transfer_to' => $completedStatus,
+            ]);
 
             // Delete process record (removed from processing)
             $process->delete();

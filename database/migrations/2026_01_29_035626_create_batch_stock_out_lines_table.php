@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::create('batch_stock_out_line', function (Blueprint $table) {
             $table->id('batch_stock_out_id');
-            $table->unsignedBigInteger('batch_inventory_id');
-            $table->foreign('batch_inventory_id')->references('batch_inventory_id')->on('batch_inventory')->onDelete('cascade');
-            $table->decimal('stock_out_weight', 10, 2);
+            $table->unsignedBigInteger('batch_id')->nullable()->comment('Original batch ID for reference');
             $table->timestamp('stock_out_date')->nullable();
         });
 

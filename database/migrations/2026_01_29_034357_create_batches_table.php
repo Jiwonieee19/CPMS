@@ -16,6 +16,7 @@ return new class extends Migration
             $table->dateTime('harvest_date');
             $table->string('initial_condition');
             $table->decimal('initial_weight', 10, 2);
+            $table->string('supplier_name');
             $table->timestamp('created_at')->nullable();
         });
     }

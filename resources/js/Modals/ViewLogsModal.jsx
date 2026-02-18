@@ -10,6 +10,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
     const [formData, setFormData] = useState({
         logId: '',
         taskDescription: '',
+        supplierName: '',
         timeSaved: '',
         date: '',
         performedByRole: '',
@@ -49,6 +50,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                 setFormData({
                     logId: log.id || '',
                     taskDescription: log.description || log.task || '',
+                    supplierName: log.supplierName || '',
                     timeSaved: log.timeSaved || '',
                     date: log.date || '',
                     performedByRole: log.performedByRole || 'Admin',
@@ -60,6 +62,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                 setFormData({
                     logId: '',
                     taskDescription: '',
+                    supplierName: '',
                     timeSaved: '',
                     date: '',
                     performedByRole: 'Admin',
@@ -174,7 +177,7 @@ export default function ViewLogsModal({ isOpen, onClose, logId }) {
                                         TASK DESCRIPTION
                                     </label>
                                     <textarea
-                                        value={formData.taskDescription}
+                                        value={`${formData.taskDescription}${formData.supplierName ? ` (from ${formData.supplierName})` : ''}`}
                                         readOnly
                                         rows="6"
                                         className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC]/20 text-[#F5F5DC] border border-[#E5B917] cursor-default resize-none whitespace-pre-wrap"
