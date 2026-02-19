@@ -8,6 +8,7 @@ use App\Models\BatchTransferLine;
 use App\Models\BatchStockOutLine;
 use App\Models\Equipments;
 use App\Models\EquipmentInventory;
+use App\Models\EquipmentStockOutLine;
 use App\Models\Logs;
 use App\Models\QualityGrading;
 use Illuminate\Http\Request;
@@ -484,6 +485,29 @@ class BatchesController extends Controller
                 return response()->json([
                     'message' => 'Batch inventory not found'
                 ], 404);
+            }
+
+            $grading = QualityGrading::where('batch_id', $batchId)->first();
+            $boxesUsed = $grading ? (int)($grading->grade_a + $grading->grade_b + $grading->reject) : 0;
+
+            if ($boxesUsed > 0) {
+                $boxesEquipment = Equipments::whereIn('equipment_type', ['boxes', 'box'])->first();
+
+                if (!$boxesEquipment) {
+                    $boxesEquipment = Equipments::whereRaw('LOWER(equipment_name) LIKE ?', ['%box%'])->first();
+                }
+
+                if ($boxesEquipment) {
+                    $boxesInventory = EquipmentInventory::where('equipment_id', $boxesEquipment->equipment_id)->first();
+
+                    if ($boxesInventory) {
+                        EquipmentStockOutLine::create([
+                            'equipment_inventory_id' => $boxesInventory->equipment_inventory_id,
+                            'stock_out_quantity' => $boxesUsed,
+                            'stock_out_date' => now(),
+                        ]);
+                    }
+                }
             }
 
             BatchStockOutLine::create([

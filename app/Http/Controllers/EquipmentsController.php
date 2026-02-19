@@ -63,6 +63,7 @@ class EquipmentsController extends Controller
         try {
             $validated = $request->validate([
                 'equipment_name' => 'required|string|max:255',
+                'supplier_name' => 'nullable|string|max:255',
                 'quantity' => 'required|integer|min:0',
                 'equipment_type' => 'nullable|string|in:sack,rack,box'
             ]);
@@ -81,6 +82,7 @@ class EquipmentsController extends Controller
 
             $equipment = Equipments::create([
                 'equipment_name' => ucfirst($validated['equipment_name']),
+                'supplier_name' => $validated['supplier_name'] ?? null,
                 'equipment_type' => $equipmentType
             ]);
 
@@ -150,7 +152,7 @@ class EquipmentsController extends Controller
             $stockInLine = EquipmentStockInLine::create([
                 'equipment_inventory_id' => $inventory->equipment_inventory_id,
                 'supplier_name' => $validated['supplier_name'],
-                'stock_in_weight' => $validated['quantity'],
+                'stock_in_quantity' => $validated['quantity'],
                 'stock_in_date' => now()
             ]);
 

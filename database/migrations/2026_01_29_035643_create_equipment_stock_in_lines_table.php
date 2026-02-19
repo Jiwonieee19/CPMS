@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('equipment_inventory_id');
             $table->foreign('equipment_inventory_id')->references('equipment_inventory_id')->on('equipment_inventory')->onDelete('cascade');
             $table->string('supplier_name');
-            $table->decimal('stock_in_weight', 10, 2);
+            $table->unsignedInteger('stock_in_quantity');
             $table->timestamp('stock_in_date')->nullable();
         });
     }

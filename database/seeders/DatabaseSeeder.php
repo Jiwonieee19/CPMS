@@ -122,7 +122,7 @@ class DatabaseSeeder extends Seeder
                 DB::table('equipment_stock_in_line')->insert([
                     'equipment_inventory_id' => $inventoryId,
                     'supplier_name' => 'Local Supplier Co.',
-                    'stock_in_weight' => 50,
+                    'stock_in_quantity' => 50,
                     'stock_in_date' => $now->copy()->subDays(6)
                 ]);
             }

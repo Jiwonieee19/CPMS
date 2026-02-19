@@ -158,7 +158,7 @@ export default function AddStockEquipmentModal({ isOpen, onClose, equipment, onS
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                SUPPLIER NAME *
+                                SUPPLIER NAME
                             </label>
                             <input
                                 type="text"
@@ -172,7 +172,7 @@ export default function AddStockEquipmentModal({ isOpen, onClose, equipment, onS
                         </div>
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                ADD QUANTITY *
+                                ADD QUANTITY
                             </label>
                             <input
                                 type="number"

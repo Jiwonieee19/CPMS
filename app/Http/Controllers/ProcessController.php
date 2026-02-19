@@ -8,6 +8,7 @@ use App\Models\Process;
 use App\Models\BatchInventory;
 use App\Models\Equipments;
 use App\Models\EquipmentInventory;
+use App\Models\EquipmentTransferLine;
 use App\Models\Logs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -194,6 +195,20 @@ class ProcessController extends Controller
                 // Deduct equipment from inventory
                 foreach ($equipmentNeeds as $equipmentType => $quantityNeeded) {
                     $deductions[] = $this->deductEquipment($equipmentType, $quantityNeeded);
+                }
+
+                foreach ($deductions as $deduction) {
+                    $equipmentInventory = EquipmentInventory::where('equipment_id', $deduction['equipment']->equipment_id)->first();
+
+                    if ($equipmentInventory) {
+                        EquipmentTransferLine::create([
+                            'equipment_inventory_id' => $equipmentInventory->equipment_inventory_id,
+                            'equipment_transfer_quantity' => $deduction['quantity'],
+                            'equipment_transfer_date' => now(),
+                            'equipment_transfer_from' => $currentStatus,
+                            'equipment_transfer_to' => $nextStatus,
+                        ]);
+                    }
                 }
 
                 // Update batch inventory status

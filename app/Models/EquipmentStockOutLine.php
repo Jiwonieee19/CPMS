@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class EquipmentStockOutLine extends Model
 {
     protected $table = 'equipment_stock_out_line';
-    protected $primaryKey = 'equipment_stock_out_id';
+    protected $primaryKey = 'equipment_stock_out_line_id';
 
     protected $fillable = [
         'equipment_inventory_id',

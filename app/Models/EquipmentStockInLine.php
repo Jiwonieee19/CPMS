@@ -13,7 +13,7 @@ class EquipmentStockInLine extends Model
     protected $fillable = [
         'equipment_inventory_id',
         'supplier_name',
-        'stock_in_weight',
+        'stock_in_quantity',
         'stock_in_date',
     ];
 

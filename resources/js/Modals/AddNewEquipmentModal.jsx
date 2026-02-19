@@ -59,6 +59,7 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
                 },
                 body: JSON.stringify({
                     equipment_name: formData.name,
+                    supplier_name: formData.from || null,
                     quantity: parseInt(formData.quantity)
                 })
             });
@@ -169,7 +170,7 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
                                 placeholder="123"
                             />
                         </div>
-                        <div>
+                        {/* <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
                                 ATTACH FILE
                             </label>
@@ -179,7 +180,7 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
                                 onChange={(e) => setFormData(prev => ({ ...prev, attachFile: e.target.files[0] }))}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
                             />
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* Buttons */}
