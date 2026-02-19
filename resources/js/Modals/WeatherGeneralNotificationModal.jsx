@@ -50,10 +50,16 @@ export default function WeatherGeneralNotificationModal({ isOpen, onClose, notif
     useEffect(() => {
         if (isOpen) {
             setIsRendering(true);
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
             requestAnimationFrame(() => setIsVisible(true));
         } else {
             setIsVisible(false);
-            const timer = setTimeout(() => setIsRendering(false), 1000);
+            const timer = setTimeout(() => {
+                setIsRendering(false);
+                document.documentElement.style.overflow = '';
+                document.body.style.overflow = '';
+            }, 1000);
             return () => clearTimeout(timer);
         }
     }, [isOpen]);

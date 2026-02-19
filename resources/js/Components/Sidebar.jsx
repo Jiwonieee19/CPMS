@@ -236,11 +236,14 @@ export default function Sidebar() {
                 document.body
             )}
 
-            <WeatherGeneralNotificationModal
-                isOpen={isWeatherNotificationOpen}
-                onClose={handleCloseWeatherNotification}
-                notification={weatherNotification}
-            />
+            {createPortal(
+                <WeatherGeneralNotificationModal
+                    isOpen={isWeatherNotificationOpen}
+                    onClose={handleCloseWeatherNotification}
+                    notification={weatherNotification}
+                />,
+                document.body
+            )}
         </div>
     );
 }
