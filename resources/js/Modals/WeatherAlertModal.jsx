@@ -128,8 +128,7 @@ export default function WeatherAlertModal({ isOpen, onClose }) {
                 alert_message: message,
                 alert_severity: severity,
                 postpone_duration: postponeDuration || 'N/A',
-                postpone_timestamp: postponeTimestamp || 'N/A',
-                weather_id: weatherId
+                postpone_timestamp: postponeTimestamp || 'N/A'
             });
 
             console.log('Alert saved:', response.data);

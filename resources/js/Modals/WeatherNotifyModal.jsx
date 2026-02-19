@@ -124,8 +124,7 @@ export default function WeatherNotifyModal({ isOpen, onClose }) {
             // Create the report
             const response = await axios.post('/weather-reports/store', {
                 report_message: message,
-                report_action: `Max Duration: ${maxDuration || 'N/A'}, Optimal Time: ${optimalTime || 'N/A'}`,
-                weather_id: weatherId
+                report_action: `Max Duration: ${maxDuration || 'N/A'}, Optimal Time: ${optimalTime || 'N/A'}`
             });
 
             console.log('Report saved:', response.data);
