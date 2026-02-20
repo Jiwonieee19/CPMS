@@ -7,6 +7,7 @@ use App\Models\EquipmentInventory;
 use App\Models\EquipmentStockInLine;
 use App\Models\Logs;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EquipmentsController extends Controller
 {
@@ -80,37 +81,54 @@ class EquipmentsController extends Controller
 
             $equipmentType = $validated['equipment_type'] ?? $inferredType;
 
-            $equipment = Equipments::create([
-                'equipment_name' => ucfirst($validated['equipment_name']),
-                'supplier_name' => $validated['supplier_name'],
-                'equipment_type' => $equipmentType
-            ]);
+            DB::beginTransaction();
 
-            // Create equipment inventory entry with quantity
-            EquipmentInventory::create([
-                'equipment_id' => $equipment->equipment_id,
-                'equipment_status' => EquipmentInventory::statusFromQuantity((int)$validated['quantity']),
-                'quantity' => $validated['quantity']
-            ]);
+            try {
+                // Create equipment without supplier_name
+                $equipment = Equipments::create([
+                    'equipment_name' => ucfirst($validated['equipment_name']),
+                    'equipment_type' => $equipmentType
+                ]);
 
-            $currentUser = \Illuminate\Support\Facades\Session::get('user');
-            $staffId = $currentUser['staff_id'] ?? null;
-            if ($staffId === 0) {
-                $staffId = null;
+                // Create equipment inventory entry with quantity
+                $inventory = EquipmentInventory::create([
+                    'equipment_id' => $equipment->equipment_id,
+                    'equipment_status' => EquipmentInventory::statusFromQuantity((int)$validated['quantity']),
+                    'quantity' => $validated['quantity']
+                ]);
+
+                // Create equipment stock in line with supplier name
+                EquipmentStockInLine::create([
+                    'equipment_inventory_id' => $inventory->equipment_inventory_id,
+                    'supplier_name' => $validated['supplier_name'],
+                    'stock_in_quantity' => $validated['quantity'],
+                    'stock_in_date' => now()
+                ]);
+
+                $currentUser = \Illuminate\Support\Facades\Session::get('user');
+                $staffId = $currentUser['staff_id'] ?? null;
+                if ($staffId === 0) {
+                    $staffId = null;
+                }
+
+                Logs::create([
+                    'log_type' => 'inventory',
+                    'log_description' => 'New equipment added: ' . $equipment->equipment_name . ' (Qty: ' . $validated['quantity'] . ')',
+                    'created_at' => now(),
+                    'equipment_id' => $equipment->equipment_id,
+                    'staff_id' => $staffId
+                ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'message' => 'Equipment created successfully',
+                    'equipment' => $equipment
+                ], 201);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
-
-            Logs::create([
-                'log_type' => 'inventory',
-                'log_description' => 'New equipment added: ' . $equipment->equipment_name . ' (Qty: ' . $validated['quantity'] . ')',
-                'created_at' => now(),
-                'equipment_id' => $equipment->equipment_id,
-                'staff_id' => $staffId
-            ]);
-
-            return response()->json([
-                'message' => 'Equipment created successfully',
-                'equipment' => $equipment
-            ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
