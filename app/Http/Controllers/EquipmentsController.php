@@ -63,7 +63,7 @@ class EquipmentsController extends Controller
         try {
             $validated = $request->validate([
                 'equipment_name' => 'required|string|max:255',
-                'supplier_name' => 'nullable|string|max:255',
+                'supplier_name' => 'required|string|max:255',
                 'quantity' => 'required|integer|min:0',
                 'equipment_type' => 'nullable|string|in:sack,rack,box'
             ]);
@@ -82,7 +82,7 @@ class EquipmentsController extends Controller
 
             $equipment = Equipments::create([
                 'equipment_name' => ucfirst($validated['equipment_name']),
-                'supplier_name' => $validated['supplier_name'] ?? null,
+                'supplier_name' => $validated['supplier_name'],
                 'equipment_type' => $equipmentType
             ]);
 

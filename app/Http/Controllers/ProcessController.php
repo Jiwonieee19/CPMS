@@ -279,7 +279,7 @@ class ProcessController extends Controller
                     'EQUIPMENT_NOT_FOUND' => "Equipment type '{$label}' not found in system",
                     'EQUIPMENT_INVENTORY_NOT_FOUND' => "Equipment inventory for '{$label}' not found",
                     'INSUFFICIENT_EQUIPMENT' => "Insufficient {$label} available. Need: {$needed}, Available: {$available}",
-                    default => 'Equipment error occurred'
+                    default => 'Equipment error occurred: ' . $e->getMessage()
                 };
 
                 Logs::create([
@@ -294,6 +294,12 @@ class ProcessController extends Controller
                 return response()->json([
                     'message' => $message
                 ], 422);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::error('Process error in proceed(): ' . $e->getMessage(), ['exception' => $e]);
+                return response()->json([
+                    'message' => 'Error processing batch: ' . $e->getMessage()
+                ], 500);
             } catch (\Exception $e) {
                 DB::rollBack();
 

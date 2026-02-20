@@ -11,7 +11,7 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
 
     const [formData, setFormData] = useState({
         name: '',
-        from: '',
+        supplier_name: '',
         quantity: '',
         attachFile: ''
     });
@@ -42,8 +42,8 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
             setIsLoading(true);
             setError(null);
 
-            if (!formData.name || !formData.quantity) {
-                setError('Name and Quantity are required');
+            if (!formData.name || !formData.supplier_name || !formData.quantity) {
+                setError('Please fill in all required fields');
                 return;
             }
 
@@ -59,7 +59,7 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
                 },
                 body: JSON.stringify({
                     equipment_name: formData.name,
-                    supplier_name: formData.from || null,
+                    supplier_name: formData.supplier_name,
                     quantity: parseInt(formData.quantity)
                 })
             });
@@ -77,7 +77,7 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
 
             setFormData({
                 name: '',
-                from: '',
+                supplier_name: '',
                 quantity: '',
                 attachFile: ''
             });
@@ -142,12 +142,12 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
                         </div>
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
-                                FROM
+                                SUPPLIER NAME
                             </label>
                             <input
                                 type="text"
-                                name="from"
-                                value={formData.from}
+                                name="supplier_name"
+                                value={formData.supplier_name}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
                                 placeholder="SUPPLIER NAME"

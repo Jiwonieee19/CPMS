@@ -8,6 +8,7 @@ class EquipmentTransferLine extends Model
 {
     protected $table = 'equipment_transfer_line';
     protected $primaryKey = 'equipment_transfer_line_id';
+    public $timestamps = false;
 
     protected $fillable = [
         'equipment_inventory_id',
