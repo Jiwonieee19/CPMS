@@ -8,7 +8,7 @@ import axios from 'axios';
 axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
 export default function WeatherNotifyModal({ isOpen, onClose }) {
-    const { auth } = usePage().props;
+    const { auth, weather } = usePage().props;
     const toast = useToast();
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
@@ -18,6 +18,126 @@ export default function WeatherNotifyModal({ isOpen, onClose }) {
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const toHourLabel = (hour24) => {
+        const normalized = ((hour24 % 24) + 24) % 24;
+        const period = normalized >= 12 ? 'pm' : 'am';
+        const hour12 = normalized % 12 || 12;
+        return `${hour12}${period}`;
+    };
+
+    const getHourlyEntry = (hourlyData, hour24) => {
+        const label = toHourLabel(hour24);
+        return hourlyData.find((entry) => String(entry.hour).toLowerCase() === label) || null;
+    };
+
+    const getForecastEntryFromPage = (hour24) => {
+        const forecastHours = weather?.forecast?.forecastday?.[0]?.hour;
+        if (!Array.isArray(forecastHours) || forecastHours.length === 0) {
+            return null;
+        }
+
+        const matchedHour = forecastHours.find((h) => {
+            const d = new Date(h.time);
+            return !Number.isNaN(d.getTime()) && d.getHours() === hour24;
+        });
+
+        if (!matchedHour) {
+            return null;
+        }
+
+        return {
+            temperature: Number(matchedHour.temp_c),
+            humidity: Number(matchedHour.humidity),
+            windSpeed: Number(matchedHour.wind_kph),
+        };
+    };
+
+    const resolveWeatherWindow = async (startHour, endHour) => {
+        try {
+            const hourlyResponse = await axios.get('/weather/hourly', { timeout: 5000 });
+            const hourlyData = Array.isArray(hourlyResponse.data) ? hourlyResponse.data : [];
+
+            const startEntry = getHourlyEntry(hourlyData, startHour);
+            const endEntry = getHourlyEntry(hourlyData, endHour);
+
+            if (startEntry && endEntry) {
+                return { startEntry, endEntry };
+            }
+        } catch (_) {
+            // Fallback handled below.
+        }
+
+        const pageStart = getForecastEntryFromPage(startHour);
+        const pageEnd = getForecastEntryFromPage(endHour);
+        if (pageStart && pageEnd) {
+            return {
+                startEntry: pageStart,
+                endEntry: pageEnd,
+            };
+        }
+
+        try {
+            const currentResponse = await axios.get('/weather/current', { timeout: 5000 });
+            const current = currentResponse?.data || {};
+
+            const fallbackEntry = {
+                temperature: Number(current.temperature),
+                humidity: Number(current.humidity),
+                windSpeed: Number(current.windSpeed),
+            };
+
+            if (
+                !Number.isNaN(fallbackEntry.temperature) &&
+                !Number.isNaN(fallbackEntry.humidity) &&
+                !Number.isNaN(fallbackEntry.windSpeed)
+            ) {
+                return {
+                    startEntry: fallbackEntry,
+                    endEntry: fallbackEntry,
+                };
+            }
+        } catch (_) {
+            // Fallback handled below.
+        }
+
+        try {
+            const latestResponse = await axios.get('/weather-data/latest', { timeout: 5000 });
+            const latest = latestResponse?.data?.data;
+
+            if (latest) {
+                const startEntry = {
+                    temperature: Number(latest.temperature),
+                    humidity: Number(latest.humidity),
+                    windSpeed: Number(latest.wind_speed),
+                };
+
+                const endEntry = {
+                    temperature: Number(latest.temperature_end ?? latest.temperature),
+                    humidity: Number(latest.humidity_end ?? latest.humidity),
+                    windSpeed: Number(latest.wind_speed_end ?? latest.wind_speed),
+                };
+
+                if (
+                    !Number.isNaN(startEntry.temperature) &&
+                    !Number.isNaN(startEntry.humidity) &&
+                    !Number.isNaN(startEntry.windSpeed) &&
+                    !Number.isNaN(endEntry.temperature) &&
+                    !Number.isNaN(endEntry.humidity) &&
+                    !Number.isNaN(endEntry.windSpeed)
+                ) {
+                    return { startEntry, endEntry };
+                }
+            }
+        } catch (_) {
+            // Final fallback handled below.
+        }
+
+        return {
+            startEntry: { temperature: 30, humidity: 70, windSpeed: 8 },
+            endEntry: { temperature: 30, humidity: 70, windSpeed: 8 },
+        };
+    };
 
     // Parse time string and return 24-hour format
     const parseTime = (timeStr) => {
@@ -107,6 +227,21 @@ export default function WeatherNotifyModal({ isOpen, onClose }) {
             return;
         }
 
+        if (!startTime.trim() || !maxDuration.trim()) {
+            const errorMsg = 'Please enter drying duration and start time';
+            setError(errorMsg);
+            toast.error(errorMsg);
+            return;
+        }
+
+        const durationValue = parseInt(maxDuration, 10);
+        if (isNaN(durationValue) || durationValue < 1 || durationValue > 12) {
+            const errorMsg = 'Drying duration must be between 1 and 12 hours only';
+            setError(errorMsg);
+            toast.error(errorMsg);
+            return;
+        }
+
         // Validate time inputs if both are provided
         if (startTime.trim() && maxDuration.trim()) {
             if (!optimalTime) {
@@ -121,17 +256,47 @@ export default function WeatherNotifyModal({ isOpen, onClose }) {
         setError('');
 
         try {
+            const parsedStart = parseTime(startTime);
+            const duration = durationValue;
+
+            if (!parsedStart || isNaN(duration) || duration <= 0) {
+                throw new Error('Invalid drying time input. Please use valid duration and time.');
+            }
+
+            const startHour = parsedStart.hours;
+            const endHour = (parsedStart.hours + duration) % 24;
+
+            const { startEntry, endEntry } = await resolveWeatherWindow(startHour, endHour);
+
+            const weatherStoreResponse = await axios.post('/weather-data/store', {
+                temperature: startEntry.temperature,
+                humidity: startEntry.humidity,
+                wind_speed: startEntry.windSpeed,
+                weather_condition: 'forecast',
+                temperature_end: endEntry.temperature,
+                humidity_end: endEntry.humidity,
+                wind_speed_end: endEntry.windSpeed,
+                weather_condition_end: 'forecast'
+            });
+
+            const weatherId = weatherStoreResponse?.data?.data?.weather_id;
+
+            if (!weatherId) {
+                throw new Error('Weather data was not saved correctly. Please try again.');
+            }
+
             // Create the report
             const response = await axios.post('/weather-reports/store', {
                 report_message: message,
-                report_action: `Max Duration: ${maxDuration || 'N/A'}, Optimal Time: ${optimalTime || 'N/A'}`
+                report_action: `Max Duration: ${maxDuration || 'N/A'}, Optimal Time: ${optimalTime || 'N/A'}`,
+                weather_id: weatherId
             });
 
             console.log('Report saved:', response.data);
             toast.success('Weather notification report saved successfully!');
             onClose();
         } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Failed to save report';
+            const errorMessage = err.response?.data?.message || err.message || 'Failed to save report';
             setError(errorMessage);
             toast.error(errorMessage);
             console.error('Error saving report:', err);
@@ -177,9 +342,32 @@ export default function WeatherNotifyModal({ isOpen, onClose }) {
                         <input
                             type="number"
                             value={maxDuration}
-                            onChange={(e) => setMaxDuration(e.target.value)}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === '') {
+                                    setMaxDuration('');
+                                    return;
+                                }
+
+                                const numeric = parseInt(value, 10);
+                                if (isNaN(numeric)) return;
+
+                                if (numeric > 12) {
+                                    setMaxDuration('12');
+                                    return;
+                                }
+
+                                if (numeric < 1) {
+                                    setMaxDuration('1');
+                                    return;
+                                }
+
+                                setMaxDuration(String(numeric));
+                            }}
+                            min="1"
+                            max="12"
                             className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#3E2723]"
-                            placeholder="0HR/HRS"
+                            placeholder="1-12 HRS"
                             disabled={isLoading}
                         />
                     </div>

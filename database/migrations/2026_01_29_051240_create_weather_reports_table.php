@@ -17,8 +17,6 @@ return new class extends Migration
             $table->date('report_date');
             $table->string('report_action')->nullable();
             $table->unsignedBigInteger('weather_id')->nullable();
-            $table->unsignedBigInteger('batch_id')->nullable();
-            $table->foreign('batch_id')->references('batch_id')->on('batches')->onDelete('set null');
             $table->unsignedBigInteger('staff_id')->nullable();
             $table->foreign('staff_id')->references('staff_id')->on('staffs')->onDelete('set null');
             $table->timestamps();

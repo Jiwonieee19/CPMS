@@ -4,11 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\WeatherAlert;
 use App\Models\WeatherData;
+use App\Models\Staffs;
 use App\Models\Logs;
 use Illuminate\Http\Request;
 
 class WeatherAlertController extends Controller
 {
+    private function resolveStaffId(): ?int
+    {
+        $currentUser = \Illuminate\Support\Facades\Session::get('user');
+        $staffId = $currentUser['staff_id'] ?? null;
+
+        if (!$staffId || (int) $staffId === 0) {
+            return null;
+        }
+
+        return Staffs::where('staff_id', (int) $staffId)->exists()
+            ? (int) $staffId
+            : null;
+    }
+
     /**
      * Store a newly created weather alert
      */
@@ -23,12 +38,7 @@ class WeatherAlertController extends Controller
                 'weather_id' => 'nullable|exists:weather_data,weather_id'
             ]);
 
-            // Get authenticated staff_id from session or request
-            $currentUser = \Illuminate\Support\Facades\Session::get('user');
-            $staffId = $currentUser['staff_id'] ?? (auth()->check() ? auth()->user()->id : null);
-            if ($staffId === 0) {
-                $staffId = null;
-            }
+            $staffId = $this->resolveStaffId();
             // Format alert_action from postpone details
             $postponeDuration = $validated['postpone_duration'] ?? 'N/A';
             $postponeTimestamp = $validated['postpone_timestamp'] ?? 'N/A';
@@ -48,7 +58,7 @@ class WeatherAlertController extends Controller
                         ? $weatherData->wind_speed . ' m/s - ' . $weatherData->wind_speed_end . ' m/s'
                         : $weatherData->wind_speed . ' m/s';
 
-                    $weatherSummary = ' | Temp: ' . $tempRange . ' | Humidity: ' . $humidityRange . ' | Wind: ' . $windRange;
+                    $weatherSummary = "\nTemperature: {$tempRange}\nHumidity: {$humidityRange}\nWind: {$windRange}";
                 }
             }
 
@@ -63,7 +73,10 @@ class WeatherAlertController extends Controller
 
             Logs::create([
                 'log_type' => 'weather',
-                'log_description' => 'Weather Alert Created: ' . substr($validated['alert_message'], 0, 50) . '... | Severity: ' . $validated['alert_severity'] . ' | Postpone: ' . $postponeDuration . $weatherSummary . ' | Timestamp: ' . $postponeTimestamp,
+                'log_description' => 'Weather Alert Created: ' . $validated['alert_message']
+                    . "\nSeverity: " . ($validated['alert_severity'] ?? 'medium')
+                    . $weatherSummary
+                    . "\nPostpone Time: " . $postponeTimestamp,
                 'log_task' => 'weather data alert',
                 'created_at' => now(),
                 'staff_id' => $staffId

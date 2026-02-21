@@ -288,67 +288,62 @@ class LogsController extends Controller
             // For weather logs, include timestamp and field details in description
             if (in_array($log->log_type, ['weather', 'weather_alert'])) {
                 $baseMessage = $log->log_description;
-                
-                // Extract parts from message
-                $message = '';
-                $severity = '';
-                $postpone = '';
-                $action = '';
-                $timestamp = '';
-                $temp = '';
-                $humidity = '';
-                $wind = '';
-                
-                if (preg_match('/^([^|]+)/', $baseMessage, $matches)) {
-                    $message = trim($matches[1]);
-                    // Remove trailing "..." if present
-                    $message = rtrim($message, '.');
-                }
-                if (preg_match('/Severity:\s*([^ |]+)/', $baseMessage, $matches)) {
-                    $severity = trim($matches[1]);
-                }
-                if (preg_match('/Postpone:\s*([^ |]+)/', $baseMessage, $matches)) {
-                    $postpone = trim($matches[1]);
-                }
-                if (preg_match('/Action:\s*([^|]+)/', $baseMessage, $matches)) {
-                    $action = trim($matches[1]);
-                }
-                if (preg_match('/Temp:\s*([^|]+)/', $baseMessage, $matches)) {
-                    $temp = trim($matches[1]);
-                }
-                if (preg_match('/Humidity:\s*([^|]+)/', $baseMessage, $matches)) {
-                    $humidity = trim($matches[1]);
-                }
-                if (preg_match('/Wind:\s*([^|]+)/', $baseMessage, $matches)) {
-                    $wind = trim($matches[1]);
-                }
-                if (preg_match('/Timestamp:\s*(.+)$/', $baseMessage, $matches)) {
-                    $timestamp = trim($matches[1]);
-                }
-                
-                // Determine if this is an alert or notify to set appropriate time label
-                $timeLabel = ($log->log_task === 'weather data alert') ? 'Postpone Time:' : 'Drying Time:';
-                
-                // Format as multiple lines
-                $description = $message . "\n";
-                if ($severity || $postpone) {
-                    $details = [];
-                    if ($severity) $details[] = "Severity: " . $severity;
-                    $description .= implode(" , ", $details) . "\n";
-                }
-                if ($action && $log->log_task === 'weather data alert') {
-                    $description .= "Action: " . $action . "\n";
-                }
-                if ($temp || $humidity || $wind) {
-                    if ($temp) $description .= "Temp: " . $temp . "\n";
-                    if ($humidity) $description .= "Humidity: " . $humidity . "\n";
-                    if ($wind) $description .= "Wind: " . $wind . "\n";
-                }
-                // Only add time if we have a valid timestamp from the log
-                if ($timestamp && $timestamp !== 'N/A' && !empty(trim($timestamp))) {
-                    // Add spaces around dash in time range (2PM-7PM becomes 2PM - 7PM)
-                    $timestamp = preg_replace('/(\d+(?::\d+)?(?:AM|PM|am|pm))-(\d+(?::\d+)?(?:AM|PM|am|pm))/i', '$1 - $2', $timestamp);
-                    $description .= $timeLabel . " " . $timestamp;
+
+                // New multiline weather logs: keep as-is with minor time-range normalization.
+                if (strpos($baseMessage, '|') === false) {
+                    $description = preg_replace(
+                        '/(Drying Time:\s*|Postpone Time:\s*)(\d+(?::\d+)?(?:AM|PM|am|pm))-(\d+(?::\d+)?(?:AM|PM|am|pm))/i',
+                        '$1$2 - $3',
+                        $baseMessage
+                    );
+                } else {
+                    // Legacy weather logs in single-line pipe format: convert to multiline.
+                    $message = '';
+                    $severity = '';
+                    $timestamp = '';
+                    $temp = '';
+                    $humidity = '';
+                    $wind = '';
+
+                    if (preg_match('/^([^|]+)/', $baseMessage, $matches)) {
+                        $message = trim($matches[1]);
+                        $message = rtrim($message, '.');
+                    }
+                    if (preg_match('/Severity:\s*([^ |]+)/', $baseMessage, $matches)) {
+                        $severity = trim($matches[1]);
+                    }
+                    if (preg_match('/Temp:\s*([^|]+)/', $baseMessage, $matches)) {
+                        $temp = trim($matches[1]);
+                    }
+                    if (preg_match('/Humidity:\s*([^|]+)/', $baseMessage, $matches)) {
+                        $humidity = trim($matches[1]);
+                    }
+                    if (preg_match('/Wind:\s*([^|]+)/', $baseMessage, $matches)) {
+                        $wind = trim($matches[1]);
+                    }
+                    if (preg_match('/Timestamp:\s*(.+)$/', $baseMessage, $matches)) {
+                        $timestamp = trim($matches[1]);
+                    }
+
+                    $timeLabel = ($log->log_task === 'weather data alert') ? 'Postpone Time:' : 'Drying Time:';
+
+                    $description = $message;
+                    if ($severity) {
+                        $description .= "\nSeverity: " . $severity;
+                    }
+                    if ($temp) {
+                        $description .= "\nTemperature: " . $temp;
+                    }
+                    if ($humidity) {
+                        $description .= "\nHumidity: " . $humidity;
+                    }
+                    if ($wind) {
+                        $description .= "\nWind: " . $wind;
+                    }
+                    if ($timestamp && $timestamp !== 'N/A' && !empty(trim($timestamp))) {
+                        $timestamp = preg_replace('/(\d+(?::\d+)?(?:AM|PM|am|pm))-(\d+(?::\d+)?(?:AM|PM|am|pm))/i', '$1 - $2', $timestamp);
+                        $description .= "\n" . $timeLabel . " " . $timestamp;
+                    }
                 }
             }
 

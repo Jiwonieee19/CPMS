@@ -4,11 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\WeatherReports;
 use App\Models\WeatherData;
+use App\Models\Staffs;
 use App\Models\Logs;
 use Illuminate\Http\Request;
 
 class WeatherReportController extends Controller
 {
+    private function resolveStaffId(): ?int
+    {
+        $currentUser = \Illuminate\Support\Facades\Session::get('user');
+        $staffId = $currentUser['staff_id'] ?? null;
+
+        if (!$staffId || (int) $staffId === 0) {
+            return null;
+        }
+
+        return Staffs::where('staff_id', (int) $staffId)->exists()
+            ? (int) $staffId
+            : null;
+    }
+
     /**
      * Store a newly created weather report
      */
@@ -21,8 +36,7 @@ class WeatherReportController extends Controller
                 'weather_id' => 'nullable|exists:weather_data,weather_id'
             ]);
 
-            // Get authenticated staff_id from session or request
-            $staffId = auth()->check() ? auth()->user()->id : null;
+            $staffId = $this->resolveStaffId();
 
             $report = WeatherReports::create([
                 'report_message' => $validated['report_message'],
@@ -52,19 +66,15 @@ class WeatherReportController extends Controller
                         ? $weatherData->wind_speed . ' m/s - ' . $weatherData->wind_speed_end . ' m/s'
                         : $weatherData->wind_speed . ' m/s';
 
-                    $weatherSummary = ' | Temp: ' . $tempRange . ' | Humidity: ' . $humidityRange . ' | Wind: ' . $windRange;
+                    $weatherSummary = "\nTemperature: {$tempRange}\nHumidity: {$humidityRange}\nWind: {$windRange}";
                 }
-            }
-
-            $currentUser = \Illuminate\Support\Facades\Session::get('user');
-            $staffId = $currentUser['staff_id'] ?? null;
-            if ($staffId === 0) {
-                $staffId = null;
             }
 
             Logs::create([
                 'log_type' => 'weather',
-                'log_description' => 'Weather Report Created: ' . substr($validated['report_message'], 0, 50) . '... | Action: ' . substr($validated['report_action'] ?? 'N/A', 0, 50) . $weatherSummary . ' | Timestamp: ' . $optimalTime,
+                'log_description' => 'Weather Report Created: ' . $validated['report_message']
+                    . $weatherSummary
+                    . "\nDrying Time: " . $optimalTime,
                 'log_task' => 'weather data notify',
                 'created_at' => now(),
                 'staff_id' => $staffId
