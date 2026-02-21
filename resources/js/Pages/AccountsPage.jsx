@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Edit, Eye, Trash2, Plus, Menu, RotateCcw } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import Sidebar from '../Components/sidebar';
 import EditAccountModal from '../Modals/EditAccountModal';
 import ViewAccountModal from '../Modals/ViewAccountModal';
@@ -9,6 +9,9 @@ import CreateAccountModal from '../Modals/CreateAccountModal';
 import { useToast } from '../Components/ToastProvider';
 
 export default function AccountsPage() {
+    const { auth } = usePage().props;
+    const currentUser = auth?.user;
+    const isAccountManager = (currentUser?.staff_role || '').toLowerCase() === 'account manager';
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -116,6 +119,11 @@ export default function AccountsPage() {
     const visiblePages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
     const handleEdit = (id, status) => {
+        if (isAccountManager && Number(id) === Number(currentUser?.staff_id)) {
+            toast.error('You cannot edit your own account.');
+            return;
+        }
+
         if (status && status.toLowerCase() === 'inactive') {
             toast.error('Account is inactive, cannot be edited.');
             return;
@@ -130,6 +138,10 @@ export default function AccountsPage() {
     };
 
     const handleDelete = (id) => {
+        if (isAccountManager && Number(id) === Number(currentUser?.staff_id)) {
+            toast.error('You cannot deactivate your own account.');
+            return;
+        }
         setSelectedAccountId(id);
         setIsDeleteModalOpen(true);
     };
@@ -259,41 +271,48 @@ export default function AccountsPage() {
                             <div className="space-y-3">
                                 {paginatedAccounts.length > 0 ? (
                                     paginatedAccounts.map((account) => (
-                                        <div
-                                            key={account.id}
-                                            className="grid grid-cols-5 gap-28 bg-[#3E2723] bg-opacity-50 py-4 px-6 rounded-lg text-[#F5F5DC] items-center text-center border-2 border-[#65524F]"
-                                        >
-                                            <div>{account.id}</div>
-                                            <div>{account.fullname}</div>
-                                            <div>{account.role}</div>
-                                            <div className={account.status.toLowerCase() === 'inactive' ? 'text-[#FF6769]' : ''}>
-                                                {account.status}
-                                            </div>
-                                            <div className="flex justify-center gap-3">
-                                                <button
-                                                    onClick={() => handleEdit(account.staff_id, account.status)}
-                                                    className={`hover:scale-110 transition ${account.status.toLowerCase() === 'inactive' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        (() => {
+                                            const isOwnAccount = isAccountManager && Number(account.staff_id) === Number(currentUser?.staff_id);
+                                            return (
+                                                <div
+                                                    key={account.id}
+                                                    className="grid grid-cols-5 gap-28 bg-[#3E2723] bg-opacity-50 py-4 px-6 rounded-lg text-[#F5F5DC] items-center text-center border-2 border-[#65524F]"
                                                 >
-                                                    <Edit size={28} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleView(account.staff_id)}
-                                                    className="hover:scale-110 transition"
-                                                >
-                                                    <Eye size={28} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(account.staff_id)}
-                                                    className="hover:scale-110 transition"
-                                                >
-                                                    {account.status.toLowerCase() === 'inactive' ? (
-                                                        <RotateCcw size={28} />
-                                                    ) : (
-                                                        <Trash2 size={28} />
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </div>
+                                                    <div>{account.id}</div>
+                                                    <div>{account.fullname}</div>
+                                                    <div>{account.role}</div>
+                                                    <div className={account.status.toLowerCase() === 'inactive' ? 'text-[#FF6769]' : ''}>
+                                                        {account.status}
+                                                    </div>
+                                                    <div className="flex justify-center gap-3">
+                                                        <button
+                                                            onClick={() => handleEdit(account.staff_id, account.status)}
+                                                            disabled={isOwnAccount}
+                                                            className={`hover:scale-110 transition ${account.status.toLowerCase() === 'inactive' || isOwnAccount ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        >
+                                                            <Edit size={28} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleView(account.staff_id)}
+                                                            className="hover:scale-110 transition"
+                                                        >
+                                                            <Eye size={28} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(account.staff_id)}
+                                                            disabled={isOwnAccount}
+                                                            className={`hover:scale-110 transition ${isOwnAccount ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        >
+                                                            {account.status.toLowerCase() === 'inactive' ? (
+                                                                <RotateCcw size={28} />
+                                                            ) : (
+                                                                <Trash2 size={28} />
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()
                                     ))
                                 ) : (
                                     <div className="py-8 text-center text-[#F5F5DC] text-xl font-semibold">

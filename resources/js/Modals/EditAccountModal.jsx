@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../Components/ToastProvider';
 
 export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated, accountsData }) {
@@ -7,6 +7,8 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated, 
     const [isVisible, setIsVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const toast = useToast();
 
     const [formData, setFormData] = useState({
@@ -49,6 +51,8 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated, 
             requestAnimationFrame(() => setIsVisible(true));
         } else {
             setIsVisible(false);
+            setShowPassword(false);
+            setShowConfirmPassword(false);
             const timer = setTimeout(() => setIsRendering(false), 1000);
             return () => clearTimeout(timer);
         }
@@ -355,13 +359,24 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated, 
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
                                 PASSWORD
                             </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className="w-full px-4 pr-12 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#65524F] hover:text-[#3E2723] transition"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    title={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
@@ -390,13 +405,24 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated, 
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
                                 CONFIRM PASS
                             </label>
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    className="w-full px-4 pr-12 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#65524F] hover:text-[#3E2723] transition"
+                                    aria-label={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'}
+                                    title={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'}
+                                >
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
                     </div>
 

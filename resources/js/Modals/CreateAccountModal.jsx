@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../Components/ToastProvider';
 import { useForm } from '@inertiajs/react';
 
@@ -7,6 +7,8 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const [error, setError] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const toast = useToast();
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -51,6 +53,8 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
         if (!isOpen) {
             reset();
             setError(null);
+            setShowPassword(false);
+            setShowConfirmPassword(false);
         }
     }, [isOpen]);
 
@@ -225,14 +229,25 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
                                 PASSWORD
                             </label>
-                            <input
-                                type="password"
-                                name="staff_password"
-                                value={data.staff_password}
-                                onChange={(e) => setData('staff_password', e.target.value)}
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="ABCDE123!@#"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="staff_password"
+                                    value={data.staff_password}
+                                    onChange={(e) => setData('staff_password', e.target.value)}
+                                    className="w-full px-4 pr-12 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
+                                    placeholder="ABCDE123!@#"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#65524F] hover:text-[#3E2723] transition"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    title={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
@@ -261,14 +276,25 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
                             <label className="block text-[#F5F5DC] text-lg font-semibold mb-2">
                                 CONFIRM PASS
                             </label>
-                            <input
-                                type="password"
-                                name="staff_password_confirmation"
-                                value={data.staff_password_confirmation}
-                                onChange={(e) => setData('staff_password_confirmation', e.target.value)}
-                                className="w-full px-4 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                placeholder="ABCDEFG"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    name="staff_password_confirmation"
+                                    value={data.staff_password_confirmation}
+                                    onChange={(e) => setData('staff_password_confirmation', e.target.value)}
+                                    className="w-full px-4 pr-12 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
+                                    placeholder="ABCDEFG"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#65524F] hover:text-[#3E2723] transition"
+                                    aria-label={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'}
+                                    title={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'}
+                                >
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
