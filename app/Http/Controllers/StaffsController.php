@@ -80,6 +80,7 @@ class StaffsController extends Controller
             Logs::create([
                 'log_type' => 'account',
                 'log_description' => 'New staff account created: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname,
+                'log_task' => 'account added',
                 'created_at' => now(),
                 'staff_id' => $staffId
             ]);
@@ -233,6 +234,7 @@ class StaffsController extends Controller
                 Logs::create([
                     'log_type' => 'account',
                     'log_description' => $logMessage,
+                    'log_task' => 'account edited',
                     'created_at' => now(),
                     'staff_id' => $currentUserId
                 ]);
@@ -283,6 +285,7 @@ class StaffsController extends Controller
             Logs::create([
                 'log_type' => 'account',
                 'log_description' => 'Staff account set to inactive: ' . $staff->staff_firstname . ' ' . $staff->staff_lastname . ' (acc-' . $staffIdPadded . ')',
+                'log_task' => 'account deactivated',
                 'created_at' => now(),
                 'staff_id' => $currentUserId
             ]);

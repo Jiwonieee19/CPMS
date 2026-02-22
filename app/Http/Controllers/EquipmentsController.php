@@ -114,6 +114,7 @@ class EquipmentsController extends Controller
                 Logs::create([
                     'log_type' => 'inventory',
                     'log_description' => 'New equipment added: ' . $equipment->equipment_name . ' (Qty: ' . $validated['quantity'] . ')',
+                    'log_task' => 'equipment added',
                     'created_at' => now(),
                     'equipment_id' => $equipment->equipment_id,
                     'staff_id' => $staffId
@@ -189,6 +190,7 @@ class EquipmentsController extends Controller
             Logs::create([
                 'log_type' => 'inventory',
                 'log_description' => 'Stock added for ' . $equipment->equipment_name . ' (+' . $validated['quantity'] . ')',
+                'log_task' => 'stock added',
                 'created_at' => now(),
                 'equipment_id' => $equipment->equipment_id,
                 'staff_id' => $staffId

@@ -197,6 +197,7 @@ class BatchesController extends Controller
                 Logs::create([
                     'log_type' => 'inventory',
                     'log_description' => 'New fresh batch added: BATCH-' . str_pad($batch->batch_id, 5, '0', STR_PAD_LEFT) . ' (' . $validated['initial_weight'] . ' kg)',
+                    'log_task' => 'fresh batch added',
                     'batch_id' => $batch->batch_id,
                     'created_at' => now(),
                     'staff_id' => $staffId
@@ -206,6 +207,7 @@ class BatchesController extends Controller
                     Logs::create([
                         'log_type' => 'equipment_deduction',
                         'log_description' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for fresh batch",
+                        'log_task' => 'equipment deducted',
                         'batch_id' => $batch->batch_id,
                         'equipment_id' => $deduction['equipment']->equipment_id,
                         'created_at' => now(),
@@ -245,6 +247,7 @@ class BatchesController extends Controller
                 Logs::create([
                     'log_type' => 'equipment_alert',
                     'log_description' => $message,
+                    'log_task' => 'equipment alert',
                     'created_at' => now(),
                     'equipment_id' => $equipment ? $equipment->equipment_id : null,
                     'staff_id' => $staffIdLog
@@ -409,6 +412,7 @@ class BatchesController extends Controller
                             Logs::create([
                                 'log_type' => 'equipment_deduction',
                                 'log_description' => 'Deducted ' . $boxesUsed . ' boxes for grading batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT),
+                                'log_task' => 'equipment deducted',
                                 'created_at' => now(),
                                 'batch_id' => $batchId,
                                 'equipment_id' => $boxesEquipment->equipment_id,
@@ -446,6 +450,7 @@ class BatchesController extends Controller
             Logs::create([
                 'log_type' => 'process',
                 'log_description' => 'BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . " graded:\n- Grade A: " . (int)($request->input('grade_a') ?? 0) . "\n- Grade B: " . (int)($request->input('grade_b') ?? 0) . "\n- Reject: " . (int)($request->input('reject') ?? 0),
+                'log_task' => 'batch graded',
                 'created_at' => now(),
                 'batch_id' => $batchId,
                 'staff_id' => $staffId
@@ -519,6 +524,7 @@ class BatchesController extends Controller
             Logs::create([
                 'log_type' => 'inventory',
                 'log_description' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' picked up by Auro Chocolate',
+                'log_task' => 'batch picked up',
                 'created_at' => now(),
                 'batch_id' => $batchId,
                 'staff_id' => $staffId

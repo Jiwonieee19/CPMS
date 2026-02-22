@@ -236,6 +236,7 @@ class ProcessController extends Controller
                     Logs::create([
                         'log_type' => 'equipment_deduction',
                         'log_description' => "Deducted {$deduction['quantity']} {$deduction['equipment']->equipment_name} for processing",
+                        'log_task' => 'equipment deducted',
                         'created_at' => now(),
                         'batch_id' => $batchId,
                         'equipment_id' => $deduction['equipment']->equipment_id,
@@ -246,6 +247,7 @@ class ProcessController extends Controller
                 Logs::create([
                     'log_type' => 'process',
                     'log_description' => 'BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' proceeded to ' . $nextStatus,
+                    'log_task' => 'batch proceeded',
                     'severity' => 'info',
                     'batch_id' => $batchId,
                     'process_id' => $process->process_id,
@@ -285,6 +287,7 @@ class ProcessController extends Controller
                 Logs::create([
                     'log_type' => 'equipment_alert',
                     'log_description' => $message,
+                    'log_task' => 'equipment alert',
                     'created_at' => now(),
                     'batch_id' => $batchId,
                     'equipment_id' => $equipment ? $equipment->equipment_id : null,
@@ -377,6 +380,7 @@ class ProcessController extends Controller
             Logs::create([
                 'log_type' => 'process',
                 'log_description' => 'Batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . ' completed to ' . $completedStatus,
+                'log_task' => 'batch completed',
                 'created_at' => now(),
                 'batch_id' => $batchId,
                 'staff_id' => $staffId
