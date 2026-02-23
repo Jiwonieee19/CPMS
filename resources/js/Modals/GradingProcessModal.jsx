@@ -3,28 +3,28 @@ import { X } from 'lucide-react';
 import { useToast } from '../Components/ToastProvider';
 
 export default function GradingProcessModal({ isOpen, onClose, batch, onComplete }) {
+    const createInitialFormData = (selectedBatch) => ({
+        gradeA: '',
+        gradeB: '',
+        rejected: '',
+        totalRacks: selectedBatch?.racks || ''
+    });
+
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const toast = useToast();
 
-    const [formData, setFormData] = useState({
-        gradeA: '',
-        gradeB: '',
-        rejected: '',
-        totalRacks: batch?.racks || ''
-    });
+    const [formData, setFormData] = useState(createInitialFormData(batch));
 
-    // Update totalRacks when batch changes
+    // Reset form values each time modal opens for a batch
     useEffect(() => {
-        if (batch) {
-            setFormData(prev => ({
-                ...prev,
-                totalRacks: batch.racks || ''
-            }));
+        if (isOpen) {
+            setFormData(createInitialFormData(batch));
+            setError(null);
         }
-    }, [batch]);
+    }, [isOpen, batch?.id, batch?.racks]);
 
     // Handle mount/unmount with fade/scale transitions
     useEffect(() => {

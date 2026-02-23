@@ -283,7 +283,7 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
                                     value={data.staff_password_confirmation}
                                     onChange={(e) => setData('staff_password_confirmation', e.target.value)}
                                     className="w-full px-4 pr-12 py-3 rounded-2xl bg-[#F5F5DC] text-[#65524F] focus:outline-none focus:ring-4 focus:ring-[#E5B917]"
-                                    placeholder="ABCDEFG"
+                                    placeholder="ABCDE123!@#"
                                 />
                                 <button
                                     type="button"

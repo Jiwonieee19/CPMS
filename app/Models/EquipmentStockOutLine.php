@@ -8,6 +8,7 @@ class EquipmentStockOutLine extends Model
 {
     protected $table = 'equipment_stock_out_line';
     protected $primaryKey = 'equipment_stock_out_line_id';
+    public $timestamps = false;
 
     protected $fillable = [
         'equipment_inventory_id',
