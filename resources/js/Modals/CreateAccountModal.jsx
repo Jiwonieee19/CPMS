@@ -7,11 +7,12 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
     const [isRendering, setIsRendering] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
     const [error, setError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const toast = useToast();
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, reset } = useForm({
         staff_firstname: '',
         staff_lastname: '',
         staff_email: '',
@@ -58,36 +59,27 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
         }
     }, [isOpen]);
 
-    const handleCreate = (e) => {
+    const handleCreate = async (e) => {
         e.preventDefault();
 
-        // Validation
-        if (!data.staff_firstname || !data.staff_lastname || !data.staff_email || !data.staff_contact || !data.staff_password || !data.staff_role) {
-            const errorMsg = 'All fields are required!';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            return;
-        }
+        try {
+            setIsSubmitting(true);
+            setError(null);
 
-        if (data.staff_password !== data.staff_password_confirmation) {
-            const errorMsg = 'The password confirmation does not match.';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            return;
-        }
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const response = await fetch('/staffs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || ''
+                },
+                body: JSON.stringify(data)
+            });
 
-        // Validate contact number length (must be 9 digits after +63 9)
-        const contactDigits = data.staff_contact.replace(/\D/g, '').slice(2); // Remove all non-digits and skip 63
-        if (contactDigits.length !== 10) { // 9 + the leading 9
-            const errorMsg = 'The Contact field must be a valid contact number.';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            return;
-        }
+            const payload = await response.json().catch(() => ({}));
 
-        post('/staffs', {
-            preserveScroll: true,
-            onSuccess: () => {
+            if (response.ok) {
                 setError(null);
                 toast.success('Staff account created successfully!');
                 reset();
@@ -95,14 +87,27 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
                     onCreated();
                 }
                 onClose();
-            },
-            onError: (errors) => {
-                const errorMsg = Object.values(errors).flat().join(', ');
-                const message = errorMsg || 'Failed to create staff account';
+                return;
+            }
+
+            if (response.status === 422) {
+                const validationErrors = Object.values(payload?.errors || {}).flat();
+                const message = validationErrors.join(', ') || 'Validation failed';
                 setError(message);
                 toast.error(message);
+                return;
             }
-        });
+
+            const fallbackMessage = payload?.message || 'Failed to create staff account';
+            setError(fallbackMessage);
+            toast.error(fallbackMessage);
+        } catch (err) {
+            const message = 'Failed to create staff account';
+            setError(message);
+            toast.error(message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleCancel = () => {
@@ -308,10 +313,10 @@ export default function CreateAccountModal({ isOpen, onClose, onCreated, account
                         </button>
                         <button
                             onClick={handleCreate}
-                            disabled={processing}
+                            disabled={isSubmitting}
                             className="py-3 rounded-2xl bg-[#311F1C] text-[#E5B917] text-xl font-semibold hover:bg-[#E5B917] hover:text-[#311F1C] transition disabled:opacity-50"
                         >
-                            {processing ? 'CREATING...' : 'CREATE'}
+                            {isSubmitting ? 'CREATING...' : 'CREATE'}
                         </button>
                     </div>
                 </div>

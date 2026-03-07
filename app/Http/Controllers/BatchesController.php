@@ -372,6 +372,22 @@ class BatchesController extends Controller
     public function grade($id, Request $request)
     {
         try {
+            $validated = $request->validate([
+                'grade_a' => 'required|integer|min:0',
+                'grade_b' => 'required|integer|min:0',
+                'reject' => 'required|integer|min:0',
+                'boxes_used' => 'required|integer|min:1'
+            ]);
+
+            if (((int)$validated['grade_a'] + (int)$validated['grade_b'] + (int)$validated['reject']) <= 0) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'grade_a' => ['Please enter at least one grade value']
+                    ]
+                ], 422);
+            }
+
             // Extract batch_id from formatted ID or use it directly
             $batchId = is_numeric($id) ? $id : (int)str_replace('BATCH-', '', $id);
             
@@ -391,36 +407,46 @@ class BatchesController extends Controller
             }
 
             // Get boxes needed
-            $boxesUsed = (int)($request->input('boxes_used') ?? 0);
+            $boxesUsed = (int)$validated['boxes_used'];
             
             // Deduct boxes from equipment inventory if needed
             if ($boxesUsed > 0) {
                 $boxesEquipment = Equipments::where('equipment_type', 'boxes')->first();
                 
-                if ($boxesEquipment) {
-                    $boxesInventory = EquipmentInventory::where('equipment_id', $boxesEquipment->equipment_id)->first();
-                    
-                    if ($boxesInventory) {
-                        $currentQuantity = (int)($boxesInventory->quantity ?? $boxesInventory->equipment_status ?? 0);
-                        
-                        if ($currentQuantity >= $boxesUsed) {
-                            $boxesInventory->quantity = $currentQuantity - $boxesUsed;
-                            $boxesInventory->equipment_status = EquipmentInventory::statusFromQuantity((int)$boxesInventory->quantity);
-                            $boxesInventory->save();
-                            
-                            // Log equipment deduction
-                            Logs::create([
-                                'log_type' => 'equipment_deduction',
-                                'log_description' => 'Deducted ' . $boxesUsed . ' boxes for grading batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT),
-                                'log_task' => 'equipment deducted',
-                                'created_at' => now(),
-                                'batch_id' => $batchId,
-                                'equipment_id' => $boxesEquipment->equipment_id,
-                                'staff_id' => $staffId
-                            ]);
-                        }
-                    }
+                if (!$boxesEquipment) {
+                    return response()->json([
+                        'message' => 'Boxes equipment not found'
+                    ], 422);
                 }
+
+                $boxesInventory = EquipmentInventory::where('equipment_id', $boxesEquipment->equipment_id)->first();
+                if (!$boxesInventory) {
+                    return response()->json([
+                        'message' => 'Boxes equipment inventory not found'
+                    ], 422);
+                }
+
+                $currentQuantity = (int)($boxesInventory->quantity ?? $boxesInventory->equipment_status ?? 0);
+                if ($currentQuantity < $boxesUsed) {
+                    return response()->json([
+                        'message' => "Insufficient boxes available. Need: {$boxesUsed}, Available: {$currentQuantity}"
+                    ], 422);
+                }
+
+                $boxesInventory->quantity = $currentQuantity - $boxesUsed;
+                $boxesInventory->equipment_status = EquipmentInventory::statusFromQuantity((int)$boxesInventory->quantity);
+                $boxesInventory->save();
+
+                // Log equipment deduction
+                Logs::create([
+                    'log_type' => 'equipment_deduction',
+                    'log_description' => 'Deducted ' . $boxesUsed . ' boxes for grading batch BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT),
+                    'log_task' => 'equipment deducted',
+                    'created_at' => now(),
+                    'batch_id' => $batchId,
+                    'equipment_id' => $boxesEquipment->equipment_id,
+                    'staff_id' => $staffId
+                ]);
             }
 
             $previousStatus = $inventory->batch_status;
@@ -439,9 +465,9 @@ class BatchesController extends Controller
             // Create quality grading record
             DB::table('quality_gradings')->insert([
                 'batch_id' => $batchId,
-                'grade_a' => (int)($request->input('grade_a') ?? 0),
-                'grade_b' => (int)($request->input('grade_b') ?? 0),
-                'reject' => (int)($request->input('reject') ?? 0),
+                'grade_a' => (int)$validated['grade_a'],
+                'grade_b' => (int)$validated['grade_b'],
+                'reject' => (int)$validated['reject'],
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -449,7 +475,7 @@ class BatchesController extends Controller
             // Log the grading activity
             Logs::create([
                 'log_type' => 'process',
-                'log_description' => 'BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . " graded:\n- Grade A: " . (int)($request->input('grade_a') ?? 0) . "\n- Grade B: " . (int)($request->input('grade_b') ?? 0) . "\n- Reject: " . (int)($request->input('reject') ?? 0),
+                'log_description' => 'BATCH-' . str_pad($batchId, 5, '0', STR_PAD_LEFT) . " graded:\n- Grade A: " . (int)$validated['grade_a'] . "\n- Grade B: " . (int)$validated['grade_b'] . "\n- Reject: " . (int)$validated['reject'],
                 'log_task' => 'batch graded',
                 'created_at' => now(),
                 'batch_id' => $batchId,
@@ -461,6 +487,11 @@ class BatchesController extends Controller
                 'batch_id' => $batchId,
                 'status' => 'Graded'
             ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error grading batch: ' . $e->getMessage()

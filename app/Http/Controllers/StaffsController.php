@@ -58,7 +58,7 @@ class StaffsController extends Controller
                 'staff_firstname' => 'required|string|max:255',
                 'staff_lastname' => 'required|string|max:255',
                 'staff_email' => 'required|email|unique:staffs',
-                'staff_contact' => 'required|string|max:20',
+                'staff_contact' => ['required', 'string', 'regex:/^\+63 9\d{9}$/'],
                 'staff_password' => 'required|string|min:8|confirmed',
                 'staff_role' => 'required|string|max:100'
             ]);
@@ -177,13 +177,13 @@ class StaffsController extends Controller
             
             // Validate the request
             $validated = $request->validate([
-                'staff_firstname' => 'sometimes|string|max:255',
-                'staff_lastname' => 'sometimes|string|max:255',
-                'staff_email' => 'sometimes|email|unique:staffs,staff_email,' . $id . ',staff_id',
-                'staff_contact' => 'sometimes|string|max:20',
-                'staff_role' => 'sometimes|string|max:100',
+                'staff_firstname' => 'sometimes|required|string|max:255',
+                'staff_lastname' => 'sometimes|required|string|max:255',
+                'staff_email' => 'sometimes|required|email|unique:staffs,staff_email,' . $id . ',staff_id',
+                'staff_contact' => ['sometimes', 'required', 'string', 'regex:/^\+63 9\d{9}$/'],
+                'staff_role' => 'sometimes|required|string|max:100',
                 'staff_status' => 'sometimes|in:active,inactive',
-                'staff_password' => 'sometimes|string|min:8|confirmed'
+                'staff_password' => 'sometimes|required|string|min:8|confirmed'
             ]);
 
             // Track changes for logging

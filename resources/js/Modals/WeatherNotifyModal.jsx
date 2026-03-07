@@ -219,84 +219,52 @@ export default function WeatherNotifyModal({ isOpen, onClose }) {
     };
 
     const handleConfirm = async () => {
-        // Validate message
-        if (!message.trim()) {
-            const errorMsg = 'Please enter notification message';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            return;
-        }
-
-        if (!startTime.trim() || !maxDuration.trim()) {
-            const errorMsg = 'Please enter drying duration and start time';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            return;
-        }
-
-        const durationValue = parseInt(maxDuration, 10);
-        if (isNaN(durationValue) || durationValue < 1 || durationValue > 12) {
-            const errorMsg = 'Drying duration must be between 1 and 12 hours only';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            return;
-        }
-
-        // Validate time inputs if both are provided
-        if (startTime.trim() && maxDuration.trim()) {
-            if (!optimalTime) {
-                const errorMsg = 'Invalid time format. Please use formats like 1pm, 1:00pm, or 13:00';
-                setError(errorMsg);
-                toast.error(errorMsg);
-                return;
-            }
-        }
-
         setIsLoading(true);
         setError('');
 
         try {
             const parsedStart = parseTime(startTime);
-            const duration = durationValue;
+            const duration = parseInt(maxDuration, 10);
 
-            if (!parsedStart || isNaN(duration) || duration <= 0) {
-                throw new Error('Invalid drying time input. Please use valid duration and time.');
-            }
+            let weatherId = null;
+            if (parsedStart && !isNaN(duration) && duration > 0) {
+                const startHour = parsedStart.hours;
+                const endHour = (parsedStart.hours + duration) % 24;
 
-            const startHour = parsedStart.hours;
-            const endHour = (parsedStart.hours + duration) % 24;
+                const { startEntry, endEntry } = await resolveWeatherWindow(startHour, endHour);
 
-            const { startEntry, endEntry } = await resolveWeatherWindow(startHour, endHour);
+                const weatherStoreResponse = await axios.post('/weather-data/store', {
+                    temperature: startEntry.temperature,
+                    humidity: startEntry.humidity,
+                    wind_speed: startEntry.windSpeed,
+                    weather_condition: 'forecast',
+                    temperature_end: endEntry.temperature,
+                    humidity_end: endEntry.humidity,
+                    wind_speed_end: endEntry.windSpeed,
+                    weather_condition_end: 'forecast'
+                }, {
+                    headers: { Accept: 'application/json' }
+                });
 
-            const weatherStoreResponse = await axios.post('/weather-data/store', {
-                temperature: startEntry.temperature,
-                humidity: startEntry.humidity,
-                wind_speed: startEntry.windSpeed,
-                weather_condition: 'forecast',
-                temperature_end: endEntry.temperature,
-                humidity_end: endEntry.humidity,
-                wind_speed_end: endEntry.windSpeed,
-                weather_condition_end: 'forecast'
-            });
-
-            const weatherId = weatherStoreResponse?.data?.data?.weather_id;
-
-            if (!weatherId) {
-                throw new Error('Weather data was not saved correctly. Please try again.');
+                weatherId = weatherStoreResponse?.data?.data?.weather_id || null;
             }
 
             // Create the report
             const response = await axios.post('/weather-reports/store', {
                 report_message: message,
-                report_action: `Max Duration: ${maxDuration || 'N/A'}, Optimal Time: ${optimalTime || 'N/A'}`,
+                max_duration: maxDuration,
+                optimal_time: optimalTime,
                 weather_id: weatherId
+            }, {
+                headers: { Accept: 'application/json' }
             });
 
             console.log('Report saved:', response.data);
             toast.success('Weather notification report saved successfully!');
             onClose();
         } catch (err) {
-            const errorMessage = err.response?.data?.message || err.message || 'Failed to save report';
+            const validationErrors = Object.values(err.response?.data?.errors || {}).flat();
+            const errorMessage = validationErrors.join(', ') || err.response?.data?.message || err.message || 'Failed to save report';
             setError(errorMessage);
             toast.error(errorMessage);
             console.error('Error saving report:', err);

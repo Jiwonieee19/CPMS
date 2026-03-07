@@ -29,13 +29,18 @@ export default function ProceedBeansPickupModal({ isOpen, onClose, batchId, onPi
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 }
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
+                if (response.status === 422) {
+                    const validationErrors = Object.values(data?.errors || {}).flat();
+                    throw new Error(validationErrors.join(', ') || data.message || 'Validation failed');
+                }
                 throw new Error(data.message || `HTTP Error: ${response.status}`);
             }
 
@@ -101,8 +106,8 @@ export default function ProceedBeansPickupModal({ isOpen, onClose, batchId, onPi
                         onClick={handleConfirm}
                         disabled={isLoading}
                         className={`py-3 rounded-2xl text-xl font-semibold transition ${isLoading
-                                ? 'bg-[#311F1C] text-[#65524F] cursor-not-allowed opacity-50'
-                                : 'bg-[#311F1C] text-[#E5B917] hover:bg-[#E5B917] hover:text-[#311F1C]'
+                            ? 'bg-[#311F1C] text-[#65524F] cursor-not-allowed opacity-50'
+                            : 'bg-[#311F1C] text-[#E5B917] hover:bg-[#E5B917] hover:text-[#311F1C]'
                             }`}
                     >
                         {isLoading ? 'PROCESSING...' : 'CONFIRM'}

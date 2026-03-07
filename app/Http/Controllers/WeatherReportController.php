@@ -32,25 +32,24 @@ class WeatherReportController extends Controller
         try {
             $validated = $request->validate([
                 'report_message' => 'required|string|max:1000',
-                'report_action' => 'nullable|string|max:255',
+                'max_duration' => 'required|integer|between:1,12',
+                'optimal_time' => ['required', 'string', 'regex:/^\d{1,2}(:\d{2})?(AM|PM)-\d{1,2}(:\d{2})?(AM|PM)$/'],
                 'weather_id' => 'nullable|exists:weather_data,weather_id'
             ]);
+
+            $reportAction = 'Max Duration: ' . $validated['max_duration'] . ', Optimal Time: ' . $validated['optimal_time'];
 
             $staffId = $this->resolveStaffId();
 
             $report = WeatherReports::create([
                 'report_message' => $validated['report_message'],
                 'report_date' => now()->format('Y-m-d'),
-                'report_action' => $validated['report_action'] ?? null,
+                'report_action' => $reportAction,
                 'weather_id' => $validated['weather_id'] ?? null,
                 'staff_id' => $staffId
             ]);
 
-            // Extract optimal time from report_action for timestamp
-            $optimalTime = 'N/A';
-            if (isset($validated['report_action']) && preg_match('/Optimal Time:\s*([^,]+)/', $validated['report_action'], $matches)) {
-                $optimalTime = trim($matches[1]);
-            }
+            $optimalTime = $validated['optimal_time'];
 
             $weatherSummary = '';
             if (!empty($validated['weather_id'])) {

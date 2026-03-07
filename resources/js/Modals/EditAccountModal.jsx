@@ -152,31 +152,6 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated, 
                 setIsLoading(true);
                 setError(null);
 
-                if (formData.password || formData.confirmPassword) {
-                    if (formData.password !== formData.confirmPassword) {
-                        const errorMsg = 'The password confirmation does not match.';
-                        setError(errorMsg);
-                        toast.error(errorMsg);
-                        return;
-                    }
-                }
-
-                if (formData.email && !formData.email.includes('@')) {
-                    const errorMsg = 'The email field must be a valid email address.';
-                    setError(errorMsg);
-                    toast.error(errorMsg);
-                    return;
-                }
-
-                // Validate contact number length (must be 9 digits after +63 9)
-                const contactDigits = formData.contact.replace(/\D/g, '').slice(2); // Remove all non-digits and skip 63
-                if (contactDigits.length !== 10) { // 9 + the leading 9
-                    const errorMsg = 'The Contact field must be a valid contact number.';
-                    setError(errorMsg);
-                    toast.error(errorMsg);
-                    return;
-                }
-
                 const payload = {
                     staff_firstname: formData.firstName,
                     staff_lastname: formData.lastName,
@@ -198,19 +173,18 @@ export default function EditAccountModal({ isOpen, onClose, staffId, onUpdated, 
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        Accept: 'application/json',
                         ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
                     },
                     body: JSON.stringify(payload)
                 });
 
-                const responseData = await response.json();
+                const responseData = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
                     // If server returned validation errors, show them
                     if (response.status === 422 && responseData.errors) {
-                        const errorMessages = Object.entries(responseData.errors)
-                            .map(([field, messages]) => messages.join(', '))
-                            .join('\n');
+                        const errorMessages = Object.values(responseData.errors).flat().join(', ');
                         throw new Error(errorMessages);
                     }
                     // Otherwise show the message from the server

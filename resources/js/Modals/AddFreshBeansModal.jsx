@@ -43,40 +43,27 @@ export default function AddFreshBeansModal({ isOpen, onClose, onAdded }) {
             setIsLoading(true);
             setError(null);
 
-            // Validation
-            if (!formData.harvest_date || !formData.initial_weight || !formData.supplier_name) {
-                const errorMsg = 'Please fill in all required fields';
-                setError(errorMsg);
-                toast.error(errorMsg);
-                setIsLoading(false);
-                return;
-            }
-
-            const weight = parseFloat(formData.initial_weight);
-            if (isNaN(weight) || weight <= 0) {
-                const errorMsg = 'Weight must be a positive number';
-                setError(errorMsg);
-                toast.error(errorMsg);
-                setIsLoading(false);
-                return;
-            }
-
             const response = await fetch('/batches', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Accept: 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
                 body: JSON.stringify({
                     harvest_date: formData.harvest_date,
-                    initial_weight: weight,
+                    initial_weight: formData.initial_weight,
                     supplier_name: formData.supplier_name
                 })
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
+                if (response.status === 422) {
+                    const validationErrors = Object.values(data?.errors || {}).flat();
+                    throw new Error(validationErrors.join(', ') || data.message || 'Validation failed');
+                }
                 throw new Error(data.message || `HTTP Error: ${response.status}`);
             }
 

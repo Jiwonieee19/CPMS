@@ -42,24 +42,8 @@ export default function AddStockEquipmentModal({ isOpen, onClose, equipment, onS
             setIsLoading(true);
             setError(null);
 
-            // Validation
-            if (!formData.supplier_name || !formData.quantity) {
-                const errorMsg = 'Please fill in all required fields';
-                setError(errorMsg);
-                toast.error(errorMsg);
-                return;
-            }
-
             if (!equipment || !equipment.equipment_id) {
                 const errorMsg = 'Invalid equipment selected';
-                setError(errorMsg);
-                toast.error(errorMsg);
-                return;
-            }
-
-            const quantity = parseInt(formData.quantity);
-            if (isNaN(quantity) || quantity <= 0) {
-                const errorMsg = 'Quantity must be a positive number';
                 setError(errorMsg);
                 toast.error(errorMsg);
                 return;
@@ -69,17 +53,22 @@ export default function AddStockEquipmentModal({ isOpen, onClose, equipment, onS
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Accept: 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
                 body: JSON.stringify({
                     supplier_name: formData.supplier_name,
-                    quantity: quantity
+                    quantity: formData.quantity
                 })
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
+                if (response.status === 422) {
+                    const validationErrors = Object.values(data?.errors || {}).flat();
+                    throw new Error(validationErrors.join(', ') || data.message || 'Validation failed');
+                }
                 throw new Error(data.message || `HTTP Error: ${response.status}`);
             }
 

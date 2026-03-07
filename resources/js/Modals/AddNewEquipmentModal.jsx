@@ -42,11 +42,6 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
             setIsLoading(true);
             setError(null);
 
-            if (!formData.name || !formData.supplier_name || !formData.quantity) {
-                setError('Please fill in all required fields');
-                return;
-            }
-
             const csrfToken = document
                 ?.querySelector('meta[name="csrf-token"]')
                 ?.getAttribute('content');
@@ -55,6 +50,7 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Accept: 'application/json',
                     ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
                 },
                 body: JSON.stringify({
@@ -65,7 +61,11 @@ export default function AddNewEquipmentModal({ isOpen, onClose, onAdded }) {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
+                const errorData = await response.json().catch(() => ({}));
+                if (response.status === 422) {
+                    const validationErrors = Object.values(errorData?.errors || {}).flat();
+                    throw new Error(validationErrors.join(', ') || errorData.message || 'Validation failed');
+                }
                 throw new Error(errorData.message || 'Failed to add equipment');
             }
 

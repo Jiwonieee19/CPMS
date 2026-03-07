@@ -101,14 +101,6 @@ export default function GradingProcessModal({ isOpen, onClose, batch, onComplete
         try {
             setError(null);
 
-            // Validate that at least one grade has a value
-            if (allGradesZero()) {
-                const errorMsg = 'Please enter at least one grade value';
-                setError(errorMsg);
-                toast.error(errorMsg);
-                return;
-            }
-
             setIsLoading(true);
             const gradeA = parseInt(formData.gradeA) || 0;
             const gradeB = parseInt(formData.gradeB) || 0;
@@ -123,43 +115,11 @@ export default function GradingProcessModal({ isOpen, onClose, batch, onComplete
                 return;
             }
 
-            // Verify boxes equipment availability
-            const equipmentResponse = await fetch('/equipments/list');
-            const equipmentData = await equipmentResponse.json();
-
-            let boxesEquipment = null;
-
-            // Check both equipments and equipment arrays, and use multiple search criteria
-            const equipmentList = equipmentData.equipments || equipmentData.equipment || [];
-
-            boxesEquipment = equipmentList.find(
-                equip =>
-                    equip.equipment_type?.toLowerCase() === 'boxes' ||
-                    equip.item?.toLowerCase().includes('box')
-            );
-
-            if (!boxesEquipment) {
-                const errorMsg = `Boxes equipment not found`;
-                setError(errorMsg);
-                toast.error(errorMsg);
-                setIsLoading(false);
-                return;
-            }
-
-            const availableBoxes = parseInt(boxesEquipment.quantity) || 0;
-
-            if (availableBoxes < totalBoxes) {
-                const errorMsg = `Insufficient boxes! Need: ${totalBoxes}, Available: ${availableBoxes}`;
-                setError(errorMsg);
-                toast.error(errorMsg);
-                setIsLoading(false);
-                return;
-            }
-
             const response = await fetch(`/batches/${batch.id}/grade`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
                 body: JSON.stringify({
@@ -171,16 +131,13 @@ export default function GradingProcessModal({ isOpen, onClose, batch, onComplete
                 })
             });
 
-            let data;
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                const text = await response.text();
-                throw new Error(`Invalid response from server: ${response.status} - ${text.substring(0, 100)}`);
-            }
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
+                if (response.status === 422) {
+                    const validationErrors = Object.values(data?.errors || {}).flat();
+                    throw new Error(validationErrors.join(', ') || data.message || 'Validation failed');
+                }
                 throw new Error(data.message || `HTTP Error: ${response.status}`);
             }
 
@@ -316,8 +273,8 @@ export default function GradingProcessModal({ isOpen, onClose, batch, onComplete
                         </button>
                         <button
                             onClick={handleGrade}
-                            disabled={allGradesZero() || isLoading}
-                            className={`py-3 rounded-2xl text-xl font-semibold transition ${allGradesZero() || isLoading
+                            disabled={isLoading}
+                            className={`py-3 rounded-2xl text-xl font-semibold transition ${isLoading
                                 ? 'bg-[#311F1C] text-[#65524F] cursor-not-allowed opacity-50'
                                 : 'bg-[#311F1C] text-[#E5B917] hover:bg-[#E5B917] hover:text-[#311F1C]'
                                 }`}

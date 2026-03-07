@@ -69,6 +69,7 @@ export default function ProceedBeansBatchModal({ isOpen, onClose, batch, onProce
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Accept: 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
                 body: JSON.stringify({
@@ -76,9 +77,13 @@ export default function ProceedBeansBatchModal({ isOpen, onClose, batch, onProce
                 })
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
+                if (response.status === 422) {
+                    const validationErrors = Object.values(data?.errors || {}).flat();
+                    throw new Error(validationErrors.join(', ') || data.message || 'Validation failed');
+                }
                 throw new Error(data.message || `HTTP Error: ${response.status}`);
             }
 

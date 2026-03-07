@@ -33,15 +33,15 @@ class WeatherAlertController extends Controller
             $validated = $request->validate([
                 'alert_message' => 'required|string|max:1000',
                 'alert_severity' => 'nullable|string|in:low,medium,high',
-                'postpone_duration' => 'nullable|string',
-                'postpone_timestamp' => 'nullable|string',
+                'postpone_duration' => 'required|integer|between:1,12',
+                'postpone_timestamp' => 'required|string|max:100',
                 'weather_id' => 'nullable|exists:weather_data,weather_id'
             ]);
 
             $staffId = $this->resolveStaffId();
             // Format alert_action from postpone details
-            $postponeDuration = $validated['postpone_duration'] ?? 'N/A';
-            $postponeTimestamp = $validated['postpone_timestamp'] ?? 'N/A';
+            $postponeDuration = $validated['postpone_duration'];
+            $postponeTimestamp = $validated['postpone_timestamp'];
             $alertAction = 'Postpone Duration: ' . $postponeDuration . ' | Postpone Timestamp: ' . $postponeTimestamp;
 
             $weatherSummary = '';
