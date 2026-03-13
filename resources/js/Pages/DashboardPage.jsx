@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Cloud, Clock, FileText, Package } from 'lucide-react';
-import Sidebar from '../Components/sidebar.jsx';
+import Sidebar from '../Components/sidebar'
+
 
 export default function DashboardPage() {
     const [currentTime, setCurrentTime] = useState(new Date());
