@@ -7,7 +7,7 @@ import ToastProvider from './Components/ToastProvider'
 
 createInertiaApp({
     title: (title) => {
-        const appName = 'Cacao Processing Management System'
+        const appName = 'CPMS'
         return title ? `${title} | ${appName}` : appName
     },
     resolve: name => {
