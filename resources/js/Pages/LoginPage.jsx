@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import companyLogo from '../Assets/company-logo.png';
-import loginBackground from '../Assets/login-background.png';
+import companyLogo from '../assets/company-logo.png';
+import loginBackground from '../assets/login-background.png';
 import ForgetPasswordModal from '../Modals/ForgetPasswordModal';
 
 export default function LoginPage() {
@@ -90,7 +90,7 @@ export default function LoginPage() {
                         </label>
                         <div className="relative">
                             <img
-                                src={new URL('../Assets/icons/icon-login-staff.png', import.meta.url).href}
+                                src={new URL('../assets/icons/icon-login-staff.png', import.meta.url).href}
                                 alt="Staff ID icon"
                                 className="absolute left-3 top-1/2 -translate-y-1/2 h-7 w-7 pointer-events-none"
                             />
@@ -113,7 +113,7 @@ export default function LoginPage() {
                         </label>
                         <div className="relative">
                             <img
-                                src={new URL('../Assets/icons/icon-login-password.png', import.meta.url).href}
+                                src={new URL('../assets/icons/icon-login-password.png', import.meta.url).href}
                                 alt="Password icon"
                                 className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 pointer-events-none"
                             />

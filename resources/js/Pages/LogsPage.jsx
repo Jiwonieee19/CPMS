@@ -22,14 +22,14 @@ function LogsPageContent({ initialTab = 'weather' }) {
     const [error, setError] = useState(null)
     const [sortColumn, setSortColumn] = useState(null)
     const [sortDirection, setSortDirection] = useState('asc')
-    const User = new URL('../Assets/icons/icon-person.png', import.meta.url).href;
+    const User = new URL('../assets/icons/icon-person.png', import.meta.url).href;
 
     // Reset to page 1 when search term or tab changes
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, activeTab]);
 
-    const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href
+    const Search = new URL('../assets/icons/icon-search.png', import.meta.url).href
     const { downloadLog } = useLogsExport()
 
     const fetchLogs = useCallback(async () => {

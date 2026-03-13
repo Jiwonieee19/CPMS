@@ -75,7 +75,7 @@ export default function WeatherPage({ weather }) {
     const visibleBars = 8;
     const graphHeight = 430;
 
-    const Megaphone = new URL('../Assets/icons/icon-megaphone.png', import.meta.url).href;
+    const Megaphone = new URL('../assets/icons/icon-megaphone.png', import.meta.url).href;
 
     const handleOpenModal = () => {
         setIsModalOpen(true);

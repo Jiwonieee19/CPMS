@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext } from 'react'
 import { useToast } from './ToastProvider'
 import { jsPDF } from 'jspdf'
-import companyLogo from '../Assets/company-logo.png';
+import companyLogo from '../assets/company-logo.png';
 
 const LogsExportContext = createContext(null)
 

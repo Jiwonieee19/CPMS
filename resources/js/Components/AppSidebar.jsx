@@ -1,24 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePage } from '@inertiajs/react';
-import companyLogo from '../Assets/company-logo.png';
-import HelpSign from '../Assets/Icons/icon-help.png';
-import Door from '../Assets/Icons/icon-logout.png';
+import companyLogo from '../assets/company-logo.png';
+import HelpSign from '../assets/icons/icon-help.png';
+import Door from '../assets/icons/icon-logout.png';
 import LogoutModal from '../Modals/LogoutModal';
 import WeatherGeneralNotificationModal from '../Modals/WeatherGeneralNotificationModal';
 
-const LayoutDashboard = new URL('../Assets/icons/icon-dashboard.png', import.meta.url).href;
-const LayoutDashboardFocus = new URL('../Assets/icons/icon-dashboard-focus.png', import.meta.url).href;
-const CloudSnow = new URL('../Assets/icons/icon-weather.png', import.meta.url).href;
-const CloudSnowFocus = new URL('../Assets/icons/icon-weather-focus.png', import.meta.url).href;
-const Clock = new URL('../Assets/icons/icon-process.png', import.meta.url).href;
-const ClockFocus = new URL('../Assets/icons/icon-process-focus.png', import.meta.url).href;
-const Notebook = new URL('../Assets/icons/icon-logs.png', import.meta.url).href;
-const NotebookFocus = new URL('../Assets/icons/icon-logs-focus.png', import.meta.url).href;
-const Package = new URL('../Assets/icons/icon-inventory.png', import.meta.url).href;
-const PackageFocus = new URL('../Assets/icons/icon-inventory-focus.png', import.meta.url).href;
-const User = new URL('../Assets/icons/icon-account.png', import.meta.url).href;
-const UserFocus = new URL('../Assets/icons/icon-account-focus.png', import.meta.url).href;
+const LayoutDashboard = new URL('../assets/icons/icon-dashboard.png', import.meta.url).href;
+const LayoutDashboardFocus = new URL('../assets/icons/icon-dashboard-focus.png', import.meta.url).href;
+const CloudSnow = new URL('../assets/icons/icon-weather.png', import.meta.url).href;
+const CloudSnowFocus = new URL('../assets/icons/icon-weather-focus.png', import.meta.url).href;
+const Clock = new URL('../assets/icons/icon-process.png', import.meta.url).href;
+const ClockFocus = new URL('../assets/icons/icon-process-focus.png', import.meta.url).href;
+const Notebook = new URL('../assets/icons/icon-logs.png', import.meta.url).href;
+const NotebookFocus = new URL('../assets/icons/icon-logs-focus.png', import.meta.url).href;
+const Package = new URL('../assets/icons/icon-inventory.png', import.meta.url).href;
+const PackageFocus = new URL('../assets/icons/icon-inventory-focus.png', import.meta.url).href;
+const User = new URL('../assets/icons/icon-account.png', import.meta.url).href;
+const UserFocus = new URL('../assets/icons/icon-account-focus.png', import.meta.url).href;
 
 const normalizeRole = (role) => {
     if (!role) return '';

@@ -92,7 +92,7 @@ export default function InventoryPage() {
         }
     }, [activeTab, fetchEquipments, fetchBatches]);
 
-    const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href
+    const Search = new URL('../assets/icons/icon-search.png', import.meta.url).href
 
     const activeData = activeTab === 'beans' ? beanStockData : equipmentStockData
 

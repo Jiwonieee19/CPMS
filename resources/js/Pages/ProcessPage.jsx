@@ -105,7 +105,7 @@ export default function ProcessPage() {
         }
     }, [activeTab, fetchProcesses, fetchDriedBatches]);
 
-    const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href
+    const Search = new URL('../assets/icons/icon-search.png', import.meta.url).href
 
     const activeData = activeTab === 'process' ? processData : driedData
 

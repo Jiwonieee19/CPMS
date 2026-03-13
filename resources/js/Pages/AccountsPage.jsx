@@ -103,8 +103,8 @@ export default function AccountsPage() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, totalAccounts);
     const paginatedAccounts = sortedAccounts.slice(startIndex, endIndex);
-    const User = new URL('../Assets/icons/icon-person.png', import.meta.url).href;
-    const Search = new URL('../Assets/icons/icon-search.png', import.meta.url).href;
+    const User = new URL('../assets/icons/icon-person.png', import.meta.url).href;
+    const Search = new URL('../assets/icons/icon-search.png', import.meta.url).href;
 
     // Calculate visible page numbers (max 3 page buttons)
     const maxVisiblePages = 3;
