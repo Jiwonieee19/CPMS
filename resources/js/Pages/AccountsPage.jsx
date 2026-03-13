@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Edit, Eye, Trash2, Plus, Menu, RotateCcw } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
-import Sidebar from '../Components/sidebar';
+import AppSidebar from '../Components/AppSidebar';
 import EditAccountModal from '../Modals/EditAccountModal';
 import ViewAccountModal from '../Modals/ViewAccountModal';
 import DeleteAccountModal from '../Modals/DeleteAccountModal';
@@ -173,7 +173,7 @@ export default function AccountsPage() {
 
     return (
         <div className="min-h-screen bg-[#F5F5DC]">
-            <Sidebar />
+            <AppSidebar />
             <div className="ml-96 px-14 pt-14 pb-10 bg-[#F5F5DC] min-h-screen">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-8">ACCOUNT MANAGEMENT</h1>
                 <div className="space-y-6">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Package, Plus, ArrowLeft, Box, PlusCircle, CheckCircle, Truck, Cloud, Clock, FileText, Eye, User, Download } from 'lucide-react'
 import { usePage } from '@inertiajs/react'
-import Sidebar from '../Components/sidebar'
+import AppSidebar from '../Components/AppSidebar'
 import ViewLogsModal from '../Modals/ViewLogsModal'
 import LogsExportProvider, { useLogsExport } from '../Components/LogsExport'
 
@@ -148,7 +148,7 @@ function LogsPageContent({ initialTab = 'weather' }) {
 
     return (
         <div className="min-h-screen bg-[#F5F5DC]">
-            <Sidebar />
+            <AppSidebar />
 
             <div className="ml-96 px-14 pt-14 pb-10 bg-[#F5F5DC]">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">

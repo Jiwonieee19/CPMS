@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Cloud, Clock, FileText, Package } from 'lucide-react';
-import Sidebar from '../Components/sidebar'
+import AppSidebar from '../Components/AppSidebar';
 
 
 export default function DashboardPage() {
@@ -110,7 +110,7 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-[#F5F5DC]">
-            <Sidebar />
+            <AppSidebar />
             <div className="ml-96 p-14 bg-[#F5F5DC] min-h-screen">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-8">DASHBOARD</h1>
 

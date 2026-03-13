@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Menu, Cloud } from 'lucide-react'
 import { router } from '@inertiajs/react'
-import Sidebar from '../Components/sidebar'
+import AppSidebar from '../Components/AppSidebar'
 import WeatherDecisionModal from '../Modals/WeatherDecisionModal'
 import '../Styles/scrollbar.css'
 
@@ -87,7 +87,7 @@ export default function WeatherPage({ weather }) {
 
     return (
         <div className="min-h-screen bg-[#F5F5DC]">
-            <Sidebar />
+            <AppSidebar />
 
             <div className="ml-96 pt-14 px-10 bg-[#F5F5DC]">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">

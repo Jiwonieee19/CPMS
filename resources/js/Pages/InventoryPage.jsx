@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Package, Plus, Menu, Box, PlusCircle, CheckCircle, Truck } from 'lucide-react'
 import { router } from '@inertiajs/react'
-import Sidebar from '../Components/sidebar'
+import AppSidebar from '../Components/AppSidebar'
 import AddNewEquipmentModal from '../Modals/AddNewEquipmentModal'
 import AddFreshBeanModal from '../Modals/AddFreshBeansModal'
 import AddStockEquipmentModal from '../Modals/AddStockEquipmentModal'
@@ -179,7 +179,7 @@ export default function InventoryPage() {
 
     return (
         <div className="min-h-screen bg-[#F5F5DC]">
-            <Sidebar />
+            <AppSidebar />
 
             <div className="ml-96 px-14 pt-14 pb-10 bg-[#F5F5DC]">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">

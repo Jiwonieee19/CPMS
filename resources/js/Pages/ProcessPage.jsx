@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Clock, CheckCircle, Menu, Star } from 'lucide-react'
-import Sidebar from '../Components/sidebar'
+import AppSidebar from '../Components/AppSidebar'
 import ProceedProcessModal from '../Modals/ProceedProcessModal'
 import GradingProcessModal from '../Modals/GradingProcessModal'
 import { useToast } from '../Components/ToastProvider'
@@ -180,7 +180,7 @@ export default function ProcessPage() {
 
     return (
         <div className="min-h-screen bg-[#F5F5DC]">
-            <Sidebar />
+            <AppSidebar />
 
             <div className="ml-96 px-14 pt-14 pb-10 bg-[#F5F5DC]">
                 <h1 className="text-6xl font-extrabold text-[#E5B917] mb-10">
