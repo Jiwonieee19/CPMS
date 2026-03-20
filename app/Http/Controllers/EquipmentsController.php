@@ -17,7 +17,9 @@ class EquipmentsController extends Controller
     public function index()
     {
         try {
-            $equipments = Equipments::with('inventory')->get();
+            $equipments = Equipments::with('inventory')
+                ->whereHas('inventory')
+                ->get();
             
             $transformedEquipments = $equipments->map(function ($equipment) {
                 $inventory = $equipment->inventory;

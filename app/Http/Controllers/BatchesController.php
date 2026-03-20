@@ -411,7 +411,7 @@ class BatchesController extends Controller
             
             // Deduct boxes from equipment inventory if needed
             if ($boxesUsed > 0) {
-                $boxesEquipment = Equipments::where('equipment_type', 'boxes')->first();
+                $boxesEquipment = Equipments::where('equipment_type', 'box')->first();
                 
                 if (!$boxesEquipment) {
                     return response()->json([
