@@ -1,52 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Cacao Processing Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive web-based management system for cacao processing operations, built with Laravel. This system streamlines batch tracking, equipment management, quality control, and operational monitoring throughout the cacao processing workflow.
 
-## About Laravel
+## Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The Cacao Processing Management System is designed to help cacao processing facilities manage their entire operational lifecycle from raw material intake to final product quality assessment. It provides real-time visibility into batch status, equipment availability, staff assignments, and environmental conditions.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Key Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Batch Management
+- Track cacao batches through all processing stages
+- Monitor batch inventory levels and status
+- Record incoming and outgoing stock transactions
+- Transfer batches between different processing locations
+- Complete audit trail for traceability
 
-## Learning Laravel
+### Equipment Management
+- Maintain comprehensive equipment inventory
+- Track equipment stock and availability
+- Manage equipment transfer records
+- Monitor equipment usage and maintenance needs
+- Ensure optimal resource allocation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Quality Control
+- Quality grading and assessment system
+- Document quality metrics for each batch
+- Maintain quality standards across production runs
+- Generate quality reports for analysis
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Environmental Monitoring
+- Real-time weather data tracking
+- Weather alert system for operational planning
+- Weather impact analysis on production
+- Historical weather records for correlation studies
 
-## Laravel Sponsors
+### Operations & Logistics
+- Staff management and assignment tracking
+- Process tracking and workflow documentation
+- Complete activity logging system
+- Stock in/out line management for both batches and equipment
+- Detailed operational logs for compliance and auditing
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### User Management
+- Secure authentication system
+- Role-based access control
+- User account management
+- Audit trails for accountability
 
-### Premium Partners
+## System Requirements
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **PHP**: 8.2 or higher
+- **Database**: MySQL, PostgreSQL, or SQLite
+- **Composer**: Latest version
+- **Node.js**: For asset compilation
+- **Laravel**: 11.x
+
+## Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Cacao-Processing-Management-System
+   ```
+
+2. **Install dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Environment setup**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+4. **Configure database**
+   - Update `.env` with your database credentials
+
+5. **Run migrations**
+   ```bash
+   php artisan migrate
+   ```
+
+6. **Seed sample data (optional)**
+   ```bash
+   php artisan db:seed
+   ```
+
+7. **Build frontend assets**
+   ```bash
+   npm run build
+   ```
+
+8. **Start the application**
+   ```bash
+   php artisan serve
+   ```
+
+## Project Structure
+
+- **`app/Models/`** - Data models for batches, equipment, quality, weather, and staff
+- **`app/Http/Controllers/`** - Request handlers and business logic
+- **`app/Http/Middleware/`** - Request middleware for authentication and authorization
+- **`app/Helpers/`** - Utility functions and helpers
+- **`database/migrations/`** - Database schema definitions
+- **`database/seeders/`** - Sample data seeders
+- **`resources/views/`** - Frontend views and UI components
+- **`routes/`** - Application routing
+
+## Core Models
+
+- **Batches** - Cacao batch records
+- **Equipments** - Processing equipment inventory
+- **Staffs** - Employee/staff records
+- **QualityGrading** - Quality assessment data
+- **WeatherData** - Environmental conditions
+- **Process** - Operational procedures and tracking
+- **Logs** - Comprehensive system activity logs
+- **BatchInventory** - Batch stock levels
+- **EquipmentInventory** - Equipment availability tracking
+- **Stock Lines** - Detailed transaction records (in, out, transfer)
+
+## Development
+
+### Running Tests
+```bash
+./vendor/bin/pest
+```
+
+### Database Migrations
+```bash
+php artisan migrate
+php artisan migrate:rollback
+```
+
+### Tinker (Debug Console)
+```bash
+php artisan tinker
+```
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+We welcome contributions to improve the Cacao Processing Management System. Please ensure:
+- Code follows PSR-12 standards
+- Tests are provided for new features
+- Documentation is updated accordingly
+- Database migrations are properly versioned
 
-## Code of Conduct
+## Support
+
+For issues, questions, or feature requests, please open an issue in the repository or contact the development team.
+
+## License
+
+This project is proprietary software. All rights reserved.
 
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
